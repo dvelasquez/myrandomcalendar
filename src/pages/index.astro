@@ -25,8 +25,21 @@ const { user } = Astro.locals;
             <p><strong>User ID:</strong> {user.id}</p>
           </div>
           
-          <div class="mt-6">
-            <form method="POST" action={actions.logout}>
+          <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+            <p class="text-sm text-blue-800">
+              <strong>📅 Calendar Access:</strong> You can now view your Google Calendar events in JSON format. 
+              If you signed in before calendar access was enabled, you may need to sign out and sign in again.
+            </p>
+          </div>
+          
+          <div class="mt-6 space-x-4">
+            <a 
+              href="/calendar" 
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              View My Calendar
+            </a>
+            <form method="POST" action={actions.logout} class="inline">
               <button 
                 type="submit" 
                 class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"

@@ -1,0 +1,177 @@
+---
+import { actions } from 'astro:actions';
+import Layout from '../layouts/Layout.astro';
+
+export const prerender = false; // Required for server actions
+
+// Get user from middleware
+const { user } = Astro.locals;
+
+// Initialize calendar data
+let calendarData = null;
+let error = null;
+
+// Try to fetch calendar data if user is logged in
+if (user) {
+  try {
+    const result = await Astro.callAction(actions.fetchCalendar, new FormData());
+    if (result.data?.success) {
+      calendarData = result.data;
+    } else {
+      error = result.error?.message || 'Failed to fetch calendar data';
+    }
+  } catch (err) {
+    error = (err as Error).message || 'An error occurred while fetching calendar data';
+  }
+}
+---
+
+<Layout>
+  <div class="container mx-auto px-4 py-8">
+    {user ? (
+      <div class="max-w-4xl mx-auto">
+        <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
+          <h2 class="text-xl font-bold">Your Google Calendar</h2>
+          <p>Calendar events in JSON format</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+          {error ? (
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              <h3 class="font-bold">Error:</h3>
+              <p>{error}</p>
+              <p class="text-sm mt-2">
+                {error.includes('calendar access') || error.includes('INSUFFICIENT_SCOPE') ? (
+                  <>
+                    <strong>Solution:</strong> You need to sign out and sign in with Google again to grant calendar permissions.
+                    <br />
+                    <a href="/logout" class="underline">Sign out</a> and then <a href="/login" class="underline">sign in with Google</a> again.
+                  </>
+                ) : (
+                  'Make sure you\'re signed in with Google and have granted calendar access permissions.'
+                )}
+              </p>
+            </div>
+          ) : calendarData ? (
+            <div>
+              <div class="mb-4">
+                <h3 class="text-lg font-semibold mb-2">Calendar Information</h3>
+                <div class="text-sm text-gray-600 space-y-1">
+                  <p><strong>Calendar Type:</strong> {calendarData.calendarId}</p>
+                  <p><strong>Time Zone:</strong> {calendarData.timeZone}</p>
+                  <p><strong>Events Found:</strong> {calendarData.events.length}</p>
+                </div>
+              </div>
+              
+              <div class="mb-4">
+                <button 
+                  id="refreshBtn"
+                  class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  Refresh Calendar Data
+                </button>
+              </div>
+              
+              <div class="border rounded-lg p-4 bg-gray-50">
+                <h3 class="text-lg font-semibold mb-2">Raw JSON Data:</h3>
+                <pre id="jsonOutput" class="text-sm overflow-auto max-h-96 bg-white p-4 rounded border">{JSON.stringify(calendarData, null, 2)}</pre>
+              </div>
+            </div>
+          ) : (
+            <div class="text-center">
+              <p class="text-gray-600">Loading calendar data...</p>
+            </div>
+          )}
+          
+          <div class="mt-6">
+            <a 
+              href="/" 
+              class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-4"
+            >
+              Back to Home
+            </a>
+            <form method="POST" action={actions.logout} class="inline">
+              <button 
+                type="submit" 
+                class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Logout
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    ) : (
+      <div class="max-w-2xl mx-auto">
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+          <h2 class="text-xl font-bold">Access Denied</h2>
+          <p>You must be logged in to view your calendar.</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="text-center space-y-4">
+            <p class="text-gray-600">Please log in to access your Google Calendar.</p>
+            
+            <div class="flex space-x-4 justify-center">
+              <a 
+                href="/login" 
+                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Login
+              </a>
+              <a 
+                href="/register" 
+                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Register
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<script>
+  import { actions } from 'astro:actions';
+  import { navigate } from 'astro:transitions/client';
+  
+  const refreshBtn = document.getElementById('refreshBtn') as HTMLButtonElement | null;
+  const jsonOutput = document.getElementById('jsonOutput') as HTMLPreElement | null;
+  
+  refreshBtn?.addEventListener('click', async () => {
+    if (!refreshBtn || !jsonOutput) return;
+    
+    refreshBtn.textContent = 'Refreshing...';
+    refreshBtn.disabled = true;
+    
+    try {
+      const result = await actions.fetchCalendar(new FormData());
+      
+      if (result.data?.success) {
+        jsonOutput.textContent = JSON.stringify(result.data, null, 2);
+      } else {
+        jsonOutput.textContent = JSON.stringify({ error: result.error?.message || 'Failed to fetch calendar data' }, null, 2);
+      }
+    } catch (error) {
+      jsonOutput.textContent = JSON.stringify({ error: (error as Error).message || 'An error occurred' }, null, 2);
+    } finally {
+      refreshBtn.textContent = 'Refresh Calendar Data';
+      refreshBtn.disabled = false;
+    }
+  });
+  
+  // Handle logout form
+  const logoutForm = document.querySelector('form[action*="logout"]');
+  
+  logoutForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    
+    const { error } = await actions.logout(new FormData());
+    
+    if (!error) {
+      navigate('/');
+    }
+  });
+</script>
