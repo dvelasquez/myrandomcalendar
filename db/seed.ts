@@ -13,4 +13,13 @@ export default async function seed() {
 		image: 'https://example.com/image.png',
 		emailVerified: new Date(),
 	});
+	await db.insert(Users).values({
+		id: '119744f6bdbda671a688646a7970c82c66a7f7f81d4af07104d294619328d106',
+		email: 'test@test.com',
+		name: 'Test',
+		passwordHash: 'd52ae90124f662a3b21236eb39cf5adfe392850ad89b098b9a089ac243c650b2',
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		emailVerified: new Date(),
+	})
 }
