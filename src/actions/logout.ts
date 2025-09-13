@@ -1,18 +1,13 @@
 import { defineAction, ActionError } from 'astro:actions';
-import { deleteSession } from '../lib/auth';
+import { auth } from '../lib/better-auth';
 
 export const logout = defineAction({
   accept: 'form',
-  handler: async (_, { cookies }) => {
+  handler: async (_, { request }) => {
     try {
-      const sessionToken = cookies.get('session_token')?.value;
-
-      if (sessionToken) {
-        await deleteSession(sessionToken);
-      }
-
-      // Clear session cookie
-      cookies.delete('session_token', { path: '/' });
+      const result = await auth.api.signOut({
+        headers: request.headers,
+      });
 
       return { success: true };
     } catch (error) {

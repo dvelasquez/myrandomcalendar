@@ -1,26 +1,13 @@
 import { defineMiddleware } from 'astro:middleware';
-import { getUserFromToken } from './lib/auth';
+import { auth } from './lib/better-auth';
 
 export const onRequest = defineMiddleware(async (context, next) => {
-    const cookieHeader = context.request.headers.get('cookie');
-    const sessionToken = cookieHeader
-        ?.split(';')
-        .find(c => c.trim().startsWith('session_token='))
-        ?.split('=')[1];
+    const session = await auth.api.getSession({
+        headers: context.request.headers,
+    });
 
-    if (sessionToken) {
-        const result = await getUserFromToken(sessionToken);
-        if (result.success) {
-            context.locals.user = result.user!;
-            context.locals.session = result.session!;
-        } else {
-            context.locals.user = null;
-            context.locals.session = null;
-        }
-    } else {
-        context.locals.user = null;
-        context.locals.session = null;
-    }
+    context.locals.user = session?.user || null;
+    context.locals.session = session || null;
 
     return next();
 });

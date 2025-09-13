@@ -1,6 +1,6 @@
 import { defineAction, ActionError } from 'astro:actions';
 import { z } from 'astro:schema';
-import { createUser, createSession } from '../lib/auth';
+import { auth } from '../lib/better-auth';
 
 export const register = defineAction({
   accept: 'form',
@@ -9,37 +9,26 @@ export const register = defineAction({
     email: z.string().email('Invalid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
   }),
-  handler: async ({ name, email, password }, { cookies }) => {
+  handler: async ({ name, email, password }, { request }) => {
     try {
-      const result = await createUser(email, password, name);
-
-      if (!result.success) {
-        throw new ActionError({
-          code: 'CONFLICT',
-          message: result.error || 'Registration failed',
-        });
-      }
-
-      // Create session
-      const sessionResult = await createSession(result.userId!);
-
-      if (!sessionResult.success) {
-        throw new ActionError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create session',
-        });
-      }
-
-      // Set session cookie
-      cookies.set('session_token', sessionResult.token!, {
-        httpOnly: true,
-        path: '/',
-        maxAge: 7 * 24 * 60 * 60, // 7 days
-        secure: true,
-        sameSite: 'lax',
+      const result = await auth.api.signUpEmail({
+        body: {
+          email,
+          password,
+          name,
+        },
+        headers: request.headers,
       });
 
-      return { success: true, userId: result.userId };
+      if (!result) {
+        throw new ActionError({
+          code: 'CONFLICT',
+          message: 'Registration failed',
+        });
+      }
+
+      // BetterAuth handles session cookies automatically
+      return { success: true, user: result.user };
     } catch (error) {
       if (error instanceof ActionError) {
         throw error;
