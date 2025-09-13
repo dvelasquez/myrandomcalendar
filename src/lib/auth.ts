@@ -28,6 +28,7 @@ export async function createUser(email: string, password: string, name?: string)
 
     try {
         await db.insert(Users).values(newUser);
+        console.log('User created:', newUser);
         return { success: true, userId };
     } catch (error) {
         console.error('Error creating user:', error);
