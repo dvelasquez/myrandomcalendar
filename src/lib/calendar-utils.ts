@@ -1,3 +1,5 @@
+import { parseISO, isValid, format } from 'date-fns';
+
 // Utility function to transform Google Calendar events to FullCalendar format
 export interface GoogleCalendarEvent {
   id?: string;
@@ -58,9 +60,36 @@ export function transformGoogleApiEventsToFullCalendar(googleEvents: GoogleCalen
     // Determine if it's an all-day event
     const isAllDay = !event.start?.dateTime && !!event.start?.date;
     
-    // Get start and end times
+    // Get start and end times with validation
     const startTime = event.start?.dateTime || event.start?.date;
     const endTime = event.end?.dateTime || event.end?.date;
+    
+    // Validate dates using date-fns
+    let validStartTime = new Date().toISOString();
+    let validEndTime = endTime;
+    
+    if (startTime) {
+      try {
+        const parsedStart = parseISO(startTime);
+        if (isValid(parsedStart)) {
+          validStartTime = startTime;
+        }
+      } catch (error) {
+        console.warn('Invalid start date:', startTime, error);
+      }
+    }
+    
+    if (endTime) {
+      try {
+        const parsedEnd = parseISO(endTime);
+        if (isValid(parsedEnd)) {
+          validEndTime = endTime;
+        }
+      } catch (error) {
+        console.warn('Invalid end date:', endTime, error);
+        validEndTime = undefined;
+      }
+    }
     
     // Generate a unique ID if not provided
     const eventId = event.id || `event-${index}-${Date.now()}`;
@@ -71,12 +100,12 @@ export function transformGoogleApiEventsToFullCalendar(googleEvents: GoogleCalen
     return {
       id: eventId,
       title: event.summary || 'Untitled Event',
-      start: startTime || new Date().toISOString(),
-      end: endTime,
+      start: validStartTime,
+      end: validEndTime || undefined,
       allDay: isAllDay,
-      description: event.description,
-      location: event.location,
-      url: event.htmlLink,
+      description: event.description || undefined,
+      location: event.location || undefined,
+      url: event.htmlLink || undefined,
       backgroundColor,
       borderColor: darkenColor(backgroundColor),
       textColor: '#ffffff'
@@ -89,9 +118,36 @@ export function transformGoogleEventsToFullCalendar(googleEvents: GoogleCalendar
     // Determine if it's an all-day event
     const isAllDay = !event.start?.dateTime && !!event.start?.date;
     
-    // Get start and end times
+    // Get start and end times with validation
     const startTime = event.start?.dateTime || event.start?.date;
     const endTime = event.end?.dateTime || event.end?.date;
+    
+    // Validate dates using date-fns
+    let validStartTime = new Date().toISOString();
+    let validEndTime = endTime;
+    
+    if (startTime) {
+      try {
+        const parsedStart = parseISO(startTime);
+        if (isValid(parsedStart)) {
+          validStartTime = startTime;
+        }
+      } catch (error) {
+        console.warn('Invalid start date:', startTime, error);
+      }
+    }
+    
+    if (endTime) {
+      try {
+        const parsedEnd = parseISO(endTime);
+        if (isValid(parsedEnd)) {
+          validEndTime = endTime;
+        }
+      } catch (error) {
+        console.warn('Invalid end date:', endTime, error);
+        validEndTime = undefined;
+      }
+    }
     
     // Generate a unique ID if not provided
     const eventId = event.id || `event-${index}-${Date.now()}`;
@@ -102,12 +158,12 @@ export function transformGoogleEventsToFullCalendar(googleEvents: GoogleCalendar
     return {
       id: eventId,
       title: event.summary || 'Untitled Event',
-      start: startTime || new Date().toISOString(),
-      end: endTime,
+      start: validStartTime,
+      end: validEndTime || undefined,
       allDay: isAllDay,
-      description: event.description,
-      location: event.location,
-      url: event.htmlLink,
+      description: event.description || undefined,
+      location: event.location || undefined,
+      url: event.htmlLink || undefined,
       backgroundColor,
       borderColor: darkenColor(backgroundColor),
       textColor: '#ffffff'
