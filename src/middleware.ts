@@ -1,5 +1,5 @@
-import { getUserFromToken } from './lib/auth';
 import { defineMiddleware } from 'astro:middleware';
+import { getUserFromToken } from './lib/auth';
 
 export const onRequest = defineMiddleware(async (context, next) => {
     const cookieHeader = context.request.headers.get('cookie');

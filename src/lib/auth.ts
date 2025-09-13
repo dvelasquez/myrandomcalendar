@@ -1,6 +1,6 @@
-import { db, Users, Sessions, eq, and, gt } from 'astro:db';
 import { randomBytes, createHash } from 'crypto';
-import type { User, NewUser, Session, NewSession, UserWithoutPassword, SessionWithUser } from './types';
+import { db, Users, Sessions, eq, and, gt } from 'astro:db';
+import type { User, NewUser, Session, NewSession, UserWithoutPassword } from './types';
 
 // Generate a secure random token
 function generateToken(): string {
@@ -105,7 +105,7 @@ export async function getUserFromToken(token: string): Promise<{ success: boolea
 
         const { user, session } = result[0];
         // Remove password hash from user object
-        const { passwordHash, ...userWithoutPassword } = user;
+        const { ...userWithoutPassword } = user;
 
         return { success: true, user: userWithoutPassword, session };
     } catch (error) {

@@ -1,4 +1,4 @@
-import { db, Users, Sessions } from 'astro:db';
+import { Users, Sessions } from 'astro:db';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 
 // Infer TypeScript types from your database tables

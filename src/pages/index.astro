@@ -1,5 +1,8 @@
 ---
+import { actions } from 'astro:actions';
 import Layout from '../layouts/Layout.astro';
+
+export const prerender = false; // Required for server actions
 
 // Get user from middleware
 const { user } = Astro.locals;
@@ -23,12 +26,14 @@ const { user } = Astro.locals;
           </div>
           
           <div class="mt-6">
-            <button 
-              id="logoutBtn" 
-              class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Logout
-            </button>
+            <form method="POST" action={actions.logout}>
+              <button 
+                type="submit" 
+                class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Logout
+              </button>
+            </form>
           </div>
         </div>
       </div>
@@ -65,26 +70,19 @@ const { user } = Astro.locals;
 </Layout>
 
 <script>
-  const logoutBtn = document.getElementById('logoutBtn');
+  import { actions } from 'astro:actions';
+  import { navigate } from 'astro:transitions/client';
   
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-      try {
-        const response = await fetch('/api/logout', {
-          method: 'POST',
-        }),
-      
-       result = await response.json();
-        
-        if (result.success) {
-          window.location.href = '/';
-        } else {
-          alert('Logout failed. Please try again.');
-        }
-      } catch (error) {
-        console.error('Logout failed:', error);
-        alert('Logout failed. Please try again.');
-      }
-    });
-  }
+  const logoutForm = document.querySelector('form[action*="logout"]');
+  
+  logoutForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    
+    const { error } = await actions.logout(new FormData());
+    
+    if (!error) {
+      // Redirect to home page after successful logout
+      navigate('/');
+    }
+  });
 </script>

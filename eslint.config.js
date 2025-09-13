@@ -1,10 +1,27 @@
-import js from '@eslint/js';
+import { fileURLToPath } from "node:url";
+import { includeIgnoreFile } from "@eslint/compat";
+import eslint from '@eslint/js';
+import { defineConfig } from 'eslint/config';
 import eslintPluginAstro from 'eslint-plugin-astro';
 import eslintPluginImport from 'eslint-plugin-import';
+import globals from "globals";
+import tseslint from 'typescript-eslint';
 
-export default [
+const gitignorePath = fileURLToPath(new URL(".gitignore", import.meta.url));
+
+export default defineConfig([
+  {
+		languageOptions: {
+			globals: {
+				...globals.browser,
+        ...globals.node,
+			},
+		},
+	},
+  includeIgnoreFile(gitignorePath, "Imported .gitignore patterns"),
   // Add more generic rule sets here, such as:
-  js.configs.all,
+  eslint.configs.recommended,
+  tseslint.configs.recommended,
   ...eslintPluginAstro.configs.recommended,
   {
     plugins: {
@@ -37,5 +54,5 @@ export default [
       // Disable the built-in sort-imports rule (not auto-fixable)
       'sort-imports': 'off'
     }
-  }
-];
+  }]
+);

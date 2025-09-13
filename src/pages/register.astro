@@ -1,12 +1,25 @@
 ---
+import { actions } from 'astro:actions';
 import Layout from '../layouts/Layout.astro';
+
+export const prerender = false; // Required for server actions
+
+// Get action result for error handling
+const result = Astro.getActionResult(actions.register);
 ---
 
 <Layout title="Register">
   <div class="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
     <h1 class="text-2xl font-bold mb-6 text-center">Create Account</h1>
     
-    <form id="registerForm" class="space-y-4">
+    <!-- Display error message if registration failed -->
+    {result?.error && (
+      <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+        {result.error.message}
+      </div>
+    )}
+    
+    <form method="POST" action={actions.register} class="space-y-4">
       <div>
         <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
         <input 
@@ -36,6 +49,7 @@ import Layout from '../layouts/Layout.astro';
           id="password" 
           name="password" 
           required 
+          minlength="6"
           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
@@ -58,33 +72,20 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-  const form = document.getElementById('registerForm');
+  import { actions } from 'astro:actions';
+  import { navigate } from 'astro:transitions/client';
   
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  const form = document.querySelector('form');
+  
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
     
     const formData = new FormData(form);
-    const name = formData.get('name');
-    const email = formData.get('email');
-    const password = formData.get('password');
+    const { error } = await actions.register(formData);
     
-    try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        // Redirect to home page after successful registration
-        window.location.href = '/';
-      } else {
-        alert(result.error || 'Registration failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('Registration failed:', error);
-      alert('Registration failed. Please try again.');
+    if (!error) {
+      // Redirect to home page on successful registration
+      navigate('/');
     }
   });
 </script>
