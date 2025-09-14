@@ -1,6 +1,11 @@
 import { parseISO, isValid, format } from 'date-fns';
+import type { CalendarEvent, GoogleCalendarApiEvent } from './types';
 
-// Utility function to transform Google Calendar events to FullCalendar format
+// Re-export the transformation function from the new transformers file
+export { transformGoogleApiEventsToFullCalendar } from './event-transformers';
+
+// Legacy interfaces - keeping for backward compatibility
+// TODO: Remove these once all code is migrated to use the new types
 export interface GoogleCalendarEvent {
   id?: string;
   summary?: string;
@@ -20,26 +25,7 @@ export interface GoogleCalendarEvent {
   updated?: string;
 }
 
-// Type for Google Calendar API response (Schema$Event)
-export interface GoogleCalendarApiEvent {
-  id?: string | null;
-  summary?: string | null;
-  description?: string | null;
-  location?: string | null;
-  start?: {
-    dateTime?: string | null;
-    date?: string | null;
-  } | null;
-  end?: {
-    dateTime?: string | null;
-    date?: string | null;
-  } | null;
-  htmlLink?: string | null;
-  status?: string | null;
-  created?: string | null;
-  updated?: string | null;
-}
-
+// Legacy interface - keeping for backward compatibility
 export interface FullCalendarEvent {
   id: string;
   title: string;
@@ -54,65 +40,8 @@ export interface FullCalendarEvent {
   textColor?: string;
 }
 
-// Function to transform Google Calendar API events to FullCalendar format
-export function transformGoogleApiEventsToFullCalendar(googleEvents: GoogleCalendarApiEvent[]): FullCalendarEvent[] {
-  return googleEvents.map((event, index) => {
-    // Determine if it's an all-day event
-    const isAllDay = !event.start?.dateTime && !!event.start?.date;
-    
-    // Get start and end times with validation
-    const startTime = event.start?.dateTime || event.start?.date;
-    const endTime = event.end?.dateTime || event.end?.date;
-    
-    // Validate dates using date-fns
-    let validStartTime = new Date().toISOString();
-    let validEndTime = endTime;
-    
-    if (startTime) {
-      try {
-        const parsedStart = parseISO(startTime);
-        if (isValid(parsedStart)) {
-          validStartTime = startTime;
-        }
-      } catch (error) {
-        console.warn('Invalid start date:', startTime, error);
-      }
-    }
-    
-    if (endTime) {
-      try {
-        const parsedEnd = parseISO(endTime);
-        if (isValid(parsedEnd)) {
-          validEndTime = endTime;
-        }
-      } catch (error) {
-        console.warn('Invalid end date:', endTime, error);
-        validEndTime = undefined;
-      }
-    }
-    
-    // Generate a unique ID if not provided
-    const eventId = event.id || `event-${index}-${Date.now()}`;
-    
-    // Create a color based on event type or use default
-    const backgroundColor = getEventColor(event);
-    
-    return {
-      id: eventId,
-      title: event.summary || 'Untitled Event',
-      start: validStartTime,
-      end: validEndTime || undefined,
-      allDay: isAllDay,
-      description: event.description || undefined,
-      location: event.location || undefined,
-      url: event.htmlLink || undefined,
-      backgroundColor,
-      borderColor: darkenColor(backgroundColor),
-      textColor: '#ffffff'
-    };
-  });
-}
-
+// Legacy function - keeping for backward compatibility
+// TODO: Remove this once all code is migrated to use the new transformers
 export function transformGoogleEventsToFullCalendar(googleEvents: GoogleCalendarEvent[]): FullCalendarEvent[] {
   return googleEvents.map((event, index) => {
     // Determine if it's an all-day event
@@ -172,7 +101,7 @@ export function transformGoogleEventsToFullCalendar(googleEvents: GoogleCalendar
 }
 
 // Helper function to generate event colors
-function getEventColor(event: GoogleCalendarEvent | GoogleCalendarApiEvent): string {
+function getEventColor(event: GoogleCalendarEvent): string {
   // You can customize this based on event properties
   const colors = [
     '#3b82f6', // Blue

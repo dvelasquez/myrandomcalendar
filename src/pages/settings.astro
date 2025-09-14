@@ -1,0 +1,126 @@
+---
+import { actions } from 'astro:actions';
+import Layout from '../layouts/Layout.astro';
+import ScheduleSettings from '../components/ScheduleSettings.tsx';
+
+export const prerender = false; // Required for server actions
+
+// Get user from middleware
+const { user } = Astro.locals;
+
+// Mock Google Calendar events for now
+const mockGoogleCalendarEvents = [
+  {
+    id: 'google-event-1',
+    title: 'Team Meeting',
+    start: '2024-01-15T10:00:00Z',
+    end: '2024-01-15T11:00:00Z',
+    allDay: false,
+    description: 'Weekly team sync',
+    backgroundColor: '#10b981',
+    borderColor: '#059669',
+    textColor: '#ffffff'
+  },
+  {
+    id: 'google-event-2',
+    title: 'Doctor Appointment',
+    start: '2024-01-16T14:00:00Z',
+    end: '2024-01-16T15:00:00Z',
+    allDay: false,
+    description: 'Annual checkup',
+    backgroundColor: '#f59e0b',
+    borderColor: '#d97706',
+    textColor: '#ffffff'
+  }
+];
+---
+
+<Layout>
+  <div class="container mx-auto px-4 py-8">
+    {user ? (
+      <div class="max-w-6xl mx-auto">
+        <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
+          <h2 class="text-xl font-bold">Schedule Management</h2>
+          <p>Configure your schedule preferences and view availability for optimal event planning.</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <ScheduleSettings 
+            userId={user.id}
+            googleCalendarEvents={mockGoogleCalendarEvents}
+            client:load
+          />
+        </div>
+        
+        <div class="mt-6">
+          <a 
+            href="/calendar" 
+            class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-4"
+          >
+            View Calendar
+          </a>
+          <a 
+            href="/" 
+            class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-4"
+          >
+            Back to Home
+          </a>
+          <form method="POST" action={actions.logout} class="inline">
+            <button 
+              type="submit" 
+              class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Logout
+            </button>
+          </form>
+        </div>
+      </div>
+    ) : (
+      <div class="max-w-2xl mx-auto">
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+          <h2 class="text-xl font-bold">Access Denied</h2>
+          <p>You must be logged in to manage your schedule settings.</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="text-center space-y-4">
+            <p class="text-gray-600">Please log in to access your schedule settings.</p>
+            
+            <div class="flex space-x-4 justify-center">
+              <a 
+                href="/login" 
+                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Login
+              </a>
+              <a 
+                href="/register" 
+                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Register
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<script>
+  import { actions } from 'astro:actions';
+  import { navigate } from 'astro:transitions/client';
+  
+  // Handle logout form
+  const logoutForm = document.querySelector('form[action*="logout"]');
+  
+  logoutForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    
+    const { error } = await actions.logout(new FormData());
+    
+    if (!error) {
+      navigate('/');
+    }
+  });
+</script>
