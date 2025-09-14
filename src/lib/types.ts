@@ -21,3 +21,15 @@ export type UserProfile = Pick<User, 'id' | 'name' | 'email' | 'image'>;
 export type SessionWithUser = Session & {
   user: User;
 };
+
+// Calendar event interface
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  start: string;
+  end?: string;
+  allDay?: boolean;
+  description?: string;
+  location?: string;
+  url?: string;
+}
