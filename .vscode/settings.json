@@ -11,5 +11,14 @@
     "source.fixAll.eslint": "explicit"
   },
   "eslint.format.enable": true,
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "sqltools.useNodeRuntime": true,
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "name": "myrandomcalendar",
+      "database": "${workspaceFolder:myrandomcalendar}/dev.db"
+    }
+  ]
 }
