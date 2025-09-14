@@ -1,5 +1,5 @@
-import { addDays, format, parseISO, isValid, startOfDay, addMinutes } from 'date-fns';
-import type { ScheduleBlock, CalendarEvent, ScheduleBlockType } from './types';
+import { addDays, addMinutes, format, startOfDay } from 'date-fns';
+import type { CalendarEvent, ScheduleBlock, ScheduleBlockType } from './types';
 
 /**
  * Transforms ScheduleBlocks to CalendarEvents for FullCalendar display

@@ -73,6 +73,15 @@ export interface CalendarEvent {
   backgroundColor?: string;
   borderColor?: string;
   textColor?: string;
+  extendedProps?: {
+    scheduleBlockId?: string;
+    scheduleBlockType?: ScheduleBlockType;
+    priority?: SchedulePriority;
+    isScheduleBlock?: boolean;
+    description?: string;
+    location?: string;
+    [key: string]: any; // Allow additional properties
+  };
 }
 
 // Use official Google Calendar API Event type

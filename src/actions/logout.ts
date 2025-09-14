@@ -1,4 +1,4 @@
-import { defineAction, ActionError } from 'astro:actions';
+import { ActionError, defineAction } from 'astro:actions';
 import { auth } from '../lib/better-auth';
 
 export const logout = defineAction({
@@ -8,6 +8,12 @@ export const logout = defineAction({
       const result = await auth.api.signOut({
         headers: request.headers,
       });
+      if (!result) {
+        throw new ActionError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Logout failed',
+        });
+      }
 
       return { success: true };
     } catch (error) {

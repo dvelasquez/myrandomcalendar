@@ -124,9 +124,9 @@ export function mapGoogleToFullCalendar<T extends GoogleCalendarEventFields>(
   return {
     id: googleEvent.id || '',
     title: googleEvent.summary || '',
-    description: googleEvent.description,
-    location: googleEvent.location,
-    url: googleEvent.htmlLink,
+    description: googleEvent.description || undefined,
+    location: googleEvent.location || undefined,
+    url: googleEvent.htmlLink || undefined,
     // Note: start/end require special handling due to date format differences
   };
 }
@@ -189,13 +189,13 @@ function darkenColor(color: string): string {
 /**
  * Type guard to check if an event is a Google Calendar API event
  */
-export function isGoogleCalendarApiEvent(event: any): event is GoogleCalendarApiEvent {
-  return event && typeof event === 'object' && 'summary' in event;
+export function isGoogleCalendarApiEvent(event: unknown): event is GoogleCalendarApiEvent {
+  return event !== null && typeof event === 'object' && event !== null && 'summary' in event;
 }
 
 /**
  * Type guard to check if an event is a FullCalendar event
  */
-export function isFullCalendarEvent(event: any): event is CalendarEvent {
-  return event && typeof event === 'object' && 'title' in event && 'start' in event;
+export function isFullCalendarEvent(event: unknown): event is CalendarEvent {
+  return event !== null && typeof event === 'object' && event !== null && 'title' in event && 'start' in event;
 }

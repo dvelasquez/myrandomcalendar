@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import type { ScheduleBlock, ScheduleBlockType, SchedulePriority } from '../lib/types';
 import { validateScheduleBlock, getDefaultColorForScheduleType } from '../lib/schedule-transformers';
+import type { ScheduleBlock, ScheduleBlockType, SchedulePriority } from '../lib/types';
 
 interface ScheduleBlockFormProps {
   scheduleBlock?: ScheduleBlock;
@@ -72,7 +72,7 @@ export default function ScheduleBlockForm({
     }
   }, [formData.type, scheduleBlock]);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | ScheduleBlockType | SchedulePriority | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Clear errors when user starts typing

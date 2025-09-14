@@ -1,189 +1,148 @@
-import React, { useState, useEffect } from 'react';
+import { actions } from 'astro:actions';
+import React, { useState } from 'react';
 import type { ScheduleBlock, CalendarEvent } from '../lib/types';
+import AvailabilityViewer from './AvailabilityViewer'; 
 import ScheduleBlockList from './ScheduleBlockList';
-import AvailabilityViewer from './AvailabilityViewer';
 
 interface ScheduleSettingsProps {
   userId: string;
   googleCalendarEvents: CalendarEvent[];
+  initialScheduleBlocks: ScheduleBlock[];
 }
 
 export default function ScheduleSettings({ 
   userId, 
-  googleCalendarEvents 
+  googleCalendarEvents,
+  initialScheduleBlocks
 }: ScheduleSettingsProps) {
-  const [scheduleBlocks, setScheduleBlocks] = useState<ScheduleBlock[]>([]);
+  const [scheduleBlocks, setScheduleBlocks] = useState<ScheduleBlock[]>(initialScheduleBlocks);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState<'blocks' | 'availability'>('blocks');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Load schedule blocks on component mount
-  useEffect(() => {
-    loadScheduleBlocks();
-  }, [userId]);
-
-  const loadScheduleBlocks = async () => {
+  const handleCreateScheduleBlock = async (scheduleBlockData: Omit<ScheduleBlock, 'id' | 'createdAt' | 'updatedAt'>): Promise<ScheduleBlock> => {
     try {
-      setIsLoading(true);
-      setError(null);
+      const formData = new FormData();
+      formData.append('title', scheduleBlockData.title);
+      formData.append('type', scheduleBlockData.type);
+      formData.append('startTime', scheduleBlockData.startTime);
+      formData.append('endTime', scheduleBlockData.endTime);
+      formData.append('daysOfWeek', JSON.stringify(scheduleBlockData.daysOfWeek));
+      formData.append('isRecurring', scheduleBlockData.isRecurring.toString());
+      formData.append('priority', scheduleBlockData.priority);
+      formData.append('isActive', scheduleBlockData.isActive.toString());
+      formData.append('timezone', scheduleBlockData.timezone);
+      if (scheduleBlockData.startDate) formData.append('startDate', scheduleBlockData.startDate.toISOString());
+      if (scheduleBlockData.endDate) formData.append('endDate', scheduleBlockData.endDate.toISOString());
+      if (scheduleBlockData.description) formData.append('description', scheduleBlockData.description);
+      formData.append('color', scheduleBlockData.color);
+      formData.append('bufferBefore', scheduleBlockData.bufferBefore.toString());
+      formData.append('bufferAfter', scheduleBlockData.bufferAfter.toString());
       
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/schedule-blocks?userId=${userId}`);
-      // const blocks = await response.json();
+      const result = await actions.createScheduleBlockAction(formData);
       
-      // Mock data for now
-      const mockBlocks: ScheduleBlock[] = [
-        {
-          id: 'work-1',
-          userId,
-          title: 'Work Hours',
-          type: 'work',
-          startTime: '09:00',
-          endTime: '17:00',
-          daysOfWeek: [1, 2, 3, 4, 5],
-          isRecurring: true,
-          priority: 'high',
-          isActive: true,
-          timezone: 'UTC',
-          description: 'Regular work hours',
-          color: '#3b82f6',
-          bufferBefore: 15,
-          bufferAfter: 15,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        },
-        {
-          id: 'sleep-1',
-          userId,
-          title: 'Sleep Time',
-          type: 'sleep',
-          startTime: '23:00',
-          endTime: '07:00',
-          daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
-          isRecurring: true,
-          priority: 'high',
-          isActive: true,
-          timezone: 'UTC',
-          description: 'Sleep schedule',
-          color: '#6366f1',
-          bufferBefore: 30,
-          bufferAfter: 30,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
-      ];
-      
-      setScheduleBlocks(mockBlocks);
-    } catch (err) {
-      setError('Failed to load schedule blocks');
-      console.error('Error loading schedule blocks:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCreateScheduleBlock = async (scheduleBlockData: Omit<ScheduleBlock, 'id' | 'createdAt' | 'updatedAt'>) => {
-    try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/schedule-blocks', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(scheduleBlockData)
-      // });
-      // const newBlock = await response.json();
-      
-      // Mock creation for now
-      const newBlock: ScheduleBlock = {
-        ...scheduleBlockData,
-        id: `block-${Date.now()}`,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      
-      setScheduleBlocks(prev => [...prev, newBlock]);
-    } catch (err) {
+      if (result.data?.success && result.data.data) {
+        setScheduleBlocks(prev => [...prev, result.data.data!]);
+        return result.data.data!;
+      } else {
+        throw new Error(result.error?.message || 'Failed to create schedule block');
+      }
+    } catch (err: unknown) {
       console.error('Error creating schedule block:', err);
       throw err;
     }
   };
 
-  const handleUpdateScheduleBlock = async (id: string, updates: Partial<ScheduleBlock>) => {
+  const handleUpdateScheduleBlock = async (id: string, updates: Partial<ScheduleBlock>): Promise<ScheduleBlock> => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/schedule-blocks/${id}`, {
-      //   method: 'PATCH',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(updates)
-      // });
-      // const updatedBlock = await response.json();
+      const formData = new FormData();
+      formData.append('id', id);
       
-      // Mock update for now
-      setScheduleBlocks(prev => 
-        prev.map(block => 
-          block.id === id 
-            ? { ...block, ...updates, updatedAt: new Date() }
-            : block
-        )
-      );
-    } catch (err) {
+      if (updates.title !== undefined) formData.append('title', updates.title);
+      if (updates.type !== undefined) formData.append('type', updates.type);
+      if (updates.startTime !== undefined) formData.append('startTime', updates.startTime);
+      if (updates.endTime !== undefined) formData.append('endTime', updates.endTime);
+      if (updates.daysOfWeek !== undefined) formData.append('daysOfWeek', JSON.stringify(updates.daysOfWeek));
+      if (updates.isRecurring !== undefined) formData.append('isRecurring', updates.isRecurring.toString());
+      if (updates.priority !== undefined) formData.append('priority', updates.priority);
+      if (updates.isActive !== undefined) formData.append('isActive', updates.isActive.toString());
+      if (updates.timezone !== undefined) formData.append('timezone', updates.timezone);
+      if (updates.startDate !== undefined) formData.append('startDate', updates.startDate.toISOString());
+      if (updates.endDate !== undefined) formData.append('endDate', updates.endDate.toISOString());
+      if (updates.description !== undefined) formData.append('description', updates.description);
+      if (updates.color !== undefined) formData.append('color', updates.color);
+      if (updates.bufferBefore !== undefined) formData.append('bufferBefore', updates.bufferBefore.toString());
+      if (updates.bufferAfter !== undefined) formData.append('bufferAfter', updates.bufferAfter.toString());
+      
+      const result = await actions.updateScheduleBlockAction(formData);
+      
+      if (result.data?.success && result.data.data) {
+        setScheduleBlocks(prev => 
+          prev.map(block => 
+            block.id === id ? result.data.data! : block
+          )
+        );
+        return result.data.data!;
+      } else {
+        throw new Error(result.error?.message || 'Failed to update schedule block');
+      }
+    } catch (err: unknown) {
       console.error('Error updating schedule block:', err);
       throw err;
     }
   };
 
-  const handleDeleteScheduleBlock = async (id: string) => {
+  const handleDeleteScheduleBlock = async (id: string): Promise<void> => {
     try {
-      // TODO: Replace with actual API call
-      // await fetch(`/api/schedule-blocks/${id}`, { method: 'DELETE' });
+      const formData = new FormData();
+      formData.append('id', id);
       
-      // Mock deletion for now
+      await actions.deleteScheduleBlockAction(formData);
+      
       setScheduleBlocks(prev => prev.filter(block => block.id !== id));
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error deleting schedule block:', err);
       throw err;
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading schedule settings...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <div className="flex items-center">
-          <span className="text-red-400 text-2xl mr-3">⚠️</span>
-          <div>
-            <h3 className="text-lg font-medium text-red-800">Error</h3>
-            <p className="text-red-600">{error}</p>
-            <button
-              onClick={loadScheduleBlocks}
-              className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleCreateDefaultScheduleBlocks = async (): Promise<void> => {
+    try {
+      const formData = new FormData();
+      
+      const result = await actions.createDefaultScheduleBlocksAction(formData);
+      
+      if (result.data?.success && result.data.data) {
+        setScheduleBlocks(prev => [...prev, ...result.data.data!]);
+        alert(result.data.message || 'Default schedule blocks created successfully!');
+      } else {
+        alert(result.error?.message || 'Failed to create default schedule blocks');
+      }
+    } catch (err: unknown) {
+      console.error('Error creating default schedule blocks:', err);
+      alert(err instanceof Error ? err.message : 'Failed to create default schedule blocks');
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Schedule Settings</h1>
-        <p className="text-gray-600">
-          Manage your schedule preferences and view availability for optimal event planning.
-        </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Schedule Settings</h1>
+            <p className="text-gray-600">
+              Manage your schedule preferences and view availability for optimal event planning.
+            </p>
+          </div>
+          {scheduleBlocks.length === 0 && (
+            <button
+              onClick={handleCreateDefaultScheduleBlocks}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+            >
+              Create Default Schedule
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}

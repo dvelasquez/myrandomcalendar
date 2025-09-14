@@ -1,38 +1,47 @@
 ---
 import { actions } from 'astro:actions';
-import Layout from '../layouts/Layout.astro';
+import { getScheduleBlocks } from '../actions/schedule-blocks';
 import ScheduleSettings from '../components/ScheduleSettings.tsx';
+import Layout from '../layouts/Layout.astro';
+import { transformGoogleApiEventsToFullCalendar } from '../lib/event-transformers';
+import type { ScheduleBlock, CalendarEvent, GoogleCalendarApiEvent } from '../lib/types';
 
 export const prerender = false; // Required for server actions
 
 // Get user from middleware
 const { user } = Astro.locals;
 
-// Mock Google Calendar events for now
-const mockGoogleCalendarEvents = [
-  {
-    id: 'google-event-1',
-    title: 'Team Meeting',
-    start: '2024-01-15T10:00:00Z',
-    end: '2024-01-15T11:00:00Z',
-    allDay: false,
-    description: 'Weekly team sync',
-    backgroundColor: '#10b981',
-    borderColor: '#059669',
-    textColor: '#ffffff'
-  },
-  {
-    id: 'google-event-2',
-    title: 'Doctor Appointment',
-    start: '2024-01-16T14:00:00Z',
-    end: '2024-01-16T15:00:00Z',
-    allDay: false,
-    description: 'Annual checkup',
-    backgroundColor: '#f59e0b',
-    borderColor: '#d97706',
-    textColor: '#ffffff'
+// Fetch schedule blocks server-side
+let scheduleBlocks: ScheduleBlock[] = [];
+if (user) {
+  try {
+    scheduleBlocks = await getScheduleBlocks(user.id);
+  } catch (error) {
+    console.error('Error fetching schedule blocks:', error);
+    // Continue with empty array if fetch fails
   }
-];
+}
+
+// Fetch real Google Calendar events
+let googleCalendarEvents: CalendarEvent[] = [];
+let calendarError: string | null = null;
+
+if (user) {
+  try {
+    const result = await Astro.callAction(actions.fetchCalendar, new FormData());
+    if (result.data?.success) {
+      // Transform Google Calendar API events to CalendarEvent format
+      const googleApiEvents = result.data.events as GoogleCalendarApiEvent[];
+      googleCalendarEvents = transformGoogleApiEventsToFullCalendar(googleApiEvents);
+    } else {
+      calendarError = result.error?.message || 'Failed to fetch calendar data';
+      console.warn('Calendar fetch error:', calendarError);
+    }
+  } catch (err) {
+    calendarError = (err as Error).message || 'An error occurred while fetching calendar data';
+    console.error('Calendar fetch error:', err);
+  }
+}
 ---
 
 <Layout>
@@ -40,14 +49,48 @@ const mockGoogleCalendarEvents = [
     {user ? (
       <div class="max-w-6xl mx-auto">
         <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
-          <h2 class="text-xl font-bold">Schedule Management</h2>
-          <p>Configure your schedule preferences and view availability for optimal event planning.</p>
+          <div class="flex justify-between items-start">
+            <div>
+              <h2 class="text-xl font-bold">Schedule Management</h2>
+              <p>Configure your schedule preferences and view availability for optimal event planning.</p>
+              {!calendarError && (
+                <p class="text-sm mt-2">
+                  <strong>Google Calendar Events:</strong> {googleCalendarEvents.length} events loaded
+                </p>
+              )}
+            </div>
+            <button 
+              id="refreshCalendarBtn"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
+            >
+              Refresh Calendar
+            </button>
+          </div>
         </div>
+        
+        {calendarError ? (
+          <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+            <h3 class="font-bold">Google Calendar Integration Notice:</h3>
+            <p class="mb-2">{calendarError}</p>
+            <p class="text-sm">
+              {calendarError.includes('calendar access') || calendarError.includes('INSUFFICIENT_SCOPE') ? (
+                <>
+                  <strong>Solution:</strong> You need to sign out and sign in with Google again to grant calendar permissions.
+                  <br />
+                  <a href="/logout" class="underline">Sign out</a> and then <a href="/login" class="underline">sign in with Google</a> again.
+                </>
+              ) : (
+                'Make sure you\'re signed in with Google and have granted calendar access permissions.'
+              )}
+            </p>
+          </div>
+        ) : null}
         
         <div class="bg-white rounded-lg shadow-md p-6">
           <ScheduleSettings 
             userId={user.id}
-            googleCalendarEvents={mockGoogleCalendarEvents}
+            googleCalendarEvents={googleCalendarEvents}
+            initialScheduleBlocks={scheduleBlocks}
             client:load
           />
         </div>
@@ -110,6 +153,25 @@ const mockGoogleCalendarEvents = [
 <script>
   import { actions } from 'astro:actions';
   import { navigate } from 'astro:transitions/client';
+  
+  // Handle calendar refresh
+  const refreshBtn = document.getElementById('refreshCalendarBtn') as HTMLButtonElement | null;
+  
+  refreshBtn?.addEventListener('click', async () => {
+    if (!refreshBtn) return;
+    
+    refreshBtn.textContent = 'Refreshing...';
+    refreshBtn.disabled = true;
+    
+    try {
+      // Reload the page to fetch fresh calendar data
+      window.location.reload();
+    } catch (error) {
+      console.error('Error refreshing calendar:', error);
+      refreshBtn.textContent = 'Refresh Calendar';
+      refreshBtn.disabled = false;
+    }
+  });
   
   // Handle logout form
   const logoutForm = document.querySelector('form[action*="logout"]');

@@ -1,5 +1,4 @@
-import { parseISO, isValid, format } from 'date-fns';
-import type { CalendarEvent, GoogleCalendarApiEvent } from './types';
+import { isValid, parseISO } from 'date-fns';
 
 // Re-export the transformation function from the new transformers file
 export { transformGoogleApiEventsToFullCalendar } from './event-transformers';

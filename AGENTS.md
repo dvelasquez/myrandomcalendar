@@ -104,15 +104,59 @@ export const auth = betterAuth({
 ## ⚡ **Quick Commands**
 ```bash
 npm run dev                    # Start development server
-npm astro -- db push --force-reset    # Reset database schema
+npm run astro -- db push --force-reset    # Reset database schema
 printenv | grep GOOGLE         # Check Google credentials
 ```
+
+## 📊 **Data Fetching Architecture (CRITICAL)**
+
+### **Preferred Pattern: Server-Side Data Fetching**
+- ✅ **Astro Actions**: Use `defineAction` for all server-side operations
+- ✅ **Server-Side Fetching**: Data fetching should happen in `.astro` components
+- ✅ **Props Passing**: Pass fetched data as props to React components
+- ✅ **No Client-Side Fetching**: Avoid `useEffect` for initial data loading
+
+### **Implementation Pattern**
+```typescript
+// ✅ CORRECT: Astro page (.astro)
+---
+import { getScheduleBlocks } from '../actions/schedule-blocks';
+
+// Fetch data server-side
+let scheduleBlocks = [];
+if (user) {
+  scheduleBlocks = await getScheduleBlocks(user.id);
+}
+---
+
+<ReactComponent 
+  initialData={scheduleBlocks}
+  client:load
+/>
+```
+
+```typescript
+// ❌ AVOID: React component fetching
+const [data, setData] = useState([]);
+
+useEffect(() => {
+  // Don't do this for initial data
+  fetchData();
+}, []);
+```
+
+### **Benefits**
+- **Performance**: Data available immediately on page load
+- **SEO**: Content present in initial HTML
+- **UX**: No loading states or empty screens
+- **Architecture**: Clean separation of concerns
 
 ## 🎯 **Current Status**
 - ✅ BetterAuth fully integrated
 - ✅ Google OAuth working and tested
 - ✅ Database schema aligned
 - ✅ All authentication flows functional
+- ✅ Server-side data fetching implemented
 - ✅ Documentation complete
 
 ---

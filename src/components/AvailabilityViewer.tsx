@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import type { ScheduleBlock, CalendarEvent } from '../lib/types';
 import { scheduleBlocksToCalendarEvents, combineCalendarEvents } from '../lib/schedule-transformers';
+import type { ScheduleBlock, CalendarEvent } from '../lib/types';
 
 interface AvailabilityViewerProps {
   scheduleBlocks: ScheduleBlock[];

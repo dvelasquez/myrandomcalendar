@@ -1,8 +1,8 @@
 import { defineAction, ActionError } from 'astro:actions';
-import { auth } from '../lib/better-auth';
-import { google } from 'googleapis';
 import { db, Accounts } from 'astro:db';
 import { eq, and } from 'drizzle-orm';
+import { google } from 'googleapis';
+import { auth } from '../lib/better-auth';
 
 export const fetchCalendar = defineAction({
   accept: 'form',
@@ -42,7 +42,7 @@ export const fetchCalendar = defineAction({
       // Check if the account has the calendar scope
       if (!googleAccount.scope || !googleAccount.scope.includes('calendar.readonly')) {
         throw new ActionError({
-          code: 'INSUFFICIENT_SCOPE',
+          code: 'INTERNAL_SERVER_ERROR',
           message: 'Google account needs calendar access. Please sign out and sign in with Google again to grant calendar permissions.',
         });
       }
