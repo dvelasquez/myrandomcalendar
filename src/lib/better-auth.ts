@@ -3,6 +3,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 export const auth = betterAuth({
+  secret: process.env.BETTER_AUTH_SECRET as string,
   database: drizzleAdapter(db, {
     provider: "sqlite",
     schema: {

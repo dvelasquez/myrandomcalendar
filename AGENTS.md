@@ -47,6 +47,7 @@ const Accounts = defineTable({
 ```bash
 GOOGLE_CLIENT_ID=your-client-id-here
 GOOGLE_CLIENT_SECRET=your-client-secret-here
+BETTER_AUTH_SECRET=your-secret-key-here
 ```
 **⚠️ IMPORTANT**: These are in system environment, NOT in `.env.local` files.
 
@@ -71,6 +72,7 @@ src/
 ```typescript
 // src/lib/better-auth.ts - MUST have this exact configuration
 export const auth = betterAuth({
+  secret: process.env.BETTER_AUTH_SECRET as string,  // CRITICAL: Session encryption
   database: drizzleAdapter(db, {
     provider: "sqlite",
     schema: {
