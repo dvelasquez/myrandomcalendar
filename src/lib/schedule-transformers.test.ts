@@ -34,7 +34,7 @@ describe('schedule-transformers', () => {
       
       // Check that the event starts and ends at the correct times (accounting for timezone)
       const startTime = new Date(events[0].start);
-      const endTime = new Date(events[0].end);
+      const endTime = new Date(events[0].end || events[0].start);
       expect(startTime.getHours()).toBe(8); // 09:00 - 15min buffer = 08:45
       expect(startTime.getMinutes()).toBe(45);
       expect(endTime.getHours()).toBe(17); // 17:00 + 15min buffer = 17:15
@@ -74,7 +74,7 @@ describe('schedule-transformers', () => {
       
       // Check that the event starts and ends at the correct times (accounting for timezone)
       const startTime = new Date(events[0].start);
-      const endTime = new Date(events[0].end);
+      const endTime = new Date(events[0].end || events[0].start);
       expect(startTime.getHours()).toBe(22); // 23:00 - 30min buffer = 22:30
       expect(startTime.getMinutes()).toBe(30);
       expect(endTime.getHours()).toBe(7); // 07:00 + 30min buffer = 07:30

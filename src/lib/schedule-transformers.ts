@@ -1,4 +1,4 @@
-import { addDays, addMinutes, format, startOfDay, setHours, addDays as addDay } from 'date-fns';
+import { addDays, addMinutes, format, startOfDay, set, addDays as addDay } from 'date-fns';
 import type { CalendarEvent, ScheduleBlock, ScheduleBlockType } from './types';
 
 /**
@@ -77,10 +77,10 @@ function generateEventForDate(
     }
     
     // Create start datetime using date-fns
-    const startDateTime = setHours(date, startTime.hours, startTime.minutes, 0, 0);
+    const startDateTime = set(date, { hours: startTime.hours, minutes: startTime.minutes, seconds: 0, milliseconds: 0 });
     
     // Create end datetime using date-fns
-    const endDateTime = setHours(date, endTime.hours, endTime.minutes, 0, 0);
+    const endDateTime = set(date, { hours: endTime.hours, minutes: endTime.minutes, seconds: 0, milliseconds: 0 });
     
     // Handle overnight events (e.g., sleep from 22:00 to 06:00)
     const finalEndDateTime = endDateTime <= startDateTime ? addDay(endDateTime, 1) : endDateTime;

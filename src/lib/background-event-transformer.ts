@@ -1,5 +1,6 @@
 import type { TimeSlot } from './availability-calculator';
-import type { CalendarEvent } from './types';
+import type { CalendarEvent, SchedulePriority } from './types';
+import type { FullCalendarEvent } from './calendar-utils';
 
 /**
  * Configuration for background event styling
@@ -44,7 +45,7 @@ export interface BackgroundEvent extends CalendarEvent {
 export function transformTimeSlotsToBackgroundEvents(
   timeSlots: TimeSlot[],
   config: BackgroundEventConfig = DEFAULT_BACKGROUND_EVENT_CONFIG
-): BackgroundEvent[] {
+): FullCalendarEvent[] {
   return timeSlots.map(slot => ({
     id: `availability-${slot.start}`,
     title: getBackgroundEventTitle(slot),
@@ -58,7 +59,7 @@ export function transformTimeSlotsToBackgroundEvents(
     className: getBackgroundEventClassName(slot),
     extendedProps: {
       availabilityType: slot.type,
-      priority: slot.priority,
+      priority: slot.priority as SchedulePriority | undefined,
       isAvailabilityEvent: true,
       originalTitle: slot.title
     }

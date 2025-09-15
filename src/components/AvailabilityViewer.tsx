@@ -1,4 +1,4 @@
-import { startOfDay, endOfDay, subDays, addDays, setHours, isBefore, isAfter } from 'date-fns';
+import { startOfDay, endOfDay, subDays, addDays, set, isBefore, isAfter } from 'date-fns';
 import React, { useState, useEffect } from 'react';
 import { scheduleBlocksToCalendarEvents, combineCalendarEvents } from '../lib/schedule-transformers';
 import type { ScheduleBlock, CalendarEvent } from '../lib/types';
@@ -60,8 +60,8 @@ export default function AvailabilityViewer({
     // Generate hourly time slots using date-fns
     const slots: TimeSlot[] = [];
     for (let hour = 0; hour < 24; hour++) {
-      const slotStart = setHours(startOfDayDate, hour, 0, 0, 0);
-      const slotEnd = setHours(startOfDayDate, hour + 1, 0, 0, 0);
+      const slotStart = set(startOfDayDate, { hours: hour, minutes: 0, seconds: 0, milliseconds: 0 });
+      const slotEnd = set(startOfDayDate, { hours: hour + 1, minutes: 0, seconds: 0, milliseconds: 0 });
 
       // Check if this slot conflicts with any events using date-fns
       const conflictingEvent = allEvents.find(event => {

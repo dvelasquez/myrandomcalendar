@@ -162,7 +162,7 @@ describe('Availability Calculator', () => {
     ];
 
     it('should generate merged contiguous time slots', () => {
-      const result = generateTimeSlots(startOfDay, endOfDay, events, DEFAULT_AVAILABILITY_CONFIG);
+      const result = generateTimeSlots(startOfDay, endOfDay, events);
       
       // Should have fewer slots than 24 because we merge contiguous ones
       expect(result.length).toBeLessThan(24);
@@ -177,14 +177,14 @@ describe('Availability Calculator', () => {
     });
 
     it('should mark conflicting slots as busy', () => {
-      const result = generateTimeSlots(startOfDay, endOfDay, events, DEFAULT_AVAILABILITY_CONFIG);
+      const result = generateTimeSlots(startOfDay, endOfDay, events);
       
       const busySlots = result.filter(slot => slot.type === 'busy');
       expect(busySlots.length).toBeGreaterThan(0);
     });
 
     it('should mark non-conflicting slots as available', () => {
-      const result = generateTimeSlots(startOfDay, endOfDay, events, DEFAULT_AVAILABILITY_CONFIG);
+      const result = generateTimeSlots(startOfDay, endOfDay, events);
       
       const availableSlots = result.filter(slot => slot.type === 'available');
       expect(availableSlots.length).toBeGreaterThan(0);

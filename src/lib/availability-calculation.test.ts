@@ -34,7 +34,7 @@ describe('availability-calculation', () => {
       
       // Check that the event starts and ends at the correct times (accounting for timezone)
       const startTime = new Date(sleepEvent.start);
-      const endTime = new Date(sleepEvent.end);
+      const endTime = new Date(sleepEvent.end || sleepEvent.start);
       expect(startTime.getHours()).toBe(22); // 23:00 - 30min buffer = 22:30
       expect(startTime.getMinutes()).toBe(30);
       expect(endTime.getHours()).toBe(7); // 07:00 + 30min buffer = 07:30
@@ -45,7 +45,7 @@ describe('availability-calculation', () => {
 
       // Test basic conflict detection logic
       const eventStart = new Date(sleepEvent.start);
-      const eventEnd = new Date(sleepEvent.end);
+      const eventEnd = new Date(sleepEvent.end || sleepEvent.start);
       
       // Test that the event conflicts with a slot that should conflict
       const conflictingSlotStart = new Date(eventStart);
@@ -130,7 +130,7 @@ describe('availability-calculation', () => {
       
       sleepEvents.forEach(sleepEvent => {
         const startTime = new Date(sleepEvent.start);
-        const endTime = new Date(sleepEvent.end);
+        const endTime = new Date(sleepEvent.end || sleepEvent.start);
         
         // Sleep should start on one day and end on the next
         expect(startTime.getDate()).not.toBe(endTime.getDate());
@@ -144,7 +144,7 @@ describe('availability-calculation', () => {
       
       workEvents.forEach(workEvent => {
         const startTime = new Date(workEvent.start);
-        const endTime = new Date(workEvent.end);
+        const endTime = new Date(workEvent.end || workEvent.start);
         
         // Work should be same day
         expect(startTime.getDate()).toBe(endTime.getDate());
@@ -250,7 +250,7 @@ describe('availability-calculation', () => {
       expect(events).toHaveLength(1);
       
       const startTime = new Date(events[0].start);
-      const endTime = new Date(events[0].end);
+      const endTime = new Date(events[0].end || events[0].start);
       expect(startTime.getHours()).toBe(0);
       expect(startTime.getMinutes()).toBe(0);
       expect(endTime.getHours()).toBe(1);
@@ -285,7 +285,7 @@ describe('availability-calculation', () => {
       expect(events).toHaveLength(1);
       
       const startTime = new Date(events[0].start);
-      const endTime = new Date(events[0].end);
+      const endTime = new Date(events[0].end || events[0].start);
       expect(startTime.getHours()).toBe(0);
       expect(startTime.getMinutes()).toBe(0);
       expect(endTime.getHours()).toBe(0);

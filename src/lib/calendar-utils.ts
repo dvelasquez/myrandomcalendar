@@ -37,6 +37,16 @@ export interface FullCalendarEvent {
   backgroundColor?: string;
   borderColor?: string;
   textColor?: string;
+  rendering?: 'background' | 'inverse-background' | 'list-item' | 'none';
+  display?: 'auto' | 'block' | 'list-item' | 'background' | 'inverse-background' | 'none';
+  className?: string;
+  extendedProps?: {
+    [key: string]: any;
+    availabilityType?: string;
+    priority?: string;
+    isAvailabilityEvent?: boolean;
+    originalTitle?: string;
+  };
 }
 
 // Legacy function - keeping for backward compatibility
