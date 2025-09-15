@@ -60,7 +60,7 @@ export async function calculateAvailability(
   );
   
   // Generate time slots
-  return generateTimeSlots(startOfDay, endOfDay, allEvents, config);
+  return generateTimeSlots(startOfDay, endOfDay, allEvents);
 }
 
 /**
@@ -189,12 +189,18 @@ export function getGoogleCalendarEventsForDate(
   endOfDay: Date,
   includeOvernight: boolean
 ): CalendarEvent[] {
+  let searchStart = startOfDay;
+  if (includeOvernight) {
+    // Include previous day for overnight events using date-fns
+    searchStart = subDays(startOfDay, 1);
+  }
+  
   return calendarEvents.filter(event => {
     const eventStart = new Date(event.start);
     const eventEnd = new Date(event.end || event.start);
     
-    // Include events that overlap with the current day
-    return eventStart < endOfDay && eventEnd > startOfDay;
+    // Include events that overlap with the search range
+    return eventStart < endOfDay && eventEnd > searchStart;
   });
 }
 
@@ -221,8 +227,7 @@ export function combineAndSortEvents(
 export function generateTimeSlots(
   startOfDay: Date,
   endOfDay: Date,
-  events: CalendarEvent[],
-  config: AvailabilityConfig
+  events: CalendarEvent[]
 ): TimeSlot[] {
   // Create a timeline of events and gaps
   const timeline = createEventTimeline(startOfDay, endOfDay, events);
