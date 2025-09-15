@@ -6,8 +6,38 @@ import { auth } from '../lib/better-auth';
 
 export const fetchCalendar = defineAction({
   accept: 'form',
-  handler: async (_, { request }) => {
+  handler: async (formData, { request }) => {
     try {
+      // Extract date range parameters from form data
+      const startDate = formData.get('startDate') as string;
+      const endDate = formData.get('endDate') as string;
+      
+      // Validate date parameters
+      if (!startDate || !endDate) {
+        throw new ActionError({
+          code: 'BAD_REQUEST',
+          message: 'startDate and endDate parameters are required',
+        });
+      }
+      
+      // Parse and validate dates
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        throw new ActionError({
+          code: 'BAD_REQUEST',
+          message: 'Invalid date format provided',
+        });
+      }
+      
+      if (start >= end) {
+        throw new ActionError({
+          code: 'BAD_REQUEST',
+          message: 'startDate must be before endDate',
+        });
+      }
+
       // Get the current session
       const session = await auth.api.getSession({
         headers: request.headers,
@@ -57,11 +87,12 @@ export const fetchCalendar = defineAction({
       // Create Calendar API client
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-      // Fetch calendar events
+      // Fetch calendar events for the specified date range
       const response = await calendar.events.list({
         calendarId: 'primary',
-        timeMin: new Date().toISOString(),
-        maxResults: 50,
+        timeMin: start.toISOString(),
+        timeMax: end.toISOString(),
+        maxResults: 250, // Increased to handle larger date ranges
         singleEvents: true,
         orderBy: 'startTime',
       });
@@ -71,6 +102,10 @@ export const fetchCalendar = defineAction({
         events: response.data.items || [],
         calendarId: response.data.kind,
         timeZone: response.data.timeZone,
+        dateRange: {
+          start: start.toISOString(),
+          end: end.toISOString(),
+        },
       };
     } catch (error) {
       console.error('Calendar fetch error:', error);

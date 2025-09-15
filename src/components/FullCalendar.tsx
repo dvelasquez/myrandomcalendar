@@ -11,6 +11,7 @@ interface FullCalendarProps {
   events: CalendarEvent[];
   onEventClick?: (event: CalendarEvent) => void;
   onDateClick?: (date: Date) => void;
+  onDateRangeChange?: (startDate: Date, endDate: Date) => void;
   showEventModal?: boolean;
 }
 
@@ -18,6 +19,7 @@ export default function FullCalendarComponent({
   events, 
   onEventClick, 
   onDateClick,
+  onDateRangeChange,
   showEventModal = true
 }: FullCalendarProps) {
   const calendarRef = useRef<FullCalendar>(null);
@@ -53,6 +55,12 @@ export default function FullCalendarComponent({
     }
   };
 
+  const handleDatesSet = (info: { start: Date; end: Date }) => {
+    if (onDateRangeChange) {
+      onDateRangeChange(info.start, info.end);
+    }
+  };
+
   const handleEventDidMount = (info: EventMountArg) => {
     // Remove any existing href attributes
     const element = info.el as HTMLAnchorElement;
@@ -77,6 +85,7 @@ export default function FullCalendarComponent({
         events={events}
         eventClick={handleEventClick}
         dateClick={handleDateClick}
+        datesSet={handleDatesSet}
         eventDidMount={handleEventDidMount}
         height="auto"
         aspectRatio={1.8}
