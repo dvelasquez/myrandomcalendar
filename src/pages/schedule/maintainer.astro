@@ -1,8 +1,5 @@
 ---
 import { actions } from 'astro:actions';
-import { startOfDay, endOfDay } from 'date-fns';
-import { createScheduleBlockAction, updateScheduleBlockAction, deleteScheduleBlockAction } from '../../actions/schedule-block-actions';
-import { getScheduleBlocks } from '../../actions/schedule-blocks';
 import Layout from '../../layouts/Layout.astro';
 import type { ScheduleBlock, ScheduleBlockType, SchedulePriority } from '../../lib/types';
 
@@ -17,65 +14,36 @@ const editId = url.searchParams.get('edit');
 const successMessage = url.searchParams.get('success');
 const errorMessage = url.searchParams.get('error');
 
-// Handle form submissions
-if (Astro.request.method === 'POST' && user) {
-  const formData = await Astro.request.formData();
-  const action = formData.get('action') as string;
-  
-  try {
-    let result;
-    let redirectUrl = '/schedule/maintainer';
-    
-    switch (action) {
-      case 'create':
-        result = await createScheduleBlockAction(formData);
-        if (result.data?.success) {
-          redirectUrl += '?success=created';
-        } else {
-          redirectUrl += `?error=${encodeURIComponent(result.error?.message || 'Failed to create schedule block')}`;
-        }
-        break;
-        
-      case 'update':
-        result = await updateScheduleBlockAction(formData);
-        if (result.data?.success) {
-          redirectUrl += '?success=updated';
-        } else {
-          redirectUrl += `?error=${encodeURIComponent(result.error?.message || 'Failed to update schedule block')}`;
-        }
-        break;
-        
-      case 'delete':
-        result = await deleteScheduleBlockAction(formData);
-        if (result.data?.success) {
-          redirectUrl += '?success=deleted';
-        } else {
-          redirectUrl += `?error=${encodeURIComponent(result.error?.message || 'Failed to delete schedule block')}`;
-        }
-        break;
-        
-      default:
-        redirectUrl += '?error=Unknown action';
-    }
-    
-    return Astro.redirect(redirectUrl);
-  } catch (error) {
-    console.error('Error handling schedule block action:', error);
-    return Astro.redirect('/schedule/maintainer?error=' + encodeURIComponent('An error occurred'));
-  }
+// Handle form submissions using Astro actions
+const createResult = Astro.getActionResult(actions.createScheduleBlockAction);
+const updateResult = Astro.getActionResult(actions.updateScheduleBlockAction);
+const deleteResult = Astro.getActionResult(actions.deleteScheduleBlockAction);
+
+// Redirect on successful actions
+if (createResult && !createResult.error) {
+  return Astro.redirect('/schedule?success=created');
+}
+if (updateResult && !updateResult.error) {
+  return Astro.redirect('/schedule/maintainer?success=updated');
+}
+if (deleteResult && !deleteResult.error) {
+  return Astro.redirect('/schedule?success=deleted');
 }
 
-// Fetch schedule blocks
+// Fetch schedule blocks using Astro.callAction
 let scheduleBlocks: ScheduleBlock[] = [];
 let editingBlock: ScheduleBlock | undefined;
 
 if (user) {
   try {
-    scheduleBlocks = await getScheduleBlocks(user.id);
-    
-    // If editing, find the block
-    if (editId) {
-      editingBlock = scheduleBlocks.find(block => block.id === editId);
+    const { data, error } = await Astro.callAction(actions.getScheduleBlocksAction, new FormData());
+    if (!error && data?.success) {
+      scheduleBlocks = data.data;
+      
+      // If editing, find the block
+      if (editId) {
+        editingBlock = scheduleBlocks.find(block => block.id === editId);
+      }
     }
   } catch (error) {
     console.error('Error fetching schedule blocks:', error);
@@ -157,9 +125,8 @@ const DAYS_OF_WEEK = [
 
         <!-- Schedule Block Form -->
         <div class="bg-white rounded-lg shadow-md p-6">
-          <form method="POST" action="/schedule/maintainer" class="space-y-6">
+          <form method="POST" action={editingBlock ? actions.updateScheduleBlockAction : actions.createScheduleBlockAction} class="space-y-6">
             <!-- Hidden fields -->
-            <input type="hidden" name="action" value={editingBlock ? "update" : "create"} />
             {editingBlock && <input type="hidden" name="id" value={editingBlock.id} />}
             <input type="hidden" name="userId" value={user.id} />
             <input type="hidden" name="timezone" value="UTC" />
@@ -241,15 +208,17 @@ const DAYS_OF_WEEK = [
                   <label class="flex flex-col items-center p-2 text-sm rounded-md border cursor-pointer hover:bg-gray-50">
                     <input
                       type="checkbox"
-                      name="daysOfWeek"
+                      name="daysOfWeekCheckbox"
                       value={day.value}
                       checked={editingBlock?.daysOfWeek?.includes(day.value) || false}
-                      class="mb-1"
+                      class="mb-1 daysOfWeekCheckbox"
                     />
                     <span class="font-medium">{day.short}</span>
                   </label>
                 ))}
               </div>
+              <!-- Hidden input to send daysOfWeek as JSON -->
+              <input type="hidden" name="daysOfWeek" value={JSON.stringify(editingBlock?.daysOfWeek || [])} id="daysOfWeekJson" />
             </div>
 
             <!-- Priority and Settings -->
@@ -395,8 +364,7 @@ const DAYS_OF_WEEK = [
                     >
                       Edit
                     </a>
-                    <form method="POST" action="/schedule/maintainer" class="inline">
-                      <input type="hidden" name="action" value="delete" />
+                    <form method="POST" action={actions.deleteScheduleBlockAction} class="inline">
                       <input type="hidden" name="id" value={block.id} />
                       <button
                         type="submit"
@@ -444,3 +412,28 @@ const DAYS_OF_WEEK = [
     )}
   </div>
 </Layout>
+
+<script>
+  // Handle days of week checkbox changes
+  document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.daysOfWeekCheckbox') as NodeListOf<HTMLInputElement>;
+    const hiddenInput = document.getElementById('daysOfWeekJson') as HTMLInputElement;
+    
+    function updateDaysOfWeek() {
+      const selectedDays = Array.from(checkboxes)
+        .filter(checkbox => checkbox.checked)
+        .map(checkbox => parseInt(checkbox.value));
+      
+      if (hiddenInput) {
+        hiddenInput.value = JSON.stringify(selectedDays);
+      }
+    }
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', updateDaysOfWeek);
+    });
+    
+    // Initialize on page load
+    updateDaysOfWeek();
+  });
+</script>
