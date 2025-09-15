@@ -1,5 +1,4 @@
 ---
-import { actions } from 'astro:actions';
 import Layout from '../layouts/Layout.astro';
 
 export const prerender = false; // Required for server actions
@@ -45,14 +44,12 @@ const { user } = Astro.locals;
             >
               Schedule Management
             </a>
-            <form method="POST" action={actions.logout} class="inline">
-              <button 
-                type="submit" 
-                class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Logout
-              </button>
-            </form>
+            <a 
+              href="/logout" 
+              class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Logout
+            </a>
           </div>
         </div>
       </div>
@@ -88,20 +85,3 @@ const { user } = Astro.locals;
   </div>
 </Layout>
 
-<script>
-  import { actions } from 'astro:actions';
-  import { navigate } from 'astro:transitions/client';
-  
-  const logoutForm = document.querySelector('form[action*="logout"]');
-  
-  logoutForm?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    
-    const { error } = await actions.logout(new FormData());
-    
-    if (!error) {
-      // Redirect to home page after successful logout
-      navigate('/');
-    }
-  });
-</script>

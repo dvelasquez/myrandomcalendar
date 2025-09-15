@@ -2,6 +2,30 @@
 globs: *.astro,src/actions/*,middleware.ts
 alwaysApply: false
 ---
+
+# Astro-Specific Rules
+
+## 📊 Data Fetching Architecture (CRITICAL)
+
+### **Preferred Pattern: Server-Side Data Fetching**
+- ✅ **Astro Actions**: Use `defineAction` for all server-side operations
+- ✅ **Server-Side Fetching**: Data fetching should happen in `.astro` components
+- ✅ **Props Passing**: Pass fetched data as props to React components
+- ✅ **No Client-Side Fetching**: Avoid `useEffect` for initial data loading
+
+### **Implementation Pattern**
+```typescript
+// ✅ CORRECT: Astro page (.astro)
+---
+import { getScheduleBlocks } from '../actions/schedule-blocks';
+
+// Fetch data server-side
+let scheduleBlocks = [];
+if (user) {
+  scheduleBlocks = await getScheduleBlocks(user.id);
+}
+---
+
 <ReactComponent 
   initialData={scheduleBlocks}
   client:load
@@ -23,6 +47,93 @@ useEffect(() => {
 - **SEO**: Content present in initial HTML
 - **UX**: No loading states or empty screens
 - **Architecture**: Clean separation of concerns
+
+## 🎯 Astro Actions API (Latest)
+
+### **Actions Definition**
+Actions are defined in a `server` object exported from `src/actions/index.ts`:
+
+```typescript
+// src/actions/index.ts
+import { defineAction } from 'astro:actions';
+import { z } from 'astro:schema';
+
+export const server = {
+  myAction: defineAction({
+    accept: 'form', // or 'json'
+    input: z.object({
+      name: z.string(),
+      email: z.string().email(),
+    }),
+    handler: async (input, context) => {
+      // Handle the action
+      return { success: true, data: input };
+    }
+  })
+};
+```
+
+### **Calling Actions from Forms**
+```astro
+---
+import { actions } from 'astro:actions';
+---
+
+<form method="POST" action={actions.myAction}>
+  <input name="name" type="text" required />
+  <input name="email" type="email" required />
+  <button type="submit">Submit</button>
+</form>
+
+<!-- Handle action results -->
+{(() => {
+  const result = Astro.getActionResult(actions.myAction);
+  if (result && !result.error) {
+    return <p class="success">Success: {result.data.message}</p>;
+  }
+  if (result?.error) {
+    return <p class="error">Error: {result.error.message}</p>;
+  }
+})()}
+```
+
+### **Calling Actions from Client-Side**
+```typescript
+// In React components or client-side scripts
+import { actions } from 'astro:actions';
+
+const handleSubmit = async (formData) => {
+  const result = await actions.myAction(formData);
+  
+  if (result.error) {
+    console.error('Action failed:', result.error);
+  } else {
+    console.log('Action succeeded:', result.data);
+  }
+};
+```
+
+### **Action Error Handling**
+```typescript
+import { ActionError, defineAction } from 'astro:actions';
+
+export const server = {
+  protectedAction: defineAction({
+    handler: async (input, context) => {
+      // Check authentication
+      if (!context.locals.user) {
+        throw new ActionError({ 
+          code: 'UNAUTHORIZED',
+          message: 'Authentication required' 
+        });
+      }
+      
+      // Handle the action
+      return { success: true };
+    }
+  })
+};
+```
 
 ## 🎯 Astro Best Practices
 
@@ -78,23 +189,88 @@ const data = await fetchUserData(session.user.id);
 </Layout>
 ```
 
-### **Form Handling**
+### **Form Handling with Actions**
 ```astro
 ---
-import { defineAction } from 'astro:actions';
-
-const updateProfile = defineAction({
-  accept: 'form',
-  handler: async ({ request }) => {
-    // Handle form submission
-    const formData = await request.formData();
-    // Process data
-    return { success: true };
-  }
-});
+import { actions } from 'astro:actions';
 ---
 
-<form method="POST" action={updateProfile}>
-  <!-- form fields -->
+<form method="POST" action={actions.updateProfile}>
+  <input name="name" type="text" required />
+  <input name="email" type="email" required />
+  <button type="submit">Update Profile</button>
 </form>
+
+<!-- Handle action results -->
+{(() => {
+  const result = Astro.getActionResult(actions.updateProfile);
+  if (result && !result.error) {
+    return <p class="success">Profile updated successfully!</p>;
+  }
+  if (result?.error) {
+    return <p class="error">Error: {result.error.message}</p>;
+  }
+})()}
+```
+
+### **Calling Actions from Server-Side**
+```astro
+---
+import { actions } from 'astro:actions';
+
+// Call action from server-side
+const searchQuery = Astro.url.searchParams.get('search');
+if (searchQuery) {
+  const { data, error } = await Astro.callAction(actions.findProduct, { 
+    query: searchQuery 
+  });
+  
+  if (error) {
+    console.error('Search failed:', error);
+  } else {
+    // Use the data
+    const products = data.products;
+  }
+}
+---
+```
+
+## 🔒 Security with Actions
+
+### **Authorization in Actions**
+```typescript
+import { ActionError, defineAction } from 'astro:actions';
+
+export const server = {
+  getUserSettings: defineAction({
+    handler: async (input, context) => {
+      // Check authentication from context.locals
+      if (!context.locals.user) {
+        throw new ActionError({ code: 'UNAUTHORIZED' });
+      }
+      
+      return { settings: context.locals.user.settings };
+    }
+  })
+};
+```
+
+### **Middleware Gating**
+```typescript
+// src/middleware.ts
+import { defineMiddleware } from 'astro:middleware';
+import { getActionContext } from 'astro:actions';
+
+export const onRequest = defineMiddleware(async (context, next) => {
+  const { action } = getActionContext(context);
+  
+  // Gate actions that require authentication
+  if (action?.calledFrom === 'rpc') {
+    if (!context.cookies.has('user-session')) {
+      return new Response('Forbidden', { status: 403 });
+    }
+  }
+  
+  return next();
+});
 ```

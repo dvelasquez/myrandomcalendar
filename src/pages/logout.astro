@@ -1,0 +1,27 @@
+---
+import { actions } from 'astro:actions';
+
+export const prerender = false; // Required for server-side operations
+
+// Get user from middleware
+const { user } = Astro.locals;
+
+// If user is logged in, perform logout using the existing action
+if (user) {
+  try {
+    // Create a mock FormData for the action
+    const formData = new FormData();
+    const result = await Astro.callAction(actions.logout, formData);
+    
+    if (result.error) {
+      console.error('Logout error:', result.error);
+    }
+  } catch (error) {
+    console.error('Logout error:', error);
+    // Continue with redirect even if logout fails
+  }
+}
+
+// Redirect to home page after logout
+return Astro.redirect('/');
+---
