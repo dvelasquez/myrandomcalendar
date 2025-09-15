@@ -1,5 +1,5 @@
 import { startOfDay, endOfDay, subDays, addDays, set, isBefore, isAfter } from 'date-fns';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { scheduleBlocksToCalendarEvents, combineCalendarEvents } from '../lib/schedule-transformers';
 import type { ScheduleBlock, CalendarEvent } from '../lib/types';
 

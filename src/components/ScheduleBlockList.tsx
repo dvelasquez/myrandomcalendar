@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { ScheduleBlock, ScheduleBlockType } from '../lib/types';
 import ScheduleBlockForm from './ScheduleBlockForm';
 
@@ -52,9 +52,9 @@ export default function ScheduleBlockList({
 
   const handleFormSave = async (scheduleBlockData: Omit<ScheduleBlock, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (editingBlock) {
-      await onUpdate(editingBlock.id, scheduleBlockData);
+      onUpdate(editingBlock.id, scheduleBlockData);
     } else {
-      await onCreate(scheduleBlockData);
+      onCreate(scheduleBlockData);
     }
     setShowForm(false);
     setEditingBlock(undefined);
@@ -66,12 +66,12 @@ export default function ScheduleBlockList({
   };
 
   const handleToggleActive = async (scheduleBlock: ScheduleBlock) => {
-    await onUpdate(scheduleBlock.id, { isActive: !scheduleBlock.isActive });
+    onUpdate(scheduleBlock.id, { isActive: !scheduleBlock.isActive });
   };
 
   const handleDelete = async (scheduleBlock: ScheduleBlock) => {
     if (window.confirm(`Are you sure you want to delete "${scheduleBlock.title}"?`)) {
-      await onDelete(scheduleBlock.id);
+      onDelete(scheduleBlock.id);
     }
   };
 

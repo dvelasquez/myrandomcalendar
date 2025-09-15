@@ -3,8 +3,8 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev --remote",
-    "build": "astro build --remote",
+    "dev": "astro check && astro dev --remote",
+    "build": "astro check && astro build --remote",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint . --ext .astro,.js,.jsx,.ts,.tsx",
@@ -15,6 +15,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@astrojs/check": "0.9.4",
     "@astrojs/db": "0.17.2",
     "@astrojs/node": "9.4.3",
     "@astrojs/react": "4.3.1",
@@ -35,7 +36,8 @@
     "pg": "8.16.3",
     "react": "19.1.1",
     "react-dom": "19.1.1",
-    "tailwindcss": "4.1.13"
+    "tailwindcss": "4.1.13",
+    "typescript": "5.9.2"
   },
   "devDependencies": {
     "@eslint/compat": "1.3.2",

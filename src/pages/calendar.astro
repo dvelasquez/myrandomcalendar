@@ -6,7 +6,7 @@ import Layout from '../layouts/Layout.astro';
 import { calculateAvailabilityForDateRange, DEFAULT_AVAILABILITY_CONFIG } from '../lib/availability-calculator';
 import { transformTimeSlotsToBackgroundEvents, DEFAULT_BACKGROUND_EVENT_CONFIG } from '../lib/background-event-transformer';
 import { transformGoogleApiEventsToFullCalendar, type FullCalendarEvent } from '../lib/calendar-utils.ts';
-import type { GoogleCalendarApiEvent, ScheduleBlock } from '../lib/types.ts';
+import type { GoogleCalendarApiEvent, ScheduleBlock, CalendarEvent } from '../lib/types.ts';
 
 export const prerender = false; // Required for server actions
 
@@ -19,6 +19,7 @@ let error: string | null = null;
 let fullCalendarEvents: FullCalendarEvent[] = [];
 let scheduleBlocks: ScheduleBlock[] = [];
 let availabilityBackgroundEvents: FullCalendarEvent[] = [];
+let calendarEvents: CalendarEvent[] = [];
 
 // Try to fetch calendar data and schedule blocks if user is logged in
 if (user) {
@@ -41,6 +42,22 @@ if (user) {
       // Continue with empty array if fetch fails
     }
 
+    // Convert FullCalendarEvent[] to CalendarEvent[] for component usage
+    calendarEvents = fullCalendarEvents.map(event => ({
+      id: event.id,
+      title: event.title,
+      start: event.start,
+      end: event.end,
+      allDay: event.allDay,
+      description: event.description,
+      location: event.location,
+      url: event.url,
+      backgroundColor: event.backgroundColor,
+      borderColor: event.borderColor,
+      textColor: event.textColor,
+      extendedProps: event.extendedProps as CalendarEvent['extendedProps']
+    }));
+
     // Calculate availability and create background events if we have schedule blocks
     if (scheduleBlocks.length > 0) {
       try {
@@ -56,7 +73,7 @@ if (user) {
           startDate,
           endDate,
           scheduleBlocks,
-          fullCalendarEvents,
+          calendarEvents,
           DEFAULT_AVAILABILITY_CONFIG
         );
 
@@ -144,7 +161,7 @@ if (user) {
               
               <div class="mb-4">
                 <FullCalendarComponent 
-                  events={fullCalendarEvents}
+                  events={calendarEvents}
                   showEventModal={true}
                   client:load
                 />

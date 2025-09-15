@@ -120,7 +120,7 @@ export default function ScheduleBlockForm({
         bufferAfter: formData.bufferAfter
       };
 
-      await onSave(scheduleBlockData);
+      onSave(scheduleBlockData);
     } catch (error) {
       console.error('Error saving schedule block:', error);
       setErrors(['Failed to save schedule block. Please try again.']);

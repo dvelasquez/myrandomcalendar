@@ -4,7 +4,6 @@ import {
   calculateAvailability,
   getStartOfDay,
   getEndOfDay,
-  getAllEventsForDate,
   generateTimeSlots,
   findConflictingEvent,
   calculateAvailabilityStats,

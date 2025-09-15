@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { formatEventTime, formatEventDate } from '../lib/event-utils'; 
 import type { CalendarEvent } from '../lib/types';
 

@@ -115,6 +115,7 @@ export const auth = betterAuth({
 npm run dev                    # Start development server
 npm run astro -- db push --force-reset    # Reset database schema
 npm test -- --run # Run tests without waiting for user input
+npm run astro -- check # to check typescript errors in astro and ts files
 printenv | grep GOOGLE         # Check Google credentials
 ```
 

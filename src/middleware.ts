@@ -7,7 +7,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     });
 
     context.locals.user = session?.user || null;
-    context.locals.session = session || null;
+    context.locals.session = session?.session || null;
 
     return next();
 });

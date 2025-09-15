@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { transformGoogleApiEventsToFullCalendar } from '../lib/event-transformers';
-import type { GoogleCalendarApiEvent, CalendarEvent } from '../lib/types';
+import type { GoogleCalendarApiEvent } from '../lib/types';
 
 describe('event-transformers', () => {
   describe('transformGoogleApiEventsToFullCalendar', () => {

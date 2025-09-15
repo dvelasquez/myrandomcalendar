@@ -1,5 +1,5 @@
 import { actions } from 'astro:actions';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { ScheduleBlock, CalendarEvent } from '../lib/types';
 import AvailabilityViewer from './AvailabilityViewer'; 
 import ScheduleBlockList from './ScheduleBlockList';

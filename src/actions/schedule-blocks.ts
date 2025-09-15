@@ -70,7 +70,7 @@ export async function createScheduleBlock(scheduleBlockData: Omit<ScheduleBlock,
     const now = new Date();
     
     const newBlock = {
-      id: `schedule-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `schedule-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       userId: scheduleBlockData.userId,
       title: scheduleBlockData.title,
       type: scheduleBlockData.type,
