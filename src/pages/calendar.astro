@@ -1,11 +1,13 @@
 ---
 import { actions } from 'astro:actions';
+import { startOfMonth, endOfMonth, subDays, addDays } from 'date-fns';
 import { getScheduleBlocks } from '../actions/schedule-blocks';
 import FullCalendarComponent from '../components/FullCalendar.tsx';
 import Layout from '../layouts/Layout.astro';
 import { calculateAvailabilityForDateRange, DEFAULT_AVAILABILITY_CONFIG } from '../lib/availability-calculator';
 import { transformTimeSlotsToBackgroundEvents, DEFAULT_BACKGROUND_EVENT_CONFIG } from '../lib/background-event-transformer';
 import { transformGoogleApiEventsToFullCalendar, type FullCalendarEvent } from '../lib/calendar-utils.ts';
+import { createFetchCalendarFormData } from '../lib/types';
 import type { GoogleCalendarApiEvent, ScheduleBlock, CalendarEvent } from '../lib/types.ts';
 
 export const prerender = false; // Required for server actions
@@ -26,13 +28,11 @@ if (user) {
   try {
     // For initial load, fetch events for a reasonable default range (current month)
     const today = new Date();
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    endOfMonth.setHours(23, 59, 59, 999); // Set to end of day to include all events on the last day
+    const startOfCurrentMonth = startOfMonth(today);
+    const endOfCurrentMonth = endOfMonth(today);
     
-    const formData = new FormData();
-    formData.append('startDate', startOfMonth.toISOString());
-    formData.append('endDate', endOfMonth.toISOString());
+    // Create typesafe FormData with proper date range
+    const formData = createFetchCalendarFormData(startOfCurrentMonth, endOfCurrentMonth);
     
     // Fetch Google Calendar events for initial date range
     const result = await Astro.callAction(actions.fetchCalendar, formData);
@@ -73,11 +73,8 @@ if (user) {
       try {
         // Calculate availability for a 6-week range (typical FullCalendar month view)
         const today = new Date();
-        const startDate = new Date(today);
-        startDate.setDate(startDate.getDate() - 7); // Start 1 week ago
-        
-        const endDate = new Date(today);
-        endDate.setDate(endDate.getDate() + 35); // End 5 weeks from now
+        const startDate = subDays(today, 7); // Start 1 week ago
+        const endDate = addDays(today, 35); // End 5 weeks from now
         
         const timeSlots = await calculateAvailabilityForDateRange(
           startDate,
@@ -276,15 +273,15 @@ if (user) {
 <script>
   import { actions } from 'astro:actions';
   import { navigate } from 'astro:transitions/client';
+  import { startOfMonth, endOfMonth } from 'date-fns';
+  import { createFetchCalendarFormData } from '../lib/types';
   
   const refreshBtn = document.getElementById('refreshBtn') as HTMLButtonElement | null;
   const jsonOutput = document.getElementById('jsonOutput') as HTMLPreElement | null;
   
   // Function to fetch calendar data for a specific date range
   async function fetchCalendarForDateRange(startDate: Date, endDate: Date) {
-    const formData = new FormData();
-    formData.append('startDate', startDate.toISOString());
-    formData.append('endDate', endDate.toISOString());
+    const formData = createFetchCalendarFormData(startDate, endDate);
     
     try {
       const result = await actions.fetchCalendar(formData);
@@ -327,13 +324,11 @@ if (user) {
     try {
       // For refresh, use the current month as default range
       const today = new Date();
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      endOfMonth.setHours(23, 59, 59, 999); // Set to end of day to include all events on the last day
+      const startOfCurrentMonth = startOfMonth(today);
+      const endOfCurrentMonth = endOfMonth(today);
       
-      const formData = new FormData();
-      formData.append('startDate', startOfMonth.toISOString());
-      formData.append('endDate', endOfMonth.toISOString());
+      // Create typesafe FormData with proper date range
+      const formData = createFetchCalendarFormData(startOfCurrentMonth, endOfCurrentMonth);
       
       const result = await actions.fetchCalendar(formData);
       

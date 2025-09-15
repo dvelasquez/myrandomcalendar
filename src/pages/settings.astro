@@ -1,10 +1,12 @@
 ---
 import { actions } from 'astro:actions';
+import { startOfMonth, endOfMonth } from 'date-fns';
 import { getScheduleBlocks } from '../actions/schedule-blocks';
 import ScheduleSettings from '../components/ScheduleSettings.tsx';
 import Layout from '../layouts/Layout.astro';
 import { transformGoogleApiEventsToFullCalendar } from '../lib/event-transformers';
 import type { ScheduleBlock, CalendarEvent, GoogleCalendarApiEvent } from '../lib/types';
+import { createFetchCalendarFormData } from '../lib/types';
 
 export const prerender = false; // Required for server actions
 
@@ -28,7 +30,15 @@ let calendarError: string | null = null;
 
 if (user) {
   try {
-    const result = await Astro.callAction(actions.fetchCalendar, new FormData());
+    // Create a reasonable date range for settings (current month)
+    const today = new Date();
+    const startOfCurrentMonth = startOfMonth(today);
+    const endOfCurrentMonth = endOfMonth(today);
+    
+    // Create typesafe FormData with proper date range
+    const formData = createFetchCalendarFormData(startOfCurrentMonth, endOfCurrentMonth);
+    
+    const result = await Astro.callAction(actions.fetchCalendar, formData);
     if (result.data?.success) {
       // Transform Google Calendar API events to CalendarEvent format
       const googleApiEvents = result.data.events as GoogleCalendarApiEvent[];
@@ -153,6 +163,8 @@ if (user) {
 <script>
   import { actions } from 'astro:actions';
   import { navigate } from 'astro:transitions/client';
+  import { startOfMonth, endOfMonth } from 'date-fns';
+  import { createFetchCalendarFormData } from '../lib/types';
   
   // Handle calendar refresh
   const refreshBtn = document.getElementById('refreshCalendarBtn') as HTMLButtonElement | null;
@@ -164,8 +176,25 @@ if (user) {
     refreshBtn.disabled = true;
     
     try {
-      // Reload the page to fetch fresh calendar data
-      window.location.reload();
+      // Create proper date range for refresh
+      const today = new Date();
+      const startOfCurrentMonth = startOfMonth(today);
+      const endOfCurrentMonth = endOfMonth(today);
+      
+      // Create typesafe FormData
+      const formData = createFetchCalendarFormData(startOfCurrentMonth, endOfCurrentMonth);
+      
+      // Fetch fresh calendar data
+      const result = await actions.fetchCalendar(formData);
+      
+      if (result.data?.success) {
+        // Reload the page to update with fresh data
+        window.location.reload();
+      } else {
+        console.error('Error refreshing calendar:', result.error?.message);
+        refreshBtn.textContent = 'Refresh Calendar';
+        refreshBtn.disabled = false;
+      }
     } catch (error) {
       console.error('Error refreshing calendar:', error);
       refreshBtn.textContent = 'Refresh Calendar';

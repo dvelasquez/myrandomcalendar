@@ -1,37 +1,45 @@
 import { defineAction, ActionError } from 'astro:actions';
 import { db, Accounts } from 'astro:db';
+import { parseISO, isValid, isAfter } from 'date-fns';
 import { eq, and } from 'drizzle-orm';
 import { google } from 'googleapis';
 import { auth } from '../lib/better-auth';
 
 export const fetchCalendar = defineAction({
   accept: 'form',
-  handler: async (formData, { request }) => {
+  handler: async (formData: FormData, { request }) => {
     try {
-      // Extract date range parameters from form data
-      const startDate = formData.get('startDate') as string;
-      const endDate = formData.get('endDate') as string;
+      // Extract and validate date range parameters from form data
+      const startDate = formData.get('startDate');
+      const endDate = formData.get('endDate');
       
-      // Validate date parameters
-      if (!startDate || !endDate) {
+      // Type-safe validation
+      if (!startDate || typeof startDate !== 'string') {
         throw new ActionError({
           code: 'BAD_REQUEST',
-          message: 'startDate and endDate parameters are required',
+          message: 'startDate parameter is required and must be a string',
         });
       }
       
-      // Parse and validate dates
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+      if (!endDate || typeof endDate !== 'string') {
+        throw new ActionError({
+          code: 'BAD_REQUEST',
+          message: 'endDate parameter is required and must be a string',
+        });
+      }
       
-      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      // Parse and validate dates using date-fns
+      const start = parseISO(startDate);
+      const end = parseISO(endDate);
+      
+      if (!isValid(start) || !isValid(end)) {
         throw new ActionError({
           code: 'BAD_REQUEST',
           message: 'Invalid date format provided',
         });
       }
       
-      if (start >= end) {
+      if (!isAfter(end, start)) {
         throw new ActionError({
           code: 'BAD_REQUEST',
           message: 'startDate must be before endDate',

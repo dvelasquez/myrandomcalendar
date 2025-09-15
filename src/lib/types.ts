@@ -112,3 +112,17 @@ export type FullCalendarToGoogleMapper = {
     ? 'url' 
     : K;
 };
+
+// Typesafe form data interfaces for actions
+export interface FetchCalendarFormData {
+  startDate: string;  // ISO string
+  endDate: string;    // ISO string
+}
+
+// Helper function to create typesafe FormData
+export function createFetchCalendarFormData(startDate: Date, endDate: Date): FormData {
+  const formData = new FormData();
+  formData.append('startDate', startDate.toISOString());
+  formData.append('endDate', endDate.toISOString());
+  return formData;
+}
