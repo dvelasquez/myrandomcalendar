@@ -1,10 +1,9 @@
 ---
 import { actions } from 'astro:actions';
-import { startOfDay, endOfDay, format, addDays, subDays } from 'date-fns';
+import { startOfDay, endOfDay } from 'date-fns';
 import { createDefaultScheduleBlocksAction } from '../../actions/schedule-block-actions';
 import { getScheduleBlocks } from '../../actions/schedule-blocks';
 import Layout from '../../layouts/Layout.astro';
-import { calculateAvailability, DEFAULT_AVAILABILITY_CONFIG, type TimeSlot } from '../../lib/availability-calculator';
 import { transformGoogleApiEventsToFullCalendar } from '../../lib/event-transformers';
 import type { ScheduleBlock, CalendarEvent, GoogleCalendarApiEvent } from '../../lib/types';
 import { createFetchCalendarFormData } from '../../lib/types';
@@ -16,9 +15,6 @@ const { user } = Astro.locals;
 
 // Get query parameters for state management
 const url = new URL(Astro.request.url);
-const activeTab = url.searchParams.get('tab') || 'blocks';
-const selectedDateParam = url.searchParams.get('date');
-const selectedDate = selectedDateParam ? new Date(selectedDateParam) : new Date();
 const successMessage = url.searchParams.get('success');
 const errorMessage = url.searchParams.get('error');
 
@@ -52,28 +48,20 @@ if (user) {
   }
 }
 
-// Fetch calendar events based on active tab
+// Fetch calendar events for the current month
 let googleCalendarEvents: CalendarEvent[] = [];
 let calendarError: string | null = null;
-let availabilityTimeSlots: TimeSlot[] = [];
 
 if (user) {
   try {
-    let startDate: Date;
-    let endDate: Date;
-    
-    if (activeTab === 'availability') {
-      // For availability tab, only fetch the selected day
-      startDate = startOfDay(selectedDate);
-      endDate = endOfDay(selectedDate);
-    } else {
-      // For blocks tab, fetch current month
-      const startDateParam = url.searchParams.get('startDate');
-      const endDateParam = url.searchParams.get('endDate');
-      const today = new Date();
-      startDate = startDateParam ? new Date(startDateParam) : startOfDay(today);
-      endDate = endDateParam ? new Date(endDateParam) : endOfDay(today);
-    }
+    // Get date range from search params for calendar events
+    const startDateParam = url.searchParams.get('startDate');
+    const endDateParam = url.searchParams.get('endDate');
+
+    // Default to current month if no params provided
+    const today = new Date();
+    const startDate = startDateParam ? new Date(startDateParam) : startOfDay(today);
+    const endDate = endDateParam ? new Date(endDateParam) : endOfDay(today);
     
     // Create typesafe FormData with proper date range
     const formData = createFetchCalendarFormData(startDate, endDate);
@@ -83,16 +71,6 @@ if (user) {
       // Transform Google Calendar API events to CalendarEvent format
       const googleApiEvents = result.data.events as GoogleCalendarApiEvent[];
       googleCalendarEvents = transformGoogleApiEventsToFullCalendar(googleApiEvents);
-      
-      // Calculate availability if we're on the availability tab
-      if (activeTab === 'availability') {
-        availabilityTimeSlots = await calculateAvailability(
-          selectedDate,
-          scheduleBlocks,
-          googleCalendarEvents,
-          DEFAULT_AVAILABILITY_CONFIG
-        );
-      }
     } else {
       calendarError = result.error?.message || 'Failed to fetch calendar data';
       console.warn('Calendar fetch error:', calendarError);
@@ -129,20 +107,29 @@ const PRIORITY_COLORS: Record<string, string> = {
                 </p>
               )}
             </div>
-            <div class="flex space-x-4">
-              <a 
-                href="/schedule/maintainer" 
-                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              >
-                Manage Schedule
-              </a>
-            <button 
-              id="refreshCalendarBtn"
-                class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm"
+        <!-- Action Buttons -->
+        <div class="mb-6 flex justify-between items-center">
+          <div class="flex space-x-4">
+            <a 
+              href="/schedule/maintainer" 
+              class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors"
             >
-              Refresh Calendar
-            </button>
-            </div>
+              Create New Schedule
+            </a>
+            <a 
+              href="/schedule/availability" 
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+            >
+              View Availability
+            </a>
+          </div>
+          <button 
+            id="refreshCalendarBtn"
+            class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors"
+          >
+            Refresh Calendar
+          </button>
+        </div>
           </div>
         </div>
         
@@ -181,36 +168,7 @@ const PRIORITY_COLORS: Record<string, string> = {
           </div>
         ) : null}
         
-        <!-- Tabs -->
-        <div class="mb-6">
-          <div class="border-b border-gray-200">
-            <nav class="-mb-px flex space-x-8">
-              <a
-                href="/schedule?tab=blocks"
-                class={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'blocks'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Schedule Blocks ({scheduleBlocks.length})
-              </a>
-              <a
-                href="/schedule?tab=availability"
-                class={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'availability'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Availability
-              </a>
-            </nav>
-          </div>
-        </div>
-
-        <!-- Tab Content -->
-        {activeTab === 'blocks' && (
+        <!-- Schedule Blocks Content -->
           <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex justify-between items-center mb-6">
               <h2 class="text-2xl font-bold text-gray-900">Schedule Blocks</h2>
@@ -312,160 +270,6 @@ const PRIORITY_COLORS: Record<string, string> = {
               </div>
             )}
           </div>
-        )}
-
-        {activeTab === 'availability' && (
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-center mb-6">
-              <h2 class="text-2xl font-bold text-gray-900">Availability</h2>
-              <div class="flex items-center space-x-4">
-                <!-- Day Navigation -->
-                <div class="flex items-center space-x-2">
-                  <a
-                    href={`/schedule?tab=availability&date=${format(subDays(selectedDate, 1), 'yyyy-MM-dd')}`}
-                    class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-                  >
-                    ← Previous
-                  </a>
-                  <span class="px-4 py-2 text-lg font-medium text-gray-900">
-                    {format(selectedDate, 'EEEE, MMMM d, yyyy')}
-                  </span>
-                  <a
-                    href={`/schedule?tab=availability&date=${format(addDays(selectedDate, 1), 'yyyy-MM-dd')}`}
-                    class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
-                  >
-                    Next →
-                  </a>
-                </div>
-                
-                <!-- Today Button -->
-                <a
-                  href={`/schedule?tab=availability&date=${format(new Date(), 'yyyy-MM-dd')}`}
-                  class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                >
-                  Today
-                </a>
-              </div>
-            </div>
-
-            {calendarError ? (
-              <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
-                <h3 class="font-bold">Calendar Integration Notice:</h3>
-                <p class="mb-2">{calendarError}</p>
-                <p class="text-sm">
-                  {calendarError.includes('calendar access') || calendarError.includes('INSUFFICIENT_SCOPE') ? (
-                    <>
-                      <strong>Solution:</strong> You need to sign out and sign in with Google again to grant calendar permissions.
-                      <br />
-                      <a href="/logout" class="underline">Sign out</a> and then <a href="/login" class="underline">sign in with Google</a> again.
-                    </>
-                  ) : (
-                    'Make sure you\'re signed in with Google and have granted calendar access permissions.'
-                  )}
-                </p>
-              </div>
-            ) : (
-              <div class="space-y-6">
-                <!-- Availability Summary -->
-                <div class="bg-gray-50 rounded-lg p-4">
-                  <h3 class="text-lg font-medium text-gray-900 mb-3">Availability Summary</h3>
-                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="text-center">
-                      <div class="text-2xl font-bold text-green-600">
-                        {availabilityTimeSlots.filter(slot => slot.type === 'available').length}
-                      </div>
-                      <div class="text-sm text-gray-600">Available Slots</div>
-                    </div>
-                    <div class="text-center">
-                      <div class="text-2xl font-bold text-red-600">
-                        {availabilityTimeSlots.filter(slot => slot.type === 'busy').length}
-                      </div>
-                      <div class="text-sm text-gray-600">Busy Slots</div>
-                    </div>
-                    <div class="text-center">
-                      <div class="text-2xl font-bold text-blue-600">
-                        {availabilityTimeSlots.filter(slot => slot.type === 'schedule-block').length}
-                      </div>
-                      <div class="text-sm text-gray-600">Schedule Blocks</div>
-                    </div>
-                    <div class="text-center">
-                      <div class="text-2xl font-bold text-purple-600">
-                        {googleCalendarEvents.length}
-                      </div>
-                      <div class="text-sm text-gray-600">Calendar Events</div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Time Slots -->
-                {availabilityTimeSlots.length > 0 ? (
-                  <div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-3">Time Slots</h3>
-                    <div class="space-y-2">
-                      {availabilityTimeSlots.map((slot) => (
-                        <div
-                          class={`p-3 rounded-lg border ${
-                            slot.type === 'available' 
-                              ? 'bg-green-50 border-green-200' 
-                              : slot.type === 'busy'
-                              ? 'bg-red-50 border-red-200'
-                              : 'bg-blue-50 border-blue-200'
-                          }`}
-                        >
-                          <div class="flex justify-between items-center">
-                            <div class="flex items-center space-x-3">
-                              <div class={`w-3 h-3 rounded-full ${
-                                slot.type === 'available' 
-                                  ? 'bg-green-500' 
-                                  : slot.type === 'busy'
-                                  ? 'bg-red-500'
-                                  : 'bg-blue-500'
-                              }`}></div>
-                              <div>
-                                <div class="font-medium text-gray-900">
-                                  {slot.title || (slot.type === 'available' ? 'Available' : slot.type === 'busy' ? 'Busy' : 'Schedule Block')}
-                                </div>
-                                <div class="text-sm text-gray-600">
-                                  {format(new Date(slot.start), 'h:mm a')} - {format(new Date(slot.end), 'h:mm a')}
-                                </div>
-                              </div>
-                            </div>
-                            <div class="text-sm text-gray-500">
-                              {slot.priority && (
-                                <span class={`px-2 py-1 text-xs rounded-full ${
-                                  slot.priority === 'high' ? 'bg-red-100 text-red-800' :
-                                  slot.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-green-100 text-green-800'
-                                }`}>
-                                  {slot.priority}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div class="text-center py-12">
-                    <div class="text-gray-400 text-6xl mb-4">📅</div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">No availability data</h3>
-                    <p class="text-gray-500 mb-4">
-                      No schedule blocks or calendar events found for this day.
-                    </p>
-                    <a
-                      href="/schedule/maintainer"
-                      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
-                    >
-                      Create Schedule Block
-                    </a>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
         <!-- Quick Stats -->
         <div class="mt-8 bg-gray-50 rounded-lg p-6">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Stats</h3>

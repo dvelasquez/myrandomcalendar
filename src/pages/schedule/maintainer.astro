@@ -1,8 +1,8 @@
 ---
 import { actions } from 'astro:actions';
 import { startOfDay, endOfDay } from 'date-fns';
-import { getScheduleBlocks } from '../../actions/schedule-blocks';
 import { createScheduleBlockAction, updateScheduleBlockAction, deleteScheduleBlockAction } from '../../actions/schedule-block-actions';
+import { getScheduleBlocks } from '../../actions/schedule-blocks';
 import Layout from '../../layouts/Layout.astro';
 import type { ScheduleBlock, ScheduleBlockType, SchedulePriority } from '../../lib/types';
 
