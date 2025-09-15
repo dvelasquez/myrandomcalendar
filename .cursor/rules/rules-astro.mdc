@@ -1,0 +1,100 @@
+---
+globs: *.astro,src/actions/*,middleware.ts
+alwaysApply: false
+---
+<ReactComponent 
+  initialData={scheduleBlocks}
+  client:load
+/>
+```
+
+```typescript
+// ❌ AVOID: React component fetching
+const [data, setData] = useState([]);
+
+useEffect(() => {
+  // Don't do this for initial data
+  fetchData();
+}, []);
+```
+
+### **Benefits**
+- **Performance**: Data available immediately on page load
+- **SEO**: Content present in initial HTML
+- **UX**: No loading states or empty screens
+- **Architecture**: Clean separation of concerns
+
+## 🎯 Astro Best Practices
+
+### **File Structure**
+- Use `.astro` files for pages and layouts
+- Keep server-side logic in the frontmatter (`---` sections)
+- Use `client:*` directives for React components that need hydration
+- Prefer `client:load` for immediate hydration, `client:idle` for performance
+
+### **Data Fetching**
+- Always fetch data in Astro frontmatter, not in React components
+- Use Astro Actions (`defineAction`) for form submissions and mutations
+- Pass data as props to React components
+- Use `astro:db` for database operations
+
+### **Authentication**
+- Use `auth.api.getSession()` in middleware and Astro pages
+- Check authentication status in Astro frontmatter
+- Pass user data as props to React components
+
+### **Styling**
+- Use TailwindCSS classes directly in Astro components
+- Prefer utility classes over custom CSS
+- Use CSS modules only when necessary
+
+### **Performance**
+- Leverage Astro's static generation capabilities
+- Use `client:visible` for components that only need to hydrate when visible
+- Minimize JavaScript bundle size by using appropriate client directives
+
+## 🔧 Common Astro Patterns
+
+### **Page with Authentication**
+```astro
+---
+import { auth } from '../lib/better-auth';
+import { redirect } from 'astro:actions';
+
+const session = await auth.api.getSession({
+  headers: Astro.request.headers
+});
+
+if (!session) {
+  return redirect('/login');
+}
+
+// Fetch data server-side
+const data = await fetchUserData(session.user.id);
+---
+
+<Layout title="Dashboard">
+  <DashboardComponent user={session.user} data={data} client:load />
+</Layout>
+```
+
+### **Form Handling**
+```astro
+---
+import { defineAction } from 'astro:actions';
+
+const updateProfile = defineAction({
+  accept: 'form',
+  handler: async ({ request }) => {
+    // Handle form submission
+    const formData = await request.formData();
+    // Process data
+    return { success: true };
+  }
+});
+---
+
+<form method="POST" action={updateProfile}>
+  <!-- form fields -->
+</form>
+```

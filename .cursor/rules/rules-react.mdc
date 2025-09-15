@@ -1,0 +1,444 @@
+---
+globs: *.tsx
+alwaysApply: false
+---
+# React-Specific Rules
+
+## 🎯 React Architecture Principles
+
+### **Pure Functional Components**
+- React components should be **Pure**: Data flows in one direction
+- Only manage presentational state, **NO DATA FETCHING**
+- If something in React needs to make a POST update, it happens on a form
+- Use props for all data, avoid `useEffect` for initial data loading
+
+### **Component Design**
+- Prefer functional components over class components
+- Use TypeScript for all component props and state
+- Keep components small and focused on single responsibility
+- Use composition over inheritance
+
+## 🚫 What NOT to Do in React Components
+
+### **Avoid Data Fetching**
+```typescript
+// ❌ DON'T DO THIS
+const [data, setData] = useState([]);
+
+useEffect(() => {
+  // Don't fetch initial data in React
+  fetchData().then(setData);
+}, []);
+```
+
+### **Avoid Complex State Management**
+```typescript
+// ❌ DON'T DO THIS
+const [user, setUser] = useState(null);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState(null);
+
+useEffect(() => {
+  setLoading(true);
+  fetchUser().then(setUser).catch(setError).finally(() => setLoading(false));
+}, []);
+```
+
+## ✅ What TO Do in React Components
+
+### **Accept Data as Props**
+```typescript
+// ✅ DO THIS
+interface DashboardProps {
+  user: User;
+  data: DashboardData[];
+  onUpdate: (id: string, data: Partial<DashboardData>) => void;
+}
+
+export function Dashboard({ user, data, onUpdate }: DashboardProps) {
+  return (
+    <div>
+      <h1>Welcome, {user.name}</h1>
+      {data.map(item => (
+        <DashboardItem key={item.id} item={item} onUpdate={onUpdate} />
+      ))}
+    </div>
+  );
+}
+```
+
+### **Handle Form Submissions**
+```typescript
+// ✅ DO THIS
+interface FormProps {
+  onSubmit: (data: FormData) => void;
+  initialData?: Partial<FormData>;
+}
+
+export function UserForm({ onSubmit, initialData }: FormProps) {
+  const [formData, setFormData] = useState(initialData || {});
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* form fields */}
+    </form>
+  );
+}
+```
+
+## 🎨 Styling Guidelines
+
+### **Use TailwindCSS**
+- Prefer Tailwind utility classes
+- Use `className` prop for styling
+- Avoid inline styles unless absolutely necessary
+
+```typescript
+// ✅ DO THIS
+<div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-md">
+  <h2 className="text-xl font-semibold text-gray-800">Title</h2>
+  <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+    Action
+  </button>
+</div>
+```
+
+## 🔧 React Best Practices
+
+### **Props Interface**
+- Always define TypeScript interfaces for props
+- Use descriptive prop names
+- Group related props together
+
+```typescript
+interface CalendarEventProps {
+  event: CalendarEvent;
+  isSelected: boolean;
+  onSelect: (event: CalendarEvent) => void;
+  onEdit: (event: CalendarEvent) => void;
+  onDelete: (eventId: string) => void;
+}
+```
+
+### **Event Handlers**
+- Use descriptive handler names
+- Pass minimal data in callbacks
+- Use `useCallback` for performance optimization when needed
+
+```typescript
+const handleEventClick = useCallback((event: CalendarEvent) => {
+  onSelect(event);
+}, [onSelect]);
+
+const handleEditClick = useCallback((event: React.MouseEvent) => {
+  event.stopPropagation();
+  onEdit(event);
+}, [onEdit]);
+```
+
+### **Conditional Rendering**
+- Use clear conditional patterns
+- Prefer early returns for complex conditions
+
+```typescript
+// ✅ DO THIS
+if (!user) {
+  return <LoginPrompt />;
+}
+
+if (loading) {
+  return <LoadingSpinner />;
+}
+
+return (
+  <div>
+    {/* main content */}
+  </div>
+);
+```
+
+## 🎯 Component Patterns
+
+### **Presentational Components**
+- Focus on UI and presentation
+- Accept all data via props
+- Handle user interactions via callback props
+
+### **Form Components**
+- Use controlled components
+- Validate input on the client side
+- Submit data via form actions or callback props
+
+### **List Components**
+- Use proper `key` props for list items
+- Implement proper accessibility attributes
+- Handle empty states gracefully
+
+## 🔍 Common React Patterns in This Project
+
+### **Calendar Components**
+```typescript
+interface FullCalendarProps {
+  events: CalendarEvent[];
+  onEventClick: (event: CalendarEvent) => void;
+  onDateSelect: (date: Date) => void;
+  initialDate?: Date;
+}
+
+export function FullCalendar({ events, onEventClick, onDateSelect, initialDate }: FullCalendarProps) {
+  // Pure presentation logic only
+  return (
+    <div className="calendar-container">
+      {/* calendar implementation */}
+    </div>
+  );
+}
+```
+
+### **Modal Components**
+```typescript
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}
+
+export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <h2>{title}</h2>
+        {children}
+      </div>
+    </div>
+  );
+}
+```
+# React-Specific Rules
+
+## 🎯 React Architecture Principles
+
+### **Pure Functional Components**
+- React components should be **Pure**: Data flows in one direction
+- Only manage presentational state, **NO DATA FETCHING**
+- If something in React needs to make a POST update, it happens on a form
+- Use props for all data, avoid `useEffect` for initial data loading
+
+### **Component Design**
+- Prefer functional components over class components
+- Use TypeScript for all component props and state
+- Keep components small and focused on single responsibility
+- Use composition over inheritance
+
+## 🚫 What NOT to Do in React Components
+
+### **Avoid Data Fetching**
+```typescript
+// ❌ DON'T DO THIS
+const [data, setData] = useState([]);
+
+useEffect(() => {
+  // Don't fetch initial data in React
+  fetchData().then(setData);
+}, []);
+```
+
+### **Avoid Complex State Management**
+```typescript
+// ❌ DON'T DO THIS
+const [user, setUser] = useState(null);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState(null);
+
+useEffect(() => {
+  setLoading(true);
+  fetchUser().then(setUser).catch(setError).finally(() => setLoading(false));
+}, []);
+```
+
+## ✅ What TO Do in React Components
+
+### **Accept Data as Props**
+```typescript
+// ✅ DO THIS
+interface DashboardProps {
+  user: User;
+  data: DashboardData[];
+  onUpdate: (id: string, data: Partial<DashboardData>) => void;
+}
+
+export function Dashboard({ user, data, onUpdate }: DashboardProps) {
+  return (
+    <div>
+      <h1>Welcome, {user.name}</h1>
+      {data.map(item => (
+        <DashboardItem key={item.id} item={item} onUpdate={onUpdate} />
+      ))}
+    </div>
+  );
+}
+```
+
+### **Handle Form Submissions**
+```typescript
+// ✅ DO THIS
+interface FormProps {
+  onSubmit: (data: FormData) => void;
+  initialData?: Partial<FormData>;
+}
+
+export function UserForm({ onSubmit, initialData }: FormProps) {
+  const [formData, setFormData] = useState(initialData || {});
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* form fields */}
+    </form>
+  );
+}
+```
+
+## 🎨 Styling Guidelines
+
+### **Use TailwindCSS**
+- Prefer Tailwind utility classes
+- Use `className` prop for styling
+- Avoid inline styles unless absolutely necessary
+
+```typescript
+// ✅ DO THIS
+<div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-md">
+  <h2 className="text-xl font-semibold text-gray-800">Title</h2>
+  <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+    Action
+  </button>
+</div>
+```
+
+## 🔧 React Best Practices
+
+### **Props Interface**
+- Always define TypeScript interfaces for props
+- Use descriptive prop names
+- Group related props together
+
+```typescript
+interface CalendarEventProps {
+  event: CalendarEvent;
+  isSelected: boolean;
+  onSelect: (event: CalendarEvent) => void;
+  onEdit: (event: CalendarEvent) => void;
+  onDelete: (eventId: string) => void;
+}
+```
+
+### **Event Handlers**
+- Use descriptive handler names
+- Pass minimal data in callbacks
+- Use `useCallback` for performance optimization when needed
+
+```typescript
+const handleEventClick = useCallback((event: CalendarEvent) => {
+  onSelect(event);
+}, [onSelect]);
+
+const handleEditClick = useCallback((event: React.MouseEvent) => {
+  event.stopPropagation();
+  onEdit(event);
+}, [onEdit]);
+```
+
+### **Conditional Rendering**
+- Use clear conditional patterns
+- Prefer early returns for complex conditions
+
+```typescript
+// ✅ DO THIS
+if (!user) {
+  return <LoginPrompt />;
+}
+
+if (loading) {
+  return <LoadingSpinner />;
+}
+
+return (
+  <div>
+    {/* main content */}
+  </div>
+);
+```
+
+## 🎯 Component Patterns
+
+### **Presentational Components**
+- Focus on UI and presentation
+- Accept all data via props
+- Handle user interactions via callback props
+
+### **Form Components**
+- Use controlled components
+- Validate input on the client side
+- Submit data via form actions or callback props
+
+### **List Components**
+- Use proper `key` props for list items
+- Implement proper accessibility attributes
+- Handle empty states gracefully
+
+## 🔍 Common React Patterns in This Project
+
+### **Calendar Components**
+```typescript
+interface FullCalendarProps {
+  events: CalendarEvent[];
+  onEventClick: (event: CalendarEvent) => void;
+  onDateSelect: (date: Date) => void;
+  initialDate?: Date;
+}
+
+export function FullCalendar({ events, onEventClick, onDateSelect, initialDate }: FullCalendarProps) {
+  // Pure presentation logic only
+  return (
+    <div className="calendar-container">
+      {/* calendar implementation */}
+    </div>
+  );
+}
+```
+
+### **Modal Components**
+```typescript
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}
+
+export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <h2>{title}</h2>
+        {children}
+      </div>
+    </div>
+  );
+}
+```
