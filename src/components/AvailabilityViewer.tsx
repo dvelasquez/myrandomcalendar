@@ -1,3 +1,4 @@
+import { startOfDay, endOfDay, subDays, addDays, setHours, isBefore, isAfter } from 'date-fns';
 import React, { useState, useEffect } from 'react';
 import { scheduleBlocksToCalendarEvents, combineCalendarEvents } from '../lib/schedule-transformers';
 import type { ScheduleBlock, CalendarEvent } from '../lib/types';
@@ -29,21 +30,17 @@ export default function AvailabilityViewer({
 
   // Generate time slots for the selected date
   useEffect(() => {
-    const startOfDay = new Date(selectedDate);
-    startOfDay.setHours(0, 0, 0, 0);
-    
-    const endOfDay = new Date(selectedDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    const startOfDayDate = startOfDay(selectedDate);
+    const endOfDayDate = endOfDay(selectedDate);
 
     // Generate schedule block events for the day and previous day (for overnight events)
-    const previousDay = new Date(startOfDay);
-    previousDay.setDate(previousDay.getDate() - 1);
+    const previousDay = subDays(startOfDayDate, 1);
     
     const scheduleBlockEvents = [
       ...scheduleBlocksToCalendarEvents(
         scheduleBlocks.filter(block => block.isActive),
         previousDay,
-        endOfDay
+        endOfDayDate
       )
     ];
 
@@ -53,34 +50,29 @@ export default function AvailabilityViewer({
       const eventStart = new Date(event.start);
       const eventEnd = new Date(event.end || event.start);
       
-      // Include events that overlap with the current day
-      return eventStart < endOfDay && eventEnd > startOfDay;
+      // Include events that overlap with the current day using date-fns
+      return isBefore(eventStart, endOfDayDate) && isAfter(eventEnd, startOfDayDate);
     });
 
     // Combine with Google Calendar events
     const allEvents = combineCalendarEvents(relevantGoogleEvents, scheduleBlockEvents);
 
-    // Generate hourly time slots
+    // Generate hourly time slots using date-fns
     const slots: TimeSlot[] = [];
     for (let hour = 0; hour < 24; hour++) {
-      const slotStart = new Date(startOfDay);
-      slotStart.setHours(hour, 0, 0, 0);
-      
-      const slotEnd = new Date(startOfDay);
-      slotEnd.setHours(hour + 1, 0, 0, 0);
+      const slotStart = setHours(startOfDayDate, hour, 0, 0, 0);
+      const slotEnd = setHours(startOfDayDate, hour + 1, 0, 0, 0);
 
-      // Check if this slot conflicts with any events
+      // Check if this slot conflicts with any events using date-fns
       const conflictingEvent = allEvents.find(event => {
         const eventStart = new Date(event.start);
         const eventEnd = new Date(event.end || event.start);
         
-        // Check if the event overlaps with this time slot
+        // Check if the event overlaps with this time slot using date-fns
         // An event conflicts if:
         // 1. Event starts before slot ends AND event ends after slot starts
         // 2. This covers all overlap scenarios including overnight events
-        const conflicts = eventStart < slotEnd && eventEnd > slotStart;
-        
-        return conflicts;
+        return isBefore(eventStart, slotEnd) && isAfter(eventEnd, slotStart);
       });
 
       if (conflictingEvent) {
@@ -153,11 +145,11 @@ export default function AvailabilityViewer({
   };
 
   const navigateDate = (direction: 'prev' | 'next') => {
-    const newDate = new Date(selectedDate);
+    let newDate: Date;
     if (viewMode === 'day') {
-      newDate.setDate(newDate.getDate() + (direction === 'next' ? 1 : -1));
+      newDate = addDays(selectedDate, direction === 'next' ? 1 : -1);
     } else {
-      newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7));
+      newDate = addDays(selectedDate, direction === 'next' ? 7 : -7);
     }
     onDateChange(newDate);
   };

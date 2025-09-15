@@ -11,6 +11,7 @@ A calendar application built with Astro 5, featuring BetterAuth authentication w
 - **Astro DB** - Database with Drizzle ORM client (accessible from "astro:db")
 - **libsql** - Database provider
 - **BetterAuth** - Authentication system (replaces custom auth)
+- **Date-FNS** - For handling dates and timesnp
 
 ## 🔐 **Authentication Status: WORKING**
 - **BetterAuth Migration**: Complete - all custom auth code removed
@@ -73,6 +74,11 @@ src/
 // src/lib/better-auth.ts - MUST have this exact configuration
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET as string,  // CRITICAL: Session encryption
+  trustedOrigins: [                                  // CRITICAL: For local development
+    "http://localhost:4321",
+    "http://randomcalendar-dev.d13z.dev",
+    "https://randomcalendar-dev.d13z.dev"
+  ],
   database: drizzleAdapter(db, {
     provider: "sqlite",
     schema: {
@@ -97,6 +103,7 @@ export const auth = betterAuth({
 - **Field Name Errors**: Check BetterAuth documentation for exact field names
 - **OAuth Errors**: Verify Google Cloud Console redirect URI: `http://localhost:4321/api/auth/callback/google`
 - **Environment Issues**: Check system environment variables, not .env files
+- **Trusted Origins Error**: Add `trustedOrigins` array to BetterAuth config for local development
 
 ## 📚 **Documentation Location**
 - **`docs/README.md`** - Navigation guide
@@ -107,6 +114,7 @@ export const auth = betterAuth({
 ```bash
 npm run dev                    # Start development server
 npm run astro -- db push --force-reset    # Reset database schema
+npm test -- --run # Run tests without waiting for user input
 printenv | grep GOOGLE         # Check Google credentials
 ```
 
@@ -159,6 +167,8 @@ useEffect(() => {
 - ✅ Database schema aligned
 - ✅ All authentication flows functional
 - ✅ Server-side data fetching implemented
+- ✅ **Background Events System** - Availability visualization with FullCalendar
+- ✅ **Pure Function Architecture** - Comprehensive test coverage (91 tests)
 - ✅ Documentation complete
 
 ---

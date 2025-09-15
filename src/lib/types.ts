@@ -80,7 +80,7 @@ export interface CalendarEvent {
     isScheduleBlock?: boolean;
     description?: string;
     location?: string;
-    [key: string]: any; // Allow additional properties
+    [key: string]: unknown; // Allow additional properties
   };
 }
 

@@ -4,6 +4,10 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET as string,
+  trustedOrigins: [
+    "http://localhost:4321",
+    "https://randomcalendar-dev.d13z.dev"
+  ],
   database: drizzleAdapter(db, {
     provider: "sqlite",
     schema: {

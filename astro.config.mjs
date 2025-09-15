@@ -17,4 +17,9 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
+  server: {
+    host: true,
+    port: 4321,
+    allowedHosts: ['localhost', 'randomcalendar-dev.d13z.dev'],
+  },
 });

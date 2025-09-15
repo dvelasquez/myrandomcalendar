@@ -1,4 +1,4 @@
-import { addDays, addMinutes, format, startOfDay } from 'date-fns';
+import { addDays, addMinutes, format, startOfDay, setHours, addDays as addDay } from 'date-fns';
 import type { CalendarEvent, ScheduleBlock, ScheduleBlockType } from './types';
 
 /**
@@ -76,22 +76,18 @@ function generateEventForDate(
       return null;
     }
     
-    // Create start datetime
-    const startDateTime = new Date(date);
-    startDateTime.setHours(startTime.hours, startTime.minutes, 0, 0);
+    // Create start datetime using date-fns
+    const startDateTime = setHours(date, startTime.hours, startTime.minutes, 0, 0);
     
-    // Create end datetime
-    const endDateTime = new Date(date);
-    endDateTime.setHours(endTime.hours, endTime.minutes, 0, 0);
+    // Create end datetime using date-fns
+    const endDateTime = setHours(date, endTime.hours, endTime.minutes, 0, 0);
     
     // Handle overnight events (e.g., sleep from 22:00 to 06:00)
-    if (endDateTime <= startDateTime) {
-      endDateTime.setDate(endDateTime.getDate() + 1);
-    }
+    const finalEndDateTime = endDateTime <= startDateTime ? addDay(endDateTime, 1) : endDateTime;
     
     // Apply buffer times
     const bufferedStart = addMinutes(startDateTime, -block.bufferBefore);
-    const bufferedEnd = addMinutes(endDateTime, block.bufferAfter);
+    const bufferedEnd = addMinutes(finalEndDateTime, block.bufferAfter);
     
     // Generate unique ID for this occurrence
     const eventId = `${block.id}-${format(date, 'yyyy-MM-dd')}`;
