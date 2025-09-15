@@ -6,12 +6,12 @@ A calendar application built with Astro 5, featuring BetterAuth authentication w
 ## 🛠 **Tech Stack**
 - **Astro 5** - Web framework
 - **TailwindCSS 4** - Styling
-- **React 19** - UI components
+- **React 19** - UI components, pure and functional. Only manage presentational state, NO DATA FETCHING.
 - **ESLint 9** - Code linting
 - **Astro DB** - Database with Drizzle ORM client (accessible from "astro:db")
 - **libsql** - Database provider
 - **BetterAuth** - Authentication system (replaces custom auth)
-- **Date-FNS** - For handling dates and timesnp
+- **Date-FNS** - For handling dates and times. Always prefer using this.
 
 ## 🔐 **Authentication Status: WORKING**
 - **BetterAuth Migration**: Complete - all custom auth code removed
@@ -118,6 +118,11 @@ npm test -- --run # Run tests without waiting for user input
 npm run astro -- check # to check typescript errors in astro and ts files
 printenv | grep GOOGLE         # Check Google credentials
 ```
+
+## Components and Presentation
+
+- Use the **rule of least power**: Privilege use native html elements, then css and finally javascript if is inevitable
+- **React components should be Pure**: Data flows in one direction. If something in React needs to make a POST update, it happens on a form.
 
 ## 📊 **Data Fetching Architecture (CRITICAL)**
 

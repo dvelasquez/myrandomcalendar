@@ -1,0 +1,453 @@
+---
+import { actions } from 'astro:actions';
+import { startOfDay, endOfDay } from 'date-fns';
+import { createDefaultScheduleBlocksAction } from '../../actions/schedule-block-actions';
+import { getScheduleBlocks } from '../../actions/schedule-blocks';
+import Layout from '../../layouts/Layout.astro';
+import { transformGoogleApiEventsToFullCalendar } from '../../lib/event-transformers';
+import type { ScheduleBlock, CalendarEvent, GoogleCalendarApiEvent } from '../../lib/types';
+import { createFetchCalendarFormData } from '../../lib/types';
+
+export const prerender = false; // Required for server actions
+
+// Get user from middleware
+const { user } = Astro.locals;
+
+// Get query parameters for state management
+const url = new URL(Astro.request.url);
+const activeTab = url.searchParams.get('tab') || 'blocks';
+const successMessage = url.searchParams.get('success');
+const errorMessage = url.searchParams.get('error');
+
+// Handle form submissions for default schedule creation
+if (Astro.request.method === 'POST' && user) {
+  const formData = await Astro.request.formData();
+  const action = formData.get('action') as string;
+  
+  if (action === 'create-default') {
+    try {
+      const result = await createDefaultScheduleBlocksAction(formData);
+      if (result.data?.success) {
+        return Astro.redirect('/schedule?success=default-created');
+      } else {
+        return Astro.redirect(`/schedule?error=${encodeURIComponent(result.error?.message || 'Failed to create default schedule blocks')}`);
+      }
+    } catch (error) {
+      console.error('Error creating default schedule blocks:', error);
+      return Astro.redirect('/schedule?error=' + encodeURIComponent('An error occurred'));
+    }
+  }
+}
+
+// Fetch schedule blocks server-side
+let scheduleBlocks: ScheduleBlock[] = [];
+if (user) {
+  try {
+    scheduleBlocks = await getScheduleBlocks(user.id);
+  } catch (error) {
+    console.error('Error fetching schedule blocks:', error);
+  }
+}
+
+// Get date range from search params for calendar events
+const startDateParam = url.searchParams.get('startDate');
+const endDateParam = url.searchParams.get('endDate');
+
+// Default to current month if no params provided
+const today = new Date();
+const startDate = startDateParam ? new Date(startDateParam) : startOfDay(today);
+const endDate = endDateParam ? new Date(endDateParam) : endOfDay(today);
+
+// Fetch real Google Calendar events
+let googleCalendarEvents: CalendarEvent[] = [];
+let calendarError: string | null = null;
+
+if (user) {
+  try {
+    // Create typesafe FormData with proper date range
+    const formData = createFetchCalendarFormData(startDate, endDate);
+    
+    const result = await Astro.callAction(actions.fetchCalendar, formData);
+    if (result.data?.success) {
+      // Transform Google Calendar API events to CalendarEvent format
+      const googleApiEvents = result.data.events as GoogleCalendarApiEvent[];
+      googleCalendarEvents = transformGoogleApiEventsToFullCalendar(googleApiEvents);
+    } else {
+      calendarError = result.error?.message || 'Failed to fetch calendar data';
+      console.warn('Calendar fetch error:', calendarError);
+    }
+  } catch (err) {
+    calendarError = (err as Error).message || 'An error occurred while fetching calendar data';
+    console.error('Calendar fetch error:', err);
+  }
+}
+
+// Schedule types for display
+const PRIORITY_COLORS: Record<string, string> = {
+  high: 'bg-red-100 text-red-800 border-red-200',
+  medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  low: 'bg-green-100 text-green-800 border-green-200'
+};
+---
+
+<Layout>
+  <div class="container mx-auto px-4 py-8">
+    {user ? (
+      <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+          <div class="flex justify-between items-start">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900 mb-2">Schedule Management</h1>
+              <p class="text-gray-600">
+                View and manage your schedule blocks and availability for optimal event planning.
+              </p>
+              {!calendarError && (
+                <p class="text-sm mt-2">
+                  <strong>Google Calendar Events:</strong> {googleCalendarEvents.length} events loaded
+                </p>
+              )}
+            </div>
+            <div class="flex space-x-4">
+              <a 
+                href="/schedule/maintainer" 
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Manage Schedule
+              </a>
+              <button 
+                id="refreshCalendarBtn"
+                class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm"
+              >
+                Refresh Calendar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        {successMessage && (
+          <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+            <h3 class="font-bold">Success!</h3>
+            <p>
+              {successMessage === 'default-created' && 'Default schedule blocks created successfully!'}
+            </p>
+          </div>
+        )}
+        
+        {errorMessage && (
+          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            <h3 class="font-bold">Error:</h3>
+            <p>{errorMessage}</p>
+          </div>
+        )}
+        
+        {calendarError ? (
+          <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+            <h3 class="font-bold">Google Calendar Integration Notice:</h3>
+            <p class="mb-2">{calendarError}</p>
+            <p class="text-sm">
+              {calendarError.includes('calendar access') || calendarError.includes('INSUFFICIENT_SCOPE') ? (
+                <>
+                  <strong>Solution:</strong> You need to sign out and sign in with Google again to grant calendar permissions.
+                  <br />
+                  <a href="/logout" class="underline">Sign out</a> and then <a href="/login" class="underline">sign in with Google</a> again.
+                </>
+              ) : (
+                'Make sure you\'re signed in with Google and have granted calendar access permissions.'
+              )}
+            </p>
+          </div>
+        ) : null}
+
+        <!-- Tabs -->
+        <div class="mb-6">
+          <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8">
+              <a
+                href="/schedule?tab=blocks"
+                class={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'blocks'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Schedule Blocks ({scheduleBlocks.length})
+              </a>
+              <a
+                href="/schedule?tab=availability"
+                class={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'availability'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Availability
+              </a>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Tab Content -->
+        {activeTab === 'blocks' && (
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-900">Schedule Blocks</h2>
+              <div class="flex space-x-4">
+                <a
+                  href="/schedule/maintainer"
+                  class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                >
+                  Create New Schedule
+                </a>
+                {scheduleBlocks.length === 0 && (
+                  <form method="POST" action="/schedule" class="inline">
+                    <input type="hidden" name="action" value="create-default" />
+                    <button
+                      type="submit"
+                      class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+                    >
+                      Create Default Schedule
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+
+            {scheduleBlocks.length === 0 ? (
+              <div class="text-center py-12">
+                <div class="text-gray-400 text-6xl mb-4">📅</div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No schedule blocks found</h3>
+                <p class="text-gray-500 mb-4">Create your first schedule block to get started</p>
+                <a
+                  href="/schedule/maintainer"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
+                >
+                  Create Schedule Block
+                </a>
+              </div>
+            ) : (
+              <div class="space-y-6">
+                {scheduleBlocks.map(block => (
+                  <div
+                    class={`border rounded-lg p-4 transition-colors ${
+                      block.isActive 
+                        ? 'bg-white border-gray-200 hover:border-gray-300' 
+                        : 'bg-gray-50 border-gray-200 opacity-75'
+                    }`}
+                  >
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <div class="flex items-center space-x-3 mb-2">
+                          <h4 class="text-lg font-medium text-gray-900">
+                            {block.title}
+                          </h4>
+                          <span class={`px-2 py-1 text-xs font-medium rounded-full border ${
+                            PRIORITY_COLORS[block.priority]
+                          }`}>
+                            {block.priority}
+                          </span>
+                          {!block.isActive && (
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                              Inactive
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div class="text-sm text-gray-600 space-y-1">
+                          <div class="flex items-center space-x-4">
+                            <span>⏰ {block.startTime} - {block.endTime}</span>
+                            <span>📅 {block.daysOfWeek.map(day => {
+                              const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                              return dayNames[day];
+                            }).join(', ')}</span>
+                          </div>
+                          
+                          {block.description && (
+                            <p class="text-gray-500">{block.description}</p>
+                          )}
+                          
+                          {(block.bufferBefore > 0 || block.bufferAfter > 0) && (
+                            <div class="text-xs text-gray-500">
+                              Buffer: {block.bufferBefore > 0 && `-${block.bufferBefore}min`} 
+                              {block.bufferBefore > 0 && block.bufferAfter > 0 && ', '}
+                              {block.bufferAfter > 0 && `+${block.bufferAfter}min`}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div class="flex items-center space-x-2 ml-4">
+                        <a
+                          href={`/schedule/maintainer?edit=${block.id}`}
+                          class="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors"
+                        >
+                          Edit
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'availability' && (
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Availability</h2>
+            <p class="text-gray-600 mb-4">
+              View your availability based on schedule blocks and Google Calendar events.
+            </p>
+            <div class="text-center py-12">
+              <div class="text-gray-400 text-6xl mb-4">📊</div>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">Availability Viewer</h3>
+              <p class="text-gray-500 mb-4">
+                This feature will show your availability visualization.
+                <br />
+                Schedule Blocks: {scheduleBlocks.length} | Calendar Events: {googleCalendarEvents.length}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <!-- Quick Stats -->
+        <div class="mt-8 bg-gray-50 rounded-lg p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Stats</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-blue-600">{scheduleBlocks.length}</div>
+              <div class="text-sm text-gray-600">Total Blocks</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-green-600">
+                {scheduleBlocks.filter(b => b.isActive).length}
+              </div>
+              <div class="text-sm text-gray-600">Active Blocks</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-purple-600">
+                {scheduleBlocks.filter(b => b.isRecurring).length}
+              </div>
+              <div class="text-sm text-gray-600">Recurring</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-orange-600">
+                {scheduleBlocks.filter(b => b.priority === 'high').length}
+              </div>
+              <div class="text-sm text-gray-600">High Priority</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="mt-6">
+          <a 
+            href="/calendar" 
+            class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-4"
+          >
+            View Calendar
+          </a>
+          <a 
+            href="/" 
+            class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-4"
+          >
+            Back to Home
+          </a>
+          <form method="POST" action={actions.logout} class="inline">
+            <button 
+              type="submit" 
+              class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Logout
+            </button>
+          </form>
+        </div>
+      </div>
+    ) : (
+      <div class="max-w-2xl mx-auto">
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+          <h2 class="text-xl font-bold">Access Denied</h2>
+          <p>You must be logged in to manage your schedule settings.</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="text-center space-y-4">
+            <p class="text-gray-600">Please log in to access your schedule settings.</p>
+            
+            <div class="flex space-x-4 justify-center">
+              <a 
+                href="/login" 
+                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Login
+              </a>
+              <a 
+                href="/register" 
+                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Register
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<script>
+  import { actions } from 'astro:actions';
+  import { navigate } from 'astro:transitions/client';
+  import { startOfDay, endOfDay } from 'date-fns';
+  import { createFetchCalendarFormData } from '../../lib/types';
+  
+  // Handle calendar refresh
+  const refreshBtn = document.getElementById('refreshCalendarBtn') as HTMLButtonElement | null;
+  
+  refreshBtn?.addEventListener('click', async () => {
+    if (!refreshBtn) return;
+    
+    refreshBtn.textContent = 'Refreshing...';
+    refreshBtn.disabled = true;
+    
+    try {
+      // Create proper date range for refresh
+      const today = new Date();
+      const startOfCurrentMonth = startOfDay(today);
+      const endOfCurrentMonth = endOfDay(today);
+      
+      // Create typesafe FormData
+      const formData = createFetchCalendarFormData(startOfCurrentMonth, endOfCurrentMonth);
+      
+      // Fetch fresh calendar data
+      const result = await actions.fetchCalendar(formData);
+      
+      if (result.data?.success) {
+        // Reload the page to update with fresh data
+        window.location.reload();
+      } else {
+        console.error('Error refreshing calendar:', result.error?.message);
+        refreshBtn.textContent = 'Refresh Calendar';
+        refreshBtn.disabled = false;
+      }
+    } catch (error) {
+      console.error('Error refreshing calendar:', error);
+      refreshBtn.textContent = 'Refresh Calendar';
+      refreshBtn.disabled = false;
+    }
+  });
+  
+  // Handle logout form
+  const logoutForm = document.querySelector('form[action*="logout"]');
+  
+  logoutForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    
+    const { error } = await actions.logout(new FormData());
+    
+    if (!error) {
+      navigate('/');
+    }
+  });
+</script>
