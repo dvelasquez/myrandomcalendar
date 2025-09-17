@@ -1,29 +1,27 @@
 import { defineAction, ActionError } from 'astro:actions';
 import { z } from 'astro:schema';
-import { auth } from '../lib/better-auth';
+import { auth } from '../../../lib/better-auth';
 
-export const register = defineAction({
+export const login = defineAction({
   accept: 'form',
   input: z.object({
-    name: z.string().min(1, 'Name is required'),
     email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    password: z.string().min(1, 'Password is required'),
   }),
-  handler: async ({ name, email, password }, { request }) => {
+  handler: async ({ email, password }, { request }) => {
     try {
-      const result = await auth.api.signUpEmail({
+      const result = await auth.api.signInEmail({
         body: {
           email,
           password,
-          name,
         },
         headers: request.headers,
       });
 
       if (!result) {
         throw new ActionError({
-          code: 'CONFLICT',
-          message: 'Registration failed',
+          code: 'UNAUTHORIZED',
+          message: 'Invalid credentials',
         });
       }
 
@@ -34,10 +32,10 @@ export const register = defineAction({
         throw error;
       }
 
-      console.error('Registration error:', error);
+      console.error('Login error:', error);
       throw new ActionError({
         code: 'INTERNAL_SERVER_ERROR',
-        message: 'Registration failed',
+        message: 'Login failed',
       });
     }
   },

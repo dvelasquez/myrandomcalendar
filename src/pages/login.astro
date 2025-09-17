@@ -5,7 +5,7 @@ import Layout from '../layouts/Layout.astro';
 export const prerender = false;
 
 // Get action result for error handling
-const result = Astro.getActionResult(actions.login);
+const result = Astro.getActionResult(actions.auth.login);
 ---
 
 <Layout title="Login">
@@ -19,7 +19,7 @@ const result = Astro.getActionResult(actions.login);
       </div>
     )}
     
-    <form method="POST" action={actions.login} class="space-y-4">
+    <form method="POST" action={actions.auth.login} class="space-y-4">
       <div>
         <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
         <input 
@@ -99,7 +99,7 @@ const result = Astro.getActionResult(actions.login);
     event.preventDefault();
     
     const formData = new FormData(form);
-    const { error } = await actions.login(formData);
+    const { error } = await actions.auth.login(formData);
     
     if (!error) {
       // Redirect to home page on successful login

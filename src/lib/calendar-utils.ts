@@ -41,7 +41,7 @@ export interface FullCalendarEvent {
   display?: 'auto' | 'block' | 'list-item' | 'background' | 'inverse-background' | 'none';
   className?: string;
   extendedProps?: {
-    [key: string]: any;
+    [key: string]: string | boolean | number | undefined;
     availabilityType?: string;
     priority?: string;
     isAvailabilityEvent?: boolean;

@@ -5,7 +5,7 @@ import Layout from '../layouts/Layout.astro';
 export const prerender = false; // Required for server actions
 
 // Get action result for error handling
-const result = Astro.getActionResult(actions.register);
+const result = Astro.getActionResult(actions.auth.register);
 ---
 
 <Layout title="Register">
@@ -19,7 +19,7 @@ const result = Astro.getActionResult(actions.register);
       </div>
     )}
     
-    <form method="POST" action={actions.register} class="space-y-4">
+    <form method="POST" action={actions.auth.register} class="space-y-4">
       <div>
         <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
         <input 
@@ -81,7 +81,7 @@ const result = Astro.getActionResult(actions.register);
     event.preventDefault();
     
     const formData = new FormData(form);
-    const { error } = await actions.register(formData);
+    const { error } = await actions.auth.register(formData);
     
     if (!error) {
       // Redirect to home page on successful registration

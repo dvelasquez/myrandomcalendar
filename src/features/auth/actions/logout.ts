@@ -1,5 +1,5 @@
 import { ActionError, defineAction } from 'astro:actions';
-import { auth } from '../lib/better-auth';
+import { auth } from '../../../lib/better-auth';
 
 export const logout = defineAction({
   accept: 'form',

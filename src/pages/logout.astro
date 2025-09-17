@@ -11,7 +11,7 @@ if (user) {
   try {
     // Create a mock FormData for the action
     const formData = new FormData();
-    const result = await Astro.callAction(actions.logout, formData);
+    const result = await Astro.callAction(actions.auth.logout, formData);
     
     if (result.error) {
       console.error('Logout error:', result.error);

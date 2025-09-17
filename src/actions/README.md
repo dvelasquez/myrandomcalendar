@@ -1,38 +1,26 @@
 # Actions Structure
 
-This directory contains the authentication actions for the application, organized into individual files for better maintainability.
+This directory contains the main actions index and utility actions for the application. Authentication actions have been moved to the features-based structure.
 
 ## File Structure
 
 ```
 src/actions/
-├── index.ts      # Main exports file
-├── register.ts   # User registration action
-├── login.ts      # User login action
-└── logout.ts     # User logout action
+├── index.ts           # Main exports file - imports from features
+└── fetch-calendar.ts  # Calendar data fetching action
 ```
 
-## Actions
+## Features-Based Structure
 
-### Register Action (`register.ts`)
-- **Purpose**: Handles user registration
-- **Input**: `name`, `email`, `password`
-- **Validation**: Zod schema validation
-- **Returns**: `{ success: boolean, userId?: string }`
-- **Error Codes**: `CONFLICT`, `INTERNAL_SERVER_ERROR`
+Authentication actions are now organized in the features structure:
 
-### Login Action (`login.ts`)
-- **Purpose**: Handles user authentication
-- **Input**: `email`, `password`
-- **Validation**: Zod schema validation
-- **Returns**: `{ success: boolean, user?: User }`
-- **Error Codes**: `UNAUTHORIZED`, `INTERNAL_SERVER_ERROR`
-
-### Logout Action (`logout.ts`)
-- **Purpose**: Handles user logout and session cleanup
-- **Input**: None (form data only)
-- **Returns**: `{ success: boolean }`
-- **Error Codes**: `INTERNAL_SERVER_ERROR`
+```
+src/features/auth/actions/
+├── index.ts    # Auth actions export
+├── login.ts    # User login action
+├── logout.ts   # User logout action
+└── register.ts # User registration action
+```
 
 ## Usage
 
@@ -43,15 +31,21 @@ Actions are imported and used in Astro components:
 import { actions } from 'astro:actions';
 ---
 
-<form method="POST" action={actions.login}>
+<!-- Auth actions are now nested under auth -->
+<form method="POST" action={actions.auth.login}>
+  <!-- form fields -->
+</form>
+
+<!-- Other feature actions -->
+<form method="POST" action={actions.schedule.createScheduleBlock}>
   <!-- form fields -->
 </form>
 ```
 
-## Benefits of Individual Files
+## Benefits of Features Structure
 
-1. **Better Organization**: Each action has its own file
-2. **Easier Maintenance**: Changes to one action don't affect others
-3. **Better Testing**: Individual actions can be tested in isolation
-4. **Cleaner Code**: Smaller, focused files are easier to read
-5. **Reusability**: Actions can be imported individually if needed
+1. **Better Organization**: Related functionality grouped together
+2. **Scalability**: Easy to add new features without cluttering main actions
+3. **Maintainability**: Each feature is self-contained
+4. **Consistency**: Follows the established pattern for schedule and periodic-events
+5. **Modularity**: Features can be developed and tested independently

@@ -1,32 +1,25 @@
-import { Users, Sessions, Accounts, Verifications, PeriodicEvents } from 'astro:db';
+import { PeriodicEvents } from 'astro:db';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import type { calendar_v3 } from 'googleapis';
 import type { PeriodicFrequency, PeriodicCategory } from '../features/periodic-events/models/PeriodicEvents.types';
 import type { ScheduleBlockType, SchedulePriority } from '../features/schedule/models/ScheduleBlocks.types';
 
-// Infer TypeScript types from your database tables
-export type User = InferSelectModel<typeof Users>;
-export type NewUser = InferInsertModel<typeof Users>;
-
-export type Session = InferSelectModel<typeof Sessions>;
-export type NewSession = InferInsertModel<typeof Sessions>;
-
-export type Account = InferSelectModel<typeof Accounts>;
-export type NewAccount = InferInsertModel<typeof Accounts>;
-
-export type Verification = InferSelectModel<typeof Verifications>;
-export type NewVerification = InferInsertModel<typeof Verifications>;
+// Re-export auth types from auth feature
+export type { 
+  User, 
+  NewUser, 
+  Session, 
+  NewSession, 
+  Account, 
+  NewAccount, 
+  Verification, 
+  NewVerification,
+  UserProfile,
+  SessionWithUser 
+} from '../features/auth/models/Auth.types';
 
 export type PeriodicEvent = InferSelectModel<typeof PeriodicEvents>;
 export type NewPeriodicEvent = InferInsertModel<typeof PeriodicEvents>;
-
-// You can also create more specific types for different use cases
-export type UserProfile = Pick<User, 'id' | 'name' | 'email' | 'image'>;
-
-// Session with user data (for joins)
-export type SessionWithUser = Session & {
-  user: User;
-};
 
 // Base calendar event interface (FullCalendar compatible)
 export interface CalendarEvent {
@@ -48,7 +41,7 @@ export interface CalendarEvent {
     isScheduleBlock?: boolean;
     description?: string;
     location?: string;
-    [key: string]: unknown; // Allow additional properties
+    [key: string]: string | boolean | number | undefined; // Allow additional properties
   };
 }
 
