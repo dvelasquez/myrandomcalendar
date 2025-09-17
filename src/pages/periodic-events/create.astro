@@ -1,11 +1,11 @@
 ---
 import { actions } from 'astro:actions';
+import type { PeriodicFrequency, PeriodicCategory } from '../../features/periodic-events/models/PeriodicEvents.types';
 import type { SchedulePriority } from '../../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../../layouts/Layout.astro';
-import type { PeriodicFrequency, PeriodicCategory } from '../../lib/types';
 
 // Handle action results
-const result = Astro.getActionResult(actions.createPeriodicEventAction);
+const result = Astro.getActionResult(actions.periodicEvents.create);
 
 // Define options for form selects 
 const frequencyOptions: { value: PeriodicFrequency; label: string }[] = [
@@ -90,7 +90,7 @@ const colorOptions = [
 
       <!-- Form -->
       <div class="bg-white shadow-lg rounded-lg p-6">
-        <form method="POST" action={actions.createPeriodicEventAction} class="space-y-6">
+        <form method="POST" action={actions.periodicEvents.create} class="space-y-6">
           <!-- Title -->
           <div>
             <label for="title" class="block text-sm font-medium text-gray-700 mb-2">

@@ -1,5 +1,6 @@
 ---
 import { actions } from 'astro:actions';
+import type { PeriodicEventData } from '../../features/periodic-events/models/PeriodicEvents.types';
 import Layout from '../../layouts/Layout.astro';
 import { auth } from '../../lib/better-auth';
 
@@ -14,12 +15,12 @@ if (!session?.user) {
 }
 
 // Fetch periodic events
-let periodicEvents: any[] = [];
+let periodicEvents: PeriodicEventData[] = [];
 try {
   const formData = new FormData();
-  const result = await Astro.callAction(actions.getPeriodicEventsAction, formData);
+  const result = await Astro.callAction(actions.periodicEvents.get, formData);
   if (result.data && !result.error) {
-    periodicEvents = result.data.data; // Access the nested data array
+    periodicEvents = result.data.data as PeriodicEventData[]; // Access the nested data array
   }
 } catch (error) {
   console.error('Error fetching periodic events:', error);
@@ -96,7 +97,7 @@ function getPriorityColor(priority: string): string {
 
       <!-- Events List -->
       {periodicEvents.length === 0 ? (
-        <!-- Empty State -->
+        // <!-- Empty State -->
         <div class="bg-white shadow-lg rounded-lg p-12 text-center">
           <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +116,7 @@ function getPriorityColor(priority: string): string {
           </a>
         </div>
       ) : (
-        <!-- Events Grid -->
+        // <!-- Events Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {periodicEvents.map((event) => (
             <div class="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-200">

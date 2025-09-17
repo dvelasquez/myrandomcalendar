@@ -1,6 +1,7 @@
 import { Users, Sessions, Accounts, Verifications, PeriodicEvents } from 'astro:db';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import type { calendar_v3 } from 'googleapis';
+import type { PeriodicFrequency, PeriodicCategory } from '../features/periodic-events/models/PeriodicEvents.types';
 import type { ScheduleBlockType, SchedulePriority } from '../features/schedule/models/ScheduleBlocks.types';
 
 // Infer TypeScript types from your database tables
@@ -26,27 +27,6 @@ export type UserProfile = Pick<User, 'id' | 'name' | 'email' | 'image'>;
 export type SessionWithUser = Session & {
   user: User;
 };
-
-// Periodic Event types
-export type PeriodicFrequency = 'daily' | 'weekly' | 'monthly';
-export type PeriodicCategory = 'exercise' | 'personal' | 'family' | 'work' | 'health' | 'hobby' | 'other';
-
-// Periodic Event interface
-export interface PeriodicEventData {
-  id: string;
-  userId: string;
-  title: string;
-  description?: string;
-  frequency: PeriodicFrequency;
-  frequencyCount: number; // How many times per period (e.g., 3 times a week)
-  duration: number; // Duration in minutes
-  category: PeriodicCategory;
-  priority: SchedulePriority;
-  isActive: boolean;
-  color: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 // Base calendar event interface (FullCalendar compatible)
 export interface CalendarEvent {
