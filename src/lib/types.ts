@@ -1,4 +1,4 @@
-import { Users, Sessions, Accounts, Verifications } from 'astro:db';
+import { Users, Sessions, Accounts, Verifications, PeriodicEvents } from 'astro:db';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import type { calendar_v3 } from 'googleapis';
 
@@ -14,6 +14,9 @@ export type NewAccount = InferInsertModel<typeof Accounts>;
 
 export type Verification = InferSelectModel<typeof Verifications>;
 export type NewVerification = InferInsertModel<typeof Verifications>;
+
+export type PeriodicEvent = InferSelectModel<typeof PeriodicEvents>;
+export type NewPeriodicEvent = InferInsertModel<typeof PeriodicEvents>;
 
 // You can also create more specific types for different use cases
 export type UserProfile = Pick<User, 'id' | 'name' | 'email' | 'image'>;
@@ -36,6 +39,27 @@ export type ScheduleBlockType =
   | 'other';         // Custom categories
 
 export type SchedulePriority = 'high' | 'medium' | 'low';
+
+// Periodic Event types
+export type PeriodicFrequency = 'daily' | 'weekly' | 'monthly';
+export type PeriodicCategory = 'exercise' | 'personal' | 'family' | 'work' | 'health' | 'hobby' | 'other';
+
+// Periodic Event interface
+export interface PeriodicEventData {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  frequency: PeriodicFrequency;
+  frequencyCount: number; // How many times per period (e.g., 3 times a week)
+  duration: number; // Duration in minutes
+  category: PeriodicCategory;
+  priority: SchedulePriority;
+  isActive: boolean;
+  color: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // Schedule Block interface
 export interface ScheduleBlock {
@@ -119,10 +143,34 @@ export interface FetchCalendarFormData {
   endDate: string;    // ISO string
 }
 
+export interface CreatePeriodicEventFormData {
+  title: string;
+  description?: string;
+  frequency: PeriodicFrequency;
+  frequencyCount: number;
+  duration: number;
+  category: PeriodicCategory;
+  priority: SchedulePriority;
+  color: string;
+}
+
 // Helper function to create typesafe FormData
 export function createFetchCalendarFormData(startDate: Date, endDate: Date): FormData {
   const formData = new FormData();
   formData.append('startDate', startDate.toISOString());
   formData.append('endDate', endDate.toISOString());
+  return formData;
+}
+
+export function createPeriodicEventFormData(data: CreatePeriodicEventFormData): FormData {
+  const formData = new FormData();
+  formData.append('title', data.title);
+  if (data.description) formData.append('description', data.description);
+  formData.append('frequency', data.frequency);
+  formData.append('frequencyCount', data.frequencyCount.toString());
+  formData.append('duration', data.duration.toString());
+  formData.append('category', data.category);
+  formData.append('priority', data.priority);
+  formData.append('color', data.color);
   return formData;
 }

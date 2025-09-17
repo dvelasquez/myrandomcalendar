@@ -1,5 +1,5 @@
 ---
-globs: *.astro,src/actions/*,middleware.ts
+globs: *.astro,src/actions/**/*.ts,middleware.ts
 alwaysApply: false
 ---
 
