@@ -1,5 +1,6 @@
 import { endOfDay, isAfter, isBefore, startOfDay, subDays } from 'date-fns';
-import type { CalendarEvent, ScheduleBlock } from './types';
+import type { ScheduleBlock } from '../features/schedule/models/ScheduleBlocks.types';
+import type { CalendarEvent } from './types';
 
 /**
  * Time slot interface for availability calculation

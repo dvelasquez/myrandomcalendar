@@ -1,5 +1,6 @@
+import type { ScheduleBlock } from '../features/schedule/models/ScheduleBlocks.types';
 import { scheduleBlocksToCalendarEvents, combineCalendarEvents } from './schedule-transformers';
-import type { ScheduleBlock, CalendarEvent } from './types';
+import type { CalendarEvent } from './types';
 
 /**
  * Example usage of the ScheduleBlock architecture

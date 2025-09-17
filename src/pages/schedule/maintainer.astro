@@ -1,7 +1,7 @@
 ---
 import { actions } from 'astro:actions';
+import type { ScheduleBlock, ScheduleBlockType, SchedulePriority } from '../../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../../layouts/Layout.astro';
-import type { ScheduleBlock, ScheduleBlockType, SchedulePriority } from '../../lib/types';
 
 export const prerender = false; // Required for server actions
 
@@ -15,9 +15,9 @@ const successMessage = url.searchParams.get('success');
 const errorMessage = url.searchParams.get('error');
 
 // Handle form submissions using Astro actions
-const createResult = Astro.getActionResult(actions.createScheduleBlockAction);
-const updateResult = Astro.getActionResult(actions.updateScheduleBlockAction);
-const deleteResult = Astro.getActionResult(actions.deleteScheduleBlockAction);
+const createResult = Astro.getActionResult(actions.schedule.createScheduleBlock);
+const updateResult = Astro.getActionResult(actions.schedule.updateScheduleBlock);
+const deleteResult = Astro.getActionResult(actions.schedule.deleteScheduleBlock);
 
 // Redirect on successful actions
 if (createResult && !createResult.error) {
@@ -36,7 +36,7 @@ let editingBlock: ScheduleBlock | undefined;
 
 if (user) {
   try {
-    const { data, error } = await Astro.callAction(actions.getScheduleBlocksAction, new FormData());
+    const { data, error } = await Astro.callAction(actions.schedule.getScheduleBlocks, new FormData());
     if (!error && data?.success) {
       scheduleBlocks = data.data;
       
@@ -125,9 +125,9 @@ const DAYS_OF_WEEK = [
 
         <!-- Handle action results -->
         {(() => {
-          const createResult = Astro.getActionResult(actions.createScheduleBlockAction);
-          const updateResult = Astro.getActionResult(actions.updateScheduleBlockAction);
-          const deleteResult = Astro.getActionResult(actions.deleteScheduleBlockAction);
+          const createResult = Astro.getActionResult(actions.schedule.createScheduleBlock);
+          const updateResult = Astro.getActionResult(actions.schedule.updateScheduleBlock);
+          const deleteResult = Astro.getActionResult(actions.schedule.deleteScheduleBlock);
           
           // Show create action errors
           if (createResult?.error) {
@@ -162,7 +162,7 @@ const DAYS_OF_WEEK = [
 
         <!-- Schedule Block Form -->
         <div class="bg-white rounded-lg shadow-md p-6">
-          <form method="POST" action={editingBlock ? actions.updateScheduleBlockAction : actions.createScheduleBlockAction} class="space-y-6">
+          <form method="POST" action={editingBlock ? actions.schedule.updateScheduleBlock : actions.schedule.createScheduleBlock} class="space-y-6">
             <!-- Hidden fields -->
             {editingBlock && <input type="hidden" name="id" value={editingBlock.id} />}
             <input type="hidden" name="timezone" value="UTC" />
@@ -401,7 +401,7 @@ const DAYS_OF_WEEK = [
                     >
                       Edit
                     </a>
-                    <form method="POST" action={actions.deleteScheduleBlockAction} class="inline">
+                    <form method="POST" action={actions.schedule.deleteScheduleBlock} class="inline">
                       <input type="hidden" name="id" value={block.id} />
                       <button
                         type="submit"

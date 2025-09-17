@@ -1,11 +1,11 @@
 ---
 import { actions } from 'astro:actions';
 import { startOfDay, endOfDay, format, addDays, subDays } from 'date-fns';
-import { getScheduleBlocks } from '../../actions/schedule-blocks';
+import type { ScheduleBlock } from '../../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../../layouts/Layout.astro';
 import { calculateAvailability, DEFAULT_AVAILABILITY_CONFIG, type TimeSlot } from '../../lib/availability-calculator';
 import { transformGoogleApiEventsToFullCalendar } from '../../lib/event-transformers';
-import type { ScheduleBlock, CalendarEvent, GoogleCalendarApiEvent } from '../../lib/types';
+import type { CalendarEvent, GoogleCalendarApiEvent } from '../../lib/types';
 import { createFetchCalendarFormData } from '../../lib/types';
 
 export const prerender = false; // Required for server actions
@@ -22,7 +22,10 @@ const selectedDate = selectedDateParam ? new Date(selectedDateParam) : new Date(
 let scheduleBlocks: ScheduleBlock[] = [];
 if (user) {
   try {
-    scheduleBlocks = await getScheduleBlocks(user.id);
+    const result = await Astro.callAction(actions.schedule.getScheduleBlocks, new FormData());
+    if (result.data?.success && result.data.data) {
+      scheduleBlocks = result.data.data;
+    }
   } catch (error) {
     console.error('Error fetching schedule blocks:', error);
   }

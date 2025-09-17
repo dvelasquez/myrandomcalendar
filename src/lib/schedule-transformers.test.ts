@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import type { ScheduleBlock } from '../features/schedule/models/ScheduleBlocks.types';
 import { scheduleBlocksToCalendarEvents, combineCalendarEvents, getDefaultColorForScheduleType, validateScheduleBlock } from '../lib/schedule-transformers';
-import type { ScheduleBlock, CalendarEvent } from '../lib/types';
+import type { CalendarEvent } from '../lib/types';
 
 describe('schedule-transformers', () => {
   describe('scheduleBlocksToCalendarEvents', () => {

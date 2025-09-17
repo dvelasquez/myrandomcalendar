@@ -1,5 +1,6 @@
 import { isSameDay } from 'date-fns';
 import { describe, it, expect } from 'vitest';
+import type { ScheduleBlock } from '../features/schedule/models/ScheduleBlocks.types';
 import {
   calculateAvailability,
   getStartOfDay,
@@ -14,7 +15,7 @@ import {
   DEFAULT_AVAILABILITY_CONFIG
 } from './availability-calculator';
 import type { TimeSlot } from './availability-calculator';
-import type { ScheduleBlock, CalendarEvent } from './types';
+import type { CalendarEvent } from './types';
 
 describe('Availability Calculator', () => {
   const mockDate = new Date('2024-01-15T12:00:00Z');

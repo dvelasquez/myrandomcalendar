@@ -1,14 +1,14 @@
 ---
 import { actions } from 'astro:actions';
 import { startOfMonth, endOfMonth, subDays, addDays } from 'date-fns';
-import { getScheduleBlocks } from '../actions/schedule-blocks';
 import FullCalendarComponent from '../components/FullCalendar.tsx';
+import type { ScheduleBlock } from '../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../layouts/Layout.astro';
 import { calculateAvailabilityForDateRange, DEFAULT_AVAILABILITY_CONFIG } from '../lib/availability-calculator';
 import { transformTimeSlotsToBackgroundEvents, DEFAULT_BACKGROUND_EVENT_CONFIG } from '../lib/background-event-transformer';
 import { transformGoogleApiEventsToFullCalendar, type FullCalendarEvent } from '../lib/calendar-utils.ts';
 import { createFetchCalendarFormData } from '../lib/types';
-import type { GoogleCalendarApiEvent, ScheduleBlock, CalendarEvent } from '../lib/types.ts';
+import type { GoogleCalendarApiEvent, CalendarEvent } from '../lib/types.ts';
 
 export const prerender = false; // Required for server actions
 
@@ -46,7 +46,10 @@ if (user) {
 
     // Fetch schedule blocks
     try {
-      scheduleBlocks = await getScheduleBlocks(user.id);
+      const result = await Astro.callAction(actions.schedule.getScheduleBlocks, new FormData());
+      if (result.data?.success && result.data.data) {
+        scheduleBlocks = result.data.data;
+      }
     } catch (scheduleError) {
       console.error('Error fetching schedule blocks:', scheduleError);
       // Continue with empty array if fetch fails

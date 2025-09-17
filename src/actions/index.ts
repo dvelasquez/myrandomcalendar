@@ -1,21 +1,16 @@
+import schedule from '../features/schedule/actions';
 import { fetchCalendar } from './fetch-calendar';
 import { login } from './login';
 import { logout } from './logout';
+import { createPeriodicEventAction, getPeriodicEventsAction } from './periodic-event-actions'; 
 import { register } from './register';
-import { createScheduleBlockAction, updateScheduleBlockAction, deleteScheduleBlockAction, toggleScheduleBlockAction, getScheduleBlocksAction, createDefaultScheduleBlocksAction } from './schedule-block-actions';
-import { createPeriodicEventAction, getPeriodicEventsAction } from './periodic-event-actions';
 
 export const server = {
   register,
   login,
   logout,
   fetchCalendar,
-  createScheduleBlockAction,
-  updateScheduleBlockAction,
-  deleteScheduleBlockAction,
-  toggleScheduleBlockAction,
-  getScheduleBlocksAction,
-  createDefaultScheduleBlocksAction,
+  schedule,
   createPeriodicEventAction,
   getPeriodicEventsAction,
 };

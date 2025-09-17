@@ -1,7 +1,8 @@
 ---
 import { actions } from 'astro:actions';
+import type { SchedulePriority } from '../../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../../layouts/Layout.astro';
-import type { PeriodicFrequency, PeriodicCategory, SchedulePriority } from '../../lib/types';
+import type { PeriodicFrequency, PeriodicCategory } from '../../lib/types';
 
 // Handle action results
 const result = Astro.getActionResult(actions.createPeriodicEventAction);

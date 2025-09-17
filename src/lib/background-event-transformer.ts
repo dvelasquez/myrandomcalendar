@@ -1,6 +1,7 @@
+import type { SchedulePriority } from '../features/schedule/models/ScheduleBlocks.types';
 import type { TimeSlot } from './availability-calculator';
 import type { FullCalendarEvent } from './calendar-utils';
-import type { CalendarEvent, SchedulePriority } from './types';
+import type { CalendarEvent } from './types';
 
 /**
  * Configuration for background event styling

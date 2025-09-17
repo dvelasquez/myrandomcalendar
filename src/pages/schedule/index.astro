@@ -1,10 +1,10 @@
 ---
 import { actions } from 'astro:actions';
-import { startOfDay, endOfDay } from 'date-fns';
-import { getScheduleBlocks } from '../../actions/schedule-blocks';
+import { endOfDay, startOfDay } from 'date-fns';
+import type { ScheduleBlock } from '../../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../../layouts/Layout.astro';
 import { transformGoogleApiEventsToFullCalendar } from '../../lib/event-transformers';
-import type { ScheduleBlock, CalendarEvent, GoogleCalendarApiEvent } from '../../lib/types';
+import type { CalendarEvent, GoogleCalendarApiEvent } from '../../lib/types';
 import { createFetchCalendarFormData } from '../../lib/types';
 
 export const prerender = false; // Required for server actions
@@ -21,7 +21,10 @@ const errorMessage = url.searchParams.get('error');
 let scheduleBlocks: ScheduleBlock[] = [];
 if (user) {
   try {
-    scheduleBlocks = await getScheduleBlocks(user.id);
+    const result = await Astro.callAction(actions.schedule.getScheduleBlocks, new FormData());
+    if (result.data?.success && result.data.data) {
+      scheduleBlocks = result.data.data;
+    }
   } catch (error) {
     console.error('Error fetching schedule blocks:', error);
   }
@@ -131,7 +134,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 
         <!-- Handle action results -->
         {(() => {
-          const result = Astro.getActionResult(actions.createDefaultScheduleBlocksAction);
+          const result = Astro.getActionResult(actions.schedule.createDefaultScheduleBlocks);
           if (result && !result.error) {
             return (
               <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
@@ -180,7 +183,7 @@ const PRIORITY_COLORS: Record<string, string> = {
                   Create New Schedule
                 </a>
                 {scheduleBlocks.length === 0 && (
-                  <form method="POST" action={actions.createDefaultScheduleBlocksAction} class="inline">
+                  <form method="POST" action={actions.schedule.createDefaultScheduleBlocks} class="inline">
                     <input type="hidden" name="timezone" value="UTC" />
                     <button
                       type="submit"
