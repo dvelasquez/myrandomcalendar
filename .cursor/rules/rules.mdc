@@ -133,138 +133,92 @@ printenv | grep GOOGLE         # Check Google credentials
 - ✅ **Pure Function Architecture** - Comprehensive test coverage (91 tests)
 - ✅ Documentation complete
 
----
-*Last Updated: September 13, 2025 - After successful BetterAuth + Google OAuth implementation*
-# MyRandomCalendar - General Project Rules
+## 🏗 Feature Architecture Pattern (MANDATORY)
 
-## 🎯 Project Overview
-A calendar application built with Astro 5, featuring BetterAuth authentication with Google OAuth integration.
+### **Feature Structure**
+All new features MUST follow this exact structure in `src/features/{feature-name}/`:
 
-## 🛠 Tech Stack
-- **Astro 5** - Web framework
-- **TailwindCSS 4** - Styling
-- **React 19** - UI components, pure and functional. Only manage presentational state, NO DATA FETCHING.
-- **ESLint 9** - Code linting
-- **Astro DB** - Database with Drizzle ORM client (accessible from "astro:db")
-- **libsql** - Database provider
-- **BetterAuth** - Authentication system (replaces custom auth)
-- **Date-FNS** - For handling dates and times. Always prefer using this.
+```
+src/features/
+├── {feature-name}/
+│   ├── actions/           # Astro actions (API endpoints)
+│   │   ├── {actionName}.ts
+│   │   └── index.ts       # Exports all actions as named object
+│   ├── db/               # Database CRUD operations
+│   │   ├── create.ts
+│   │   ├── get.ts
+│   │   ├── update.ts
+│   │   ├── delete.ts
+│   │   └── [other-crud].ts
+│   ├── domain/           # Business logic (reserved for future use)
+│   └── models/           # Data definitions
+│       ├── {FeatureName}.db.ts      # Astro DB table definition
+│       ├── {FeatureName}.schema.ts  # Zod validation schemas
+│       └── {FeatureName}.types.ts   # TypeScript interfaces
+```
 
-## 🔐 Authentication Status: WORKING
-- **BetterAuth Migration**: Complete - all custom auth code removed
-- **Google OAuth**: Fully functional and tested
-- **Email/Password**: Available as alternative
-- **Session Management**: Handled by BetterAuth automatically
+### **File Naming Conventions**
+- **Actions**: `camelCase.ts` (e.g., `createScheduleBlock.ts`)
+- **DB**: `camelCase.ts` (e.g., `create.ts`, `get.ts`)
+- **Models**: `PascalCase.{db|schema|types}.ts` (e.g., `ScheduleBlocks.db.ts`)
 
-## 🗄 Database Schema (CRITICAL)
-The database schema MUST match BetterAuth's exact field names:
-
+### **Action Pattern**
 ```typescript
-// CRITICAL: These field names are non-negotiable
-const Accounts = defineTable({
-  columns: {
-    id: column.text({ primaryKey: true }),
-    accountId: column.text({ unique: true }),
-    userId: column.text({ references: () => Users.columns.id }),
-    providerId: column.text(),                    // NOT "provider"
-    providerAccountId: column.text({ optional: true }),
-    accessToken: column.text({ optional: true }),
-    refreshToken: column.text({ optional: true }),
-    accessTokenExpiresAt: column.date({ optional: true }), // NOT "expiresAt"
-    tokenType: column.text({ optional: true }),
-    scope: column.text({ optional: true }),
-    idToken: column.text({ optional: true }),
-    sessionState: column.text({ optional: true }),
-    createdAt: column.date(),
-    updatedAt: column.date(),
+// actions/{actionName}.ts
+export const {actionName} = defineAction({
+  accept: 'form',
+  input: {featureName}Schema,
+  handler: async (data, { request }) => {
+    // Authentication check
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session?.user) throw new ActionError({ code: 'UNAUTHORIZED' });
+    
+    // Call DB function
+    const result = await {dbFunction}({...data, userId: session.user.id});
+    
+    return { success: true, data: result };
   },
 });
 ```
 
-## 🔧 Environment Variables (System Environment)
-```bash
-GOOGLE_CLIENT_ID=your-client-id-here
-GOOGLE_CLIENT_SECRET=your-client-secret-here
-BETTER_AUTH_SECRET=your-secret-key-here
-```
-**⚠️ IMPORTANT**: These are in system environment, NOT in `.env.local` files.
-
-## 📁 Key File Structure
-```
-src/
-├── lib/
-│   ├── better-auth.ts      # BetterAuth configuration (CRITICAL)
-│   ├── auth-client.ts      # Client-side auth utilities
-│   └── types.ts           # Database type definitions
-├── pages/
-│   ├── api/auth/[...all].ts # Catch-all BetterAuth API route
-│   └── login.astro         # Login page with Google button
-├── actions/
-│   ├── login.ts            # Uses auth.api.signInEmail()
-│   ├── register.ts         # Uses auth.api.signUpEmail()
-│   └── logout.ts           # Uses auth.api.signOut()
-└── middleware.ts           # Uses auth.api.getSession()
-```
-
-## 🚨 Critical Configuration
+### **DB Pattern**
 ```typescript
-// src/lib/better-auth.ts - MUST have this exact configuration
-export const auth = betterAuth({
-  secret: process.env.BETTER_AUTH_SECRET as string,  // CRITICAL: Session encryption
-  trustedOrigins: [                                  // CRITICAL: For local development
-    "http://localhost:4321",
-    "http://randomcalendar-dev.d13z.dev",
-    "https://randomcalendar-dev.d13z.dev"
-  ],
-  database: drizzleAdapter(db, {
-    provider: "sqlite",
-    schema: {
-      user: Users,
-      session: Sessions,
-      account: Accounts,      // Singular names
-      verification: Verifications,
-    },
-    usePlural: false,        // CRITICAL: Must be false
-  }),
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    },
-  },
-});
+// db/{operation}.ts
+export async function {operationName}(data: {Type}): Promise<{Type}> {
+  // Pure database operations only
+  // No business logic
+  // Return properly typed data
+}
 ```
 
-## 🔍 Common Issues & Quick Fixes
-- **Schema Errors**: Use `npm astro -- db push --force-reset` for breaking changes
-- **Field Name Errors**: Check BetterAuth documentation for exact field names
-- **OAuth Errors**: Verify Google Cloud Console redirect URI: `http://localhost:4321/api/auth/callback/google`
-- **Environment Issues**: Check system environment variables, not .env files
-- **Trusted Origins Error**: Add `trustedOrigins` array to BetterAuth config for local development
+### **Models Pattern**
+- **`.db.ts`**: Astro DB table definitions with `defineTable`
+- **`.schema.ts`**: Zod schemas for validation with proper error messages
+- **`.types.ts`**: TypeScript interfaces and type definitions
 
-## 📚 Documentation Location
-- **`docs/README.md`** - Navigation guide
-- **`docs/GOOGLE_OAUTH_SETUP.md`** - Overview and status
-- **`docs/BETTERAUTH_DOCUMENTATION.md`** - Detailed technical reference
+### **Index Export Pattern**
+```typescript
+// actions/index.ts
+import { action1 } from "./action1";
+import { action2 } from "./action2";
 
-## ⚡ Quick Commands
-```bash
-npm run dev                    # Start development server
-npm run astro -- db push --force-reset    # Reset database schema
-npm test -- --run # Run tests without waiting for user input
-npm run astro -- check # to check typescript errors in astro and ts files
-printenv | grep GOOGLE         # Check Google credentials
+const {featureName} = {
+  action1,
+  action2,
+};
+
+export default {featureName};
 ```
 
-## 🎯 Current Status
-- ✅ BetterAuth fully integrated
-- ✅ Google OAuth working and tested
-- ✅ Database schema aligned
-- ✅ All authentication flows functional
-- ✅ Server-side data fetching implemented
-- ✅ **Background Events System** - Availability visualization with FullCalendar
-- ✅ **Pure Function Architecture** - Comprehensive test coverage (91 tests)
-- ✅ Documentation complete
+### **Examples**
+- ✅ `src/features/schedule/` - Complete implementation
+- ✅ `src/features/periodic-events/` - Complete implementation
+- ❌ Any feature not following this exact structure
+
+### **Domain Folder**
+- Currently empty but reserved for business logic
+- Will contain pure functions for complex business rules
+- Separates business logic from data access and API layers
 
 ---
-*Last Updated: September 13, 2025 - After successful BetterAuth + Google OAuth implementation*
+*Last Updated: January 15, 2025 - Added Feature Architecture Pattern*
