@@ -1,5 +1,6 @@
 import { ActionError, defineAction } from 'astro:actions';
 import { db, PeriodicEvents } from 'astro:db';
+import { eq } from 'drizzle-orm';
 import { auth } from '../lib/better-auth';
 
 /**
@@ -33,42 +34,42 @@ export const createPeriodicEventAction = defineAction({
       // Validation
       if (!title || title.trim().length === 0) {
         throw new ActionError({
-          code: 'VALIDATION_ERROR',
+          code: 'BAD_REQUEST',
           message: 'Title is required',
         });
       }
 
       if (!frequency || !['daily', 'weekly', 'monthly'].includes(frequency)) {
         throw new ActionError({
-          code: 'VALIDATION_ERROR',
+          code: 'BAD_REQUEST',
           message: 'Valid frequency is required (daily, weekly, or monthly)',
         });
       }
 
       if (!frequencyCount || frequencyCount < 1) {
         throw new ActionError({
-          code: 'VALIDATION_ERROR',
+          code: 'BAD_REQUEST',
           message: 'Frequency count must be at least 1',
         });
       }
 
       if (!duration || duration < 1) {
         throw new ActionError({
-          code: 'VALIDATION_ERROR',
+          code: 'BAD_REQUEST',
           message: 'Duration must be at least 1 minute',
         });
       }
 
       if (!category || !['exercise', 'personal', 'family', 'work', 'health', 'hobby', 'other'].includes(category)) {
         throw new ActionError({
-          code: 'VALIDATION_ERROR',
+          code: 'BAD_REQUEST',
           message: 'Valid category is required',
         });
       }
 
       if (!priority || !['high', 'medium', 'low'].includes(priority)) {
         throw new ActionError({
-          code: 'VALIDATION_ERROR',
+          code: 'BAD_REQUEST',
           message: 'Valid priority is required',
         });
       }
@@ -117,6 +118,49 @@ export const createPeriodicEventAction = defineAction({
       throw new ActionError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Failed to create periodic event',
+      });
+    }
+  },
+});
+
+/**
+ * Get all periodic events for the current user
+ */
+export const getPeriodicEventsAction = defineAction({
+  accept: 'form',
+  handler: async (_, { request }) => {
+    try {
+      const session = await auth.api.getSession({
+        headers: request.headers,
+      });
+      
+      if (!session?.user) {
+        throw new ActionError({
+          code: 'UNAUTHORIZED',
+          message: 'You must be logged in to view periodic events',
+        });
+      }
+
+      const events = await db
+        .select()
+        .from(PeriodicEvents)
+        .where(eq(PeriodicEvents.userId, session.user.id))
+        .orderBy(PeriodicEvents.createdAt);
+      
+      return {
+        success: true,
+        data: events
+      };
+    } catch (error) {
+      console.error('Error in getPeriodicEventsAction:', error);
+      
+      if (error instanceof ActionError) {
+        throw error;
+      }
+      
+      throw new ActionError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to load periodic events',
       });
     }
   },

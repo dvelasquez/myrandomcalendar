@@ -3,7 +3,7 @@ import { login } from './login';
 import { logout } from './logout';
 import { register } from './register';
 import { createScheduleBlockAction, updateScheduleBlockAction, deleteScheduleBlockAction, toggleScheduleBlockAction, getScheduleBlocksAction, createDefaultScheduleBlocksAction } from './schedule-block-actions';
-import { createPeriodicEventAction } from './periodic-event-actions';
+import { createPeriodicEventAction, getPeriodicEventsAction } from './periodic-event-actions';
 
 export const server = {
   register,
@@ -17,4 +17,5 @@ export const server = {
   getScheduleBlocksAction,
   createDefaultScheduleBlocksAction,
   createPeriodicEventAction,
+  getPeriodicEventsAction,
 };
