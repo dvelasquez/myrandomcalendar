@@ -1,7 +1,6 @@
 ---
 import { actions } from 'astro:actions';
 import { startOfDay, endOfDay } from 'date-fns';
-import { createDefaultScheduleBlocksAction } from '../../actions/schedule-block-actions';
 import { getScheduleBlocks } from '../../actions/schedule-blocks';
 import Layout from '../../layouts/Layout.astro';
 import { transformGoogleApiEventsToFullCalendar } from '../../lib/event-transformers';
@@ -17,26 +16,6 @@ const { user } = Astro.locals;
 const url = new URL(Astro.request.url);
 const successMessage = url.searchParams.get('success');
 const errorMessage = url.searchParams.get('error');
-
-// Handle form submissions for default schedule creation
-if (Astro.request.method === 'POST' && user) {
-  const formData = await Astro.request.formData();
-  const action = formData.get('action') as string;
-  
-  if (action === 'create-default') {
-    try {
-      const result = await createDefaultScheduleBlocksAction(formData);
-        if (result.data?.success) {
-        return Astro.redirect('/schedule?success=default-created');
-        } else {
-        return Astro.redirect(`/schedule?error=${encodeURIComponent(result.error?.message || 'Failed to create default schedule blocks')}`);
-      }
-    } catch (error) {
-      console.error('Error creating default schedule blocks:', error);
-      return Astro.redirect('/schedule?error=' + encodeURIComponent('An error occurred'));
-    }
-  }
-}
 
 // Fetch schedule blocks server-side
 let scheduleBlocks: ScheduleBlock[] = [];
@@ -149,6 +128,27 @@ const PRIORITY_COLORS: Record<string, string> = {
             <p>{errorMessage}</p>
           </div>
         )}
+
+        <!-- Handle action results -->
+        {(() => {
+          const result = Astro.getActionResult(actions.createDefaultScheduleBlocksAction);
+          if (result && !result.error) {
+            return (
+              <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+                <h3 class="font-bold">Success!</h3>
+                <p>Default schedule blocks created successfully!</p>
+              </div>
+            );
+          }
+          if (result?.error) {
+            return (
+              <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                <h3 class="font-bold">Error:</h3>
+                <p>{result.error.message}</p>
+              </div>
+            );
+          }
+        })()}
         
         {calendarError ? (
           <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
@@ -180,15 +180,15 @@ const PRIORITY_COLORS: Record<string, string> = {
                   Create New Schedule
                 </a>
                 {scheduleBlocks.length === 0 && (
-                  <form method="POST" action="/schedule" class="inline">
-                    <input type="hidden" name="action" value="create-default" />
+                  <form method="POST" action={actions.createDefaultScheduleBlocksAction} class="inline">
+                    <input type="hidden" name="timezone" value="UTC" />
                     <button
                       type="submit"
                       class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
                     >
                       Create Default Schedule
                     </button>
-        </form>
+                  </form>
                 )}
               </div>
             </div>
@@ -355,7 +355,6 @@ const PRIORITY_COLORS: Record<string, string> = {
 
 <script>
   import { actions } from 'astro:actions';
-  import { navigate } from 'astro:transitions/client';
   import { startOfDay, endOfDay } from 'date-fns';
   import { createFetchCalendarFormData } from '../../lib/types';
   

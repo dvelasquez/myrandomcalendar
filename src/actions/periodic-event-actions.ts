@@ -1,5 +1,6 @@
 import { ActionError, defineAction } from 'astro:actions';
 import { db, PeriodicEvents } from 'astro:db';
+import { z } from 'astro:schema';
 import { eq } from 'drizzle-orm';
 import { auth } from '../lib/better-auth';
 
@@ -8,7 +9,23 @@ import { auth } from '../lib/better-auth';
  */
 export const createPeriodicEventAction = defineAction({
   accept: 'form',
-  handler: async (formData, { request }) => {
+  input: z.object({
+    title: z.string().min(1, 'Title is required'),
+    description: z.string().optional(),
+    frequency: z.enum(['daily', 'weekly', 'monthly'], {
+      errorMap: () => ({ message: 'Valid frequency is required (daily, weekly, or monthly)' }),
+    }),
+    frequencyCount: z.string().transform((val) => parseInt(val) || 1).refine((val) => val >= 1, 'Frequency count must be at least 1'),
+    duration: z.string().transform((val) => parseInt(val) || 1).refine((val) => val >= 1, 'Duration must be at least 1 minute'),
+    category: z.enum(['exercise', 'personal', 'family', 'work', 'health', 'hobby', 'other'], {
+      errorMap: () => ({ message: 'Valid category is required' }),
+    }),
+    priority: z.enum(['high', 'medium', 'low'], {
+      errorMap: () => ({ message: 'Valid priority is required' }),
+    }),
+    color: z.string().optional(),
+  }),
+  handler: async ({ title, description, frequency, frequencyCount, duration, category, priority, color }, { request }) => {
     try {
       const session = await auth.api.getSession({
         headers: request.headers,
@@ -18,59 +35,6 @@ export const createPeriodicEventAction = defineAction({
         throw new ActionError({
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to create periodic events',
-        });
-      }
-
-      // Extract and validate form data
-      const title = formData.get('title') as string;
-      const description = formData.get('description') as string;
-      const frequency = formData.get('frequency') as string;
-      const frequencyCount = parseInt(formData.get('frequencyCount') as string);
-      const duration = parseInt(formData.get('duration') as string);
-      const category = formData.get('category') as string;
-      const priority = formData.get('priority') as string;
-      const color = formData.get('color') as string;
-
-      // Validation
-      if (!title || title.trim().length === 0) {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: 'Title is required',
-        });
-      }
-
-      if (!frequency || !['daily', 'weekly', 'monthly'].includes(frequency)) {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: 'Valid frequency is required (daily, weekly, or monthly)',
-        });
-      }
-
-      if (!frequencyCount || frequencyCount < 1) {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: 'Frequency count must be at least 1',
-        });
-      }
-
-      if (!duration || duration < 1) {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: 'Duration must be at least 1 minute',
-        });
-      }
-
-      if (!category || !['exercise', 'personal', 'family', 'work', 'health', 'hobby', 'other'].includes(category)) {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: 'Valid category is required',
-        });
-      }
-
-      if (!priority || !['high', 'medium', 'low'].includes(priority)) {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: 'Valid priority is required',
         });
       }
 

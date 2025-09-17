@@ -1,5 +1,6 @@
 import { defineAction, ActionError } from 'astro:actions';
-import { db, Accounts } from 'astro:db';
+import { db, Accounts } from 'astro:db'; 
+import { z } from 'astro:schema';
 import { parseISO, isValid, isAfter } from 'date-fns';
 import { eq, and } from 'drizzle-orm';
 import { google } from 'googleapis';
@@ -7,44 +8,32 @@ import { auth } from '../lib/better-auth';
 
 export const fetchCalendar = defineAction({
   accept: 'form',
-  handler: async (formData: FormData, { request }) => {
+  input: z.object({
+    startDate: z.string().refine((date) => {
+      const parsed = parseISO(date);
+      return isValid(parsed);
+    }, {
+      message: 'Invalid startDate format',
+    }),
+    endDate: z.string().refine((date) => {
+      const parsed = parseISO(date);
+      return isValid(parsed);
+    }, {
+      message: 'Invalid endDate format',
+    }),
+  }).refine((data) => {
+    const start = parseISO(data.startDate);
+    const end = parseISO(data.endDate);
+    return isAfter(end, start);
+  }, {
+    message: 'startDate must be before endDate',
+    path: ['endDate'],
+  }),
+  handler: async ({ startDate, endDate }, { request }) => {
     try {
-      // Extract and validate date range parameters from form data
-      const startDate = formData.get('startDate');
-      const endDate = formData.get('endDate');
-      
-      // Type-safe validation
-      if (!startDate || typeof startDate !== 'string') {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: 'startDate parameter is required and must be a string',
-        });
-      }
-      
-      if (!endDate || typeof endDate !== 'string') {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: 'endDate parameter is required and must be a string',
-        });
-      }
-      
-      // Parse and validate dates using date-fns
+      // Parse dates using date-fns (already validated by Zod)
       const start = parseISO(startDate);
       const end = parseISO(endDate);
-      
-      if (!isValid(start) || !isValid(end)) {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: 'Invalid date format provided',
-        });
-      }
-      
-      if (!isAfter(end, start)) {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: 'startDate must be before endDate',
-        });
-      }
 
       // Get the current session
       const session = await auth.api.getSession({

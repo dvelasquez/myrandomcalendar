@@ -1,7 +1,41 @@
-import { defineAction, ActionError } from 'astro:actions';
-import { createScheduleBlock, updateScheduleBlock, deleteScheduleBlock, toggleScheduleBlock, getScheduleBlocks } from '../actions/schedule-blocks';
+import { ActionError, defineAction } from 'astro:actions';
+import { z } from 'astro:schema';
+import { createScheduleBlock, deleteScheduleBlock, getScheduleBlocks, toggleScheduleBlock, updateScheduleBlock } from '../actions/schedule-blocks';
 import { auth } from '../lib/better-auth';
-import type { ScheduleBlock, ScheduleBlockType, SchedulePriority } from '../lib/types';
+import type { ScheduleBlockType, SchedulePriority } from '../lib/types';
+
+// Common Zod schemas for schedule blocks
+const scheduleBlockBaseSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  type: z.enum(['work', 'sleep', 'personal', 'travel', 'meal', 'exercise', 'family', 'study', 'other'], {
+    errorMap: () => ({ message: 'Valid type is required' }),
+  }),
+  startTime: z.string().min(1, 'Start time is required'),
+  endTime: z.string().min(1, 'End time is required'),
+  daysOfWeek: z.string().transform((val) => {
+    try {
+      const parsed = JSON.parse(val);
+      if (Array.isArray(parsed) && parsed.every(d => typeof d === 'number' && d >= 0 && d <= 6)) {
+        return parsed;
+      }
+      throw new Error('Invalid days of week format');
+    } catch {
+      throw new Error('Days of week must be a valid JSON array of numbers 0-6');
+    }
+  }),
+  isRecurring: z.string().optional().transform((val) => val === 'true' || val === 'on' || val === undefined).default('true'),
+  priority: z.enum(['high', 'medium', 'low'], {
+    errorMap: () => ({ message: 'Priority must be high, medium, or low' }),
+  }),
+  isActive: z.string().optional().transform((val) => val === 'true' || val === 'on' || val === undefined).default('true'),
+  timezone: z.string().default('UTC'),
+  startDate: z.string().nullable().optional().transform((val) => val ? new Date(val) : undefined),
+  endDate: z.string().nullable().optional().transform((val) => val ? new Date(val) : undefined),
+  description: z.string().nullable().optional().transform((val) => val || undefined),
+  color: z.string().nullable().optional().transform((val) => val || '#3b82f6'),
+  bufferBefore: z.string().transform((val) => parseInt(val) || 0).default('0'),
+  bufferAfter: z.string().transform((val) => parseInt(val) || 0).default('0'),
+});
 
 /**
  * Get all schedule blocks for the current user
@@ -22,6 +56,7 @@ export const getScheduleBlocksAction = defineAction({
       }
 
       const blocks = await getScheduleBlocks(session.user.id);
+
       
       return {
         success: true,
@@ -47,7 +82,8 @@ export const getScheduleBlocksAction = defineAction({
  */
 export const createScheduleBlockAction = defineAction({
   accept: 'form',
-  handler: async (formData, { request }) => {
+  input: scheduleBlockBaseSchema,
+  handler: async (data, { request }) => {
     try {
       const session = await auth.api.getSession({
         headers: request.headers,
@@ -60,55 +96,19 @@ export const createScheduleBlockAction = defineAction({
         });
       }
 
-    // Extract form data
-    const title = formData.get('title') as string;
-    const type = formData.get('type') as string;
-    const startTime = formData.get('startTime') as string;
-    const endTime = formData.get('endTime') as string;
-    const daysOfWeek = JSON.parse(formData.get('daysOfWeek') as string);
-    const isRecurring = formData.get('isRecurring') === 'true';
-    const priority = formData.get('priority') as string;
-    const isActive = formData.get('isActive') === 'true';
-    const timezone = formData.get('timezone') as string;
-    const startDate = formData.get('startDate') ? new Date(formData.get('startDate') as string) : undefined;
-    const endDate = formData.get('endDate') ? new Date(formData.get('endDate') as string) : undefined;
-    const description = formData.get('description') as string;
-    const color = formData.get('color') as string;
-    const bufferBefore = parseInt(formData.get('bufferBefore') as string) || 0;
-    const bufferAfter = parseInt(formData.get('bufferAfter') as string) || 0;
-
-    // Validate required fields
-    if (!title || !startTime || !endTime || !daysOfWeek) {
-      return {
-        success: false,
-        error: 'Missing required fields'
+      const scheduleBlockData = {
+        userId: session.user.id,
+        ...data,
+        type: data.type as ScheduleBlockType,
+        priority: data.priority as SchedulePriority,
+        color: data.color || '#10b981', // Provide default color
       };
-    }
 
-    const scheduleBlockData = {
-      userId: session.user.id,
-      title,
-      type: type as ScheduleBlockType,
-      startTime,
-      endTime,
-      daysOfWeek,
-      isRecurring,
-      priority: priority as SchedulePriority,
-      isActive,
-      timezone: timezone || 'UTC',
-      startDate,
-      endDate,
-      description: description || undefined,
-      color: color || '#3b82f6',
-      bufferBefore,
-      bufferAfter
-    };
-
-      const newBlock = await createScheduleBlock(scheduleBlockData);
+      const result = await createScheduleBlock(scheduleBlockData);
       
       return {
         success: true,
-        data: newBlock
+        data: result
       };
     } catch (error) {
       console.error('Error in createScheduleBlockAction:', error);
@@ -130,7 +130,11 @@ export const createScheduleBlockAction = defineAction({
  */
 export const updateScheduleBlockAction = defineAction({
   accept: 'form',
-  handler: async (formData, { request }) => {
+  input: z.object({
+    id: z.string().min(1, 'Schedule block ID is required'),
+    ...scheduleBlockBaseSchema.shape,
+  }),
+  handler: async ({ id, ...data }, { request }) => {
     try {
       const session = await auth.api.getSession({
         headers: request.headers,
@@ -143,59 +147,31 @@ export const updateScheduleBlockAction = defineAction({
         });
       }
 
-    const id = formData.get('id') as string;
-    if (!id) {
-      return {
-        success: false,
-        error: 'Schedule block ID is required'
+      const updateData = {
+        ...data,
+        type: data.type as ScheduleBlockType,
+        priority: data.priority as SchedulePriority,
       };
-    }
 
-    // Extract update data
-    const updates: Partial<ScheduleBlock> = {};
-    
-    if (formData.get('title')) updates.title = formData.get('title') as string;
-    if (formData.get('type')) updates.type = formData.get('type') as ScheduleBlockType;
-    if (formData.get('startTime')) updates.startTime = formData.get('startTime') as string;
-    if (formData.get('endTime')) updates.endTime = formData.get('endTime') as string;
-    if (formData.get('daysOfWeek')) updates.daysOfWeek = JSON.parse(formData.get('daysOfWeek') as string);
-    if (formData.get('isRecurring')) updates.isRecurring = formData.get('isRecurring') === 'true';
-    if (formData.get('priority')) updates.priority = formData.get('priority') as SchedulePriority;
-    if (formData.get('isActive')) updates.isActive = formData.get('isActive') === 'true';
-    if (formData.get('timezone')) updates.timezone = formData.get('timezone') as string;
-    if (formData.get('startDate')) updates.startDate = new Date(formData.get('startDate') as string);
-    if (formData.get('endDate')) updates.endDate = new Date(formData.get('endDate') as string);
-    if (formData.get('description')) updates.description = formData.get('description') as string;
-    if (formData.get('color')) updates.color = formData.get('color') as string;
-    if (formData.get('bufferBefore')) updates.bufferBefore = parseInt(formData.get('bufferBefore') as string);
-    if (formData.get('bufferAfter')) updates.bufferAfter = parseInt(formData.get('bufferAfter') as string);
-
-    const updatedBlock = await updateScheduleBlock(id, session.user.id, updates);
-    
-    return {
-      success: true,
-      data: updatedBlock
-    };
-  } catch (error) {
-    console.error('Error in updateScheduleBlockAction:', error);
-    
-    if (error instanceof ActionError) {
-      throw error;
-    }
-    
-    if (error instanceof Error && error.message.includes('not found')) {
+      const result = await updateScheduleBlock(id, session.user.id, updateData);
+      
+      return {
+        success: true,
+        data: result
+      };
+    } catch (error) {
+      console.error('Error in updateScheduleBlockAction:', error);
+      
+      if (error instanceof ActionError) {
+        throw error;
+      }
+      
       throw new ActionError({
-        code: 'NOT_FOUND',
-        message: 'Schedule block not found',
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to update schedule block',
       });
     }
-    
-    throw new ActionError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'Failed to update schedule block',
-    });
-  }
-},
+  },
 });
 
 /**
@@ -203,7 +179,10 @@ export const updateScheduleBlockAction = defineAction({
  */
 export const deleteScheduleBlockAction = defineAction({
   accept: 'form',
-  handler: async (formData, { request }) => {
+  input: z.object({
+    id: z.string().min(1, 'Schedule block ID is required'),
+  }),
+  handler: async ({ id }, { request }) => {
     try {
       const session = await auth.api.getSession({
         headers: request.headers,
@@ -216,32 +195,17 @@ export const deleteScheduleBlockAction = defineAction({
         });
       }
 
-      const id = formData.get('id') as string;
-      if (!id) {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: 'Schedule block ID is required',
-        });
-      }
-
       await deleteScheduleBlock(id, session.user.id);
       
       return {
         success: true,
-        data: { id }
+        message: 'Schedule block deleted successfully'
       };
     } catch (error) {
       console.error('Error in deleteScheduleBlockAction:', error);
       
       if (error instanceof ActionError) {
         throw error;
-      }
-      
-      if (error instanceof Error && error.message.includes('not found')) {
-        throw new ActionError({
-          code: 'NOT_FOUND',
-          message: 'Schedule block not found',
-        });
       }
       
       throw new ActionError({
@@ -257,7 +221,10 @@ export const deleteScheduleBlockAction = defineAction({
  */
 export const toggleScheduleBlockAction = defineAction({
   accept: 'form',
-  handler: async (formData, { request }) => {
+  input: z.object({
+    id: z.string().min(1, 'Schedule block ID is required'),
+  }),
+  handler: async ({ id }, { request }) => {
     try {
       const session = await auth.api.getSession({
         headers: request.headers,
@@ -270,32 +237,17 @@ export const toggleScheduleBlockAction = defineAction({
         });
       }
 
-      const id = formData.get('id') as string;
-      if (!id) {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: 'Schedule block ID is required',
-        });
-      }
-
-      const toggledBlock = await toggleScheduleBlock(id, session.user.id);
+      const result = await toggleScheduleBlock(id, session.user.id);
       
       return {
         success: true,
-        data: toggledBlock
+        data: result
       };
     } catch (error) {
       console.error('Error in toggleScheduleBlockAction:', error);
       
       if (error instanceof ActionError) {
         throw error;
-      }
-      
-      if (error instanceof Error && error.message.includes('not found')) {
-        throw new ActionError({
-          code: 'NOT_FOUND',
-          message: 'Schedule block not found',
-        });
       }
       
       throw new ActionError({
@@ -307,11 +259,14 @@ export const toggleScheduleBlockAction = defineAction({
 });
 
 /**
- * Create default schedule blocks for testing/demo purposes
+ * Create default schedule blocks for a new user
  */
 export const createDefaultScheduleBlocksAction = defineAction({
   accept: 'form',
-  handler: async (_, { request }) => {
+  input: z.object({
+    timezone: z.string().default('UTC'),
+  }),
+  handler: async ({ timezone }, { request }) => {
     try {
       const session = await auth.api.getSession({
         headers: request.headers,
@@ -320,81 +275,71 @@ export const createDefaultScheduleBlocksAction = defineAction({
       if (!session?.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to create schedule blocks',
+          message: 'You must be logged in to create default schedule blocks',
         });
       }
 
-      // Check if user already has schedule blocks
-      const existingBlocks = await getScheduleBlocks(session.user.id);
-      if (existingBlocks.length > 0) {
-        throw new ActionError({
-          code: 'BAD_REQUEST',
-          message: 'You already have schedule blocks. Delete existing ones first.',
-        });
-      }
-
-      // Create default schedule blocks
       const defaultBlocks = [
         {
           title: 'Work Hours',
           type: 'work' as ScheduleBlockType,
           startTime: '09:00',
           endTime: '17:00',
-          daysOfWeek: [1, 2, 3, 4, 5], // Mon-Fri
+          daysOfWeek: [1, 2, 3, 4, 5], // Monday to Friday
           isRecurring: true,
           priority: 'high' as SchedulePriority,
           isActive: true,
-          timezone: 'UTC',
+          timezone,
           description: 'Regular work hours',
           color: '#3b82f6',
           bufferBefore: 15,
           bufferAfter: 15,
         },
         {
-          title: 'Sleep Time',
+          title: 'Sleep Schedule',
           type: 'sleep' as ScheduleBlockType,
-          startTime: '23:00',
+          startTime: '22:00',
           endTime: '07:00',
           daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // Every day
           isRecurring: true,
           priority: 'high' as SchedulePriority,
           isActive: true,
-          timezone: 'UTC',
-          description: 'Sleep schedule',
-          color: '#6366f1',
+          timezone,
+          description: 'Regular sleep schedule',
+          color: '#1e40af',
           bufferBefore: 30,
           bufferAfter: 30,
         },
         {
-          title: 'Lunch Break',
-          type: 'meal' as ScheduleBlockType,
-          startTime: '12:00',
-          endTime: '13:00',
-          daysOfWeek: [1, 2, 3, 4, 5], // Mon-Fri
+          title: 'Personal Time',
+          type: 'personal' as ScheduleBlockType,
+          startTime: '18:00',
+          endTime: '22:00',
+          daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // Every day
           isRecurring: true,
           priority: 'medium' as SchedulePriority,
           isActive: true,
-          timezone: 'UTC',
-          description: 'Lunch break',
-          color: '#f97316',
+          timezone,
+          description: 'Personal time for hobbies and relaxation',
+          color: '#10b981',
           bufferBefore: 0,
           bufferAfter: 0,
-        }
+        },
       ];
 
-      const createdBlocks = [];
+      const results = [];
       for (const blockData of defaultBlocks) {
-        const block = await createScheduleBlock({
-          ...blockData,
+        const result = await createScheduleBlock({
           userId: session.user.id,
+          ...blockData,
         });
-        createdBlocks.push(block);
+        results.push(result);
       }
       
       return {
         success: true,
-        data: createdBlocks,
-        message: `Created ${createdBlocks.length} default schedule blocks`
+        data: results,
+        message: 'Default schedule blocks created successfully'
       };
     } catch (error) {
       console.error('Error in createDefaultScheduleBlocksAction:', error);

@@ -270,9 +270,8 @@ if (user) {
 
 <script>
   import { actions } from 'astro:actions';
-  import { navigate } from 'astro:transitions/client';
-  import { startOfMonth, endOfMonth } from 'date-fns';
-  import { createFetchCalendarFormData } from '../lib/types';
+import { endOfMonth, startOfMonth } from 'date-fns';
+import { createFetchCalendarFormData } from '../lib/types';
   
   const refreshBtn = document.getElementById('refreshBtn') as HTMLButtonElement | null;
   const jsonOutput = document.getElementById('jsonOutput') as HTMLPreElement | null;
