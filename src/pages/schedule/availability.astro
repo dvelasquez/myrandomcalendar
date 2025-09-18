@@ -1,11 +1,12 @@
 ---
 import { actions } from 'astro:actions';
 import { startOfDay, endOfDay, format, addDays, subDays } from 'date-fns';
+import { calculateAvailability, DEFAULT_AVAILABILITY_CONFIG } from '../../features/calendar/domain/availability-calculator';
+import { transformGoogleApiEventsToFullCalendar } from '../../features/calendar/domain/google-event-transformer';
+import type { CalendarEvent, TimeSlot } from '../../features/calendar/models/Calendar.types';
+import type { GoogleCalendarApiEvent } from '../../features/calendar/providers/google-calendar/models/GoogleCalendar.types';
 import type { ScheduleBlock } from '../../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../../layouts/Layout.astro';
-import { calculateAvailability, DEFAULT_AVAILABILITY_CONFIG, type TimeSlot } from '../../lib/availability-calculator';
-import { transformGoogleApiEventsToFullCalendar } from '../../lib/event-transformers';
-import type { CalendarEvent, GoogleCalendarApiEvent } from '../../lib/types';
 import { createFetchCalendarFormData } from '../../lib/types';
 
 export const prerender = false; // Required for server actions
@@ -45,7 +46,7 @@ if (user) {
     // Create typesafe FormData with proper date range
     const formData = createFetchCalendarFormData(startDate, endDate);
     
-    const result = await Astro.callAction(actions.googleCalendar.fetchCalendar, formData);
+    const result = await Astro.callAction(actions.calendar.providers.google.fetchCalendar, formData);
     if (result.data?.success) {
       // Transform Google Calendar API events to CalendarEvent format
       const googleApiEvents = result.data.events as GoogleCalendarApiEvent[];

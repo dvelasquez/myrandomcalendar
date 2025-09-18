@@ -1,6 +1,6 @@
 import { addDays, addMinutes, format, startOfDay, set, addDays as addDay } from 'date-fns';
-import type { ScheduleBlock, ScheduleBlockType } from '../features/schedule/models/ScheduleBlocks.types';
-import type { CalendarEvent } from './types';
+import type { ScheduleBlock, ScheduleBlockType } from '../../schedule/models/ScheduleBlocks.types';
+import type { CalendarEvent } from '../models/Calendar.types';
 
 /**
  * Transforms ScheduleBlocks to CalendarEvents for FullCalendar display

@@ -1,6 +1,7 @@
+import { combineAndSortEvents } from '../features/calendar/domain/event-aggregator';
+import { scheduleBlocksToCalendarEvents } from '../features/calendar/domain/schedule-event-transformer';
+import type { CalendarEvent } from '../features/calendar/models/Calendar.types';
 import type { ScheduleBlock } from '../features/schedule/models/ScheduleBlocks.types';
-import { scheduleBlocksToCalendarEvents, combineCalendarEvents } from './schedule-transformers';
-import type { CalendarEvent } from './types';
 
 /**
  * Example usage of the ScheduleBlock architecture
@@ -104,7 +105,7 @@ const generatedScheduleEvents = scheduleBlocksToCalendarEvents(
 );
 
 // Example 4: Combine all events for FullCalendar display
-const allCalendarEvents = combineCalendarEvents(
+const allCalendarEvents = combineAndSortEvents(
   googleCalendarEvents,
   generatedScheduleEvents
 );
@@ -113,11 +114,11 @@ console.log('Generated Schedule Events:', generatedScheduleEvents.length);
 console.log('Total Calendar Events:', allCalendarEvents.length);
 
 // Example 5: Filter events by type
-const workEvents = allCalendarEvents.filter(event => 
+const workEvents = allCalendarEvents.filter((event: CalendarEvent) => 
   event.extendedProps?.scheduleBlockType === 'work'
 );
 
-const sleepEvents = allCalendarEvents.filter(event => 
+const sleepEvents = allCalendarEvents.filter((event: CalendarEvent) =>
   event.extendedProps?.scheduleBlockType === 'sleep'
 );
 

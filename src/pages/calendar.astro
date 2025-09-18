@@ -2,10 +2,10 @@
 import { actions } from 'astro:actions';
 import { startOfMonth, endOfMonth, subDays, addDays } from 'date-fns';
 import FullCalendarComponent from '../components/FullCalendar.tsx';
+import { calculateAvailabilityForDateRange, DEFAULT_AVAILABILITY_CONFIG } from '../features/calendar/domain/availability-calculator';
+import { transformTimeSlotsToBackgroundEvents, DEFAULT_BACKGROUND_EVENT_CONFIG } from '../features/calendar/domain/background-event-transformer';
 import type { ScheduleBlock } from '../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../layouts/Layout.astro';
-import { calculateAvailabilityForDateRange, DEFAULT_AVAILABILITY_CONFIG } from '../lib/availability-calculator';
-import { transformTimeSlotsToBackgroundEvents, DEFAULT_BACKGROUND_EVENT_CONFIG } from '../lib/background-event-transformer';
 import { transformGoogleApiEventsToFullCalendar, type FullCalendarEvent } from '../lib/calendar-utils.ts';
 import { createFetchCalendarFormData } from '../lib/types';
 import type { GoogleCalendarApiEvent, CalendarEvent } from '../lib/types.ts';
@@ -35,7 +35,7 @@ if (user) {
     const formData = createFetchCalendarFormData(startOfCurrentMonth, endOfCurrentMonth);
     
     // Fetch Google Calendar events for initial date range
-    const result = await Astro.callAction(actions.googleCalendar.fetchCalendar, formData);
+    const result = await Astro.callAction(actions.calendar.providers.google.fetchCalendar, formData);
     if (result.data?.success) {
       calendarData = result.data;
       // Transform Google Calendar events to FullCalendar format
@@ -284,7 +284,7 @@ import { createFetchCalendarFormData } from '../lib/types';
     const formData = createFetchCalendarFormData(startDate, endDate);
     
     try {
-      const result = await actions.googleCalendar.fetchCalendar(formData);
+      const result = await actions.calendar.providers.google.fetchCalendar(formData);
       return result;
     } catch (error) {
       console.error('Error fetching calendar for date range:', error);
@@ -330,7 +330,7 @@ import { createFetchCalendarFormData } from '../lib/types';
       // Create typesafe FormData with proper date range
       const formData = createFetchCalendarFormData(startOfCurrentMonth, endOfCurrentMonth);
       
-      const result = await actions.googleCalendar.fetchCalendar(formData);
+      const result = await actions.calendar.providers.google.fetchCalendar(formData);
       
       if (result.data?.success) {
         jsonOutput.textContent = JSON.stringify(result.data, null, 2);

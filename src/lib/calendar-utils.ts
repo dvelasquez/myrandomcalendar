@@ -1,7 +1,7 @@
 import { isValid, parseISO } from 'date-fns';
 
 // Re-export the transformation function from the new transformers file
-export { transformGoogleApiEventsToFullCalendar } from './event-transformers';
+export { transformGoogleApiEventsToFullCalendar } from '../features/calendar/domain/google-event-transformer';
 
 // Legacy interfaces - keeping for backward compatibility
 // TODO: Remove these once all code is migrated to use the new types

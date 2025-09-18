@@ -1,19 +1,6 @@
-import type { SchedulePriority } from '../features/schedule/models/ScheduleBlocks.types';
-import type { TimeSlot } from './availability-calculator';
-import type { FullCalendarEvent } from './calendar-utils';
-import type { CalendarEvent } from './types';
-
-/**
- * Configuration for background event styling
- */
-export interface BackgroundEventConfig {
-  availableColor: string;
-  busyColor: string;
-  scheduleBlockColor: string;
-  opacity: number;
-  borderColor?: string;
-  borderWidth?: number;
-}
+import type { SchedulePriority } from '../../schedule/models/ScheduleBlocks.types';
+import type { TimeSlot } from '../models/Calendar.types';
+import type { CalendarEvent, BackgroundEventConfig } from '../models/Calendar.types';
 
 /**
  * Default configuration for background events
@@ -46,7 +33,7 @@ export interface BackgroundEvent extends CalendarEvent {
 export function transformTimeSlotsToBackgroundEvents(
   timeSlots: TimeSlot[],
   config: BackgroundEventConfig = DEFAULT_BACKGROUND_EVENT_CONFIG
-): FullCalendarEvent[] {
+): CalendarEvent[] {
   return timeSlots.map(slot => ({
     id: `availability-${slot.start}`,
     title: getBackgroundEventTitle(slot),

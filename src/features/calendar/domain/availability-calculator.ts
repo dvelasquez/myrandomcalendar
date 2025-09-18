@@ -1,37 +1,20 @@
 import { endOfDay, isAfter, isBefore, startOfDay, subDays } from 'date-fns';
-import type { ScheduleBlock } from '../features/schedule/models/ScheduleBlocks.types';
-import type { CalendarEvent } from './types';
+import type { ScheduleBlock } from '../../schedule/models/ScheduleBlocks.types';
+import type { CalendarEvent, TimeSlot, AvailabilityConfig } from '../models/Calendar.types';
 
-/**
- * Time slot interface for availability calculation
- */
-export interface TimeSlot {
-  start: string;
-  end: string;
-  type: 'available' | 'busy' | 'schedule-block';
-  title?: string;
-  priority?: string;
-  color?: string;
-}
-
-/**
- * Configuration for availability calculation
- */
-export interface AvailabilityConfig {
-  timeSlotDurationMinutes: number;
-  startHour: number;
-  endHour: number;
-  includeOvernightEvents: boolean;
-}
+// Re-export TimeSlot for external use
+export type { TimeSlot };
 
 /**
  * Default configuration for availability calculation
  */
 export const DEFAULT_AVAILABILITY_CONFIG: AvailabilityConfig = {
-  timeSlotDurationMinutes: 60, // Not used anymore, kept for compatibility
-  startHour: 0, // Start at midnight
-  endHour: 24, // End at midnight (24 hours)
-  includeOvernightEvents: true
+  includeOvernightEvents: true,
+  defaultWorkingHours: {
+    start: '09:00',
+    end: '17:00',
+  },
+  timezone: 'UTC',
 };
 
 /**
@@ -166,7 +149,7 @@ export async function getScheduleBlockEventsForDate(
   includeOvernight: boolean
 ): Promise<CalendarEvent[]> {
   // Import the transformer function dynamically to avoid circular dependencies
-  const { scheduleBlocksToCalendarEvents } = await import('./schedule-transformers');
+  const { scheduleBlocksToCalendarEvents } = await import('./schedule-event-transformer');
   
   let startDate = startOfDay;
   if (includeOvernight) {

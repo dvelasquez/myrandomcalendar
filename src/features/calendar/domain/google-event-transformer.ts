@@ -3,7 +3,7 @@ import type {
   CalendarEvent, 
   GoogleCalendarApiEvent, 
   GoogleCalendarEventFields 
-} from '../lib/types';
+} from '../providers/google-calendar/models/GoogleCalendar.types';
 
 /**
  * Transforms Google Calendar API events to FullCalendar format
