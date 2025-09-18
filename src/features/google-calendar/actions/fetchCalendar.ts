@@ -1,35 +1,15 @@
 import { defineAction, ActionError } from 'astro:actions';
-import { db, Accounts } from 'astro:db'; 
-import { z } from 'astro:schema';
-import { parseISO, isValid, isAfter } from 'date-fns';
-import { eq, and } from 'drizzle-orm';
+import { parseISO } from 'date-fns';
 import { google } from 'googleapis';
-import { auth } from '../lib/better-auth';
+import { auth } from '../../../lib/better-auth';
+import { getGoogleCalendarCredentials, hasGoogleCalendarAccess } from '../db/get';
+import { fetchCalendarSchema } from '../models/GoogleCalendar.schema';
+import type { GoogleCalendarListResponse } from '../models/GoogleCalendar.types';
 
 export const fetchCalendar = defineAction({
   accept: 'form',
-  input: z.object({
-    startDate: z.string().refine((date) => {
-      const parsed = parseISO(date);
-      return isValid(parsed);
-    }, {
-      message: 'Invalid startDate format',
-    }),
-    endDate: z.string().refine((date) => {
-      const parsed = parseISO(date);
-      return isValid(parsed);
-    }, {
-      message: 'Invalid endDate format',
-    }),
-  }).refine((data) => {
-    const start = parseISO(data.startDate);
-    const end = parseISO(data.endDate);
-    return isAfter(end, start);
-  }, {
-    message: 'startDate must be before endDate',
-    path: ['endDate'],
-  }),
-  handler: async ({ startDate, endDate }, { request }) => {
+  input: fetchCalendarSchema,
+  handler: async ({ startDate, endDate }, { request }): Promise<GoogleCalendarListResponse> => {
     try {
       // Parse dates using date-fns (already validated by Zod)
       const start = parseISO(startDate);
@@ -47,38 +27,29 @@ export const fetchCalendar = defineAction({
         });
       }
 
-      // Get the user's Google account information directly from database
-      const googleAccounts = await db
-        .select()
-        .from(Accounts)
-        .where(and(
-          eq(Accounts.userId, session.user.id),
-          eq(Accounts.providerId, 'google')
-        ))
-        .limit(1);
-
-      const googleAccount = googleAccounts[0];
-      
-      if (!googleAccount || !googleAccount.accessToken) {
+      // Check if user has Google Calendar access
+      const hasAccess = await hasGoogleCalendarAccess(session.user.id);
+      if (!hasAccess) {
         throw new ActionError({
           code: 'NOT_FOUND',
           message: 'No Google account with calendar access found. Please sign in with Google again.',
         });
       }
 
-      // Check if the account has the calendar scope
-      if (!googleAccount.scope || !googleAccount.scope.includes('calendar.readonly')) {
+      // Get Google Calendar credentials
+      const credentials = await getGoogleCalendarCredentials(session.user.id);
+      if (!credentials) {
         throw new ActionError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Google account needs calendar access. Please sign out and sign in with Google again to grant calendar permissions.',
+          code: 'NOT_FOUND',
+          message: 'No Google account with calendar access found. Please sign in with Google again.',
         });
       }
 
       // Set up Google OAuth2 client
       const oauth2Client = new google.auth.OAuth2();
       oauth2Client.setCredentials({
-        access_token: googleAccount.accessToken,
-        refresh_token: googleAccount.refreshToken,
+        access_token: credentials.accessToken,
+        refresh_token: credentials.refreshToken,
       });
 
       // Create Calendar API client

@@ -35,7 +35,7 @@ if (user) {
     const formData = createFetchCalendarFormData(startOfCurrentMonth, endOfCurrentMonth);
     
     // Fetch Google Calendar events for initial date range
-    const result = await Astro.callAction(actions.fetchCalendar, formData);
+    const result = await Astro.callAction(actions.googleCalendar.fetchCalendar, formData);
     if (result.data?.success) {
       calendarData = result.data;
       // Transform Google Calendar events to FullCalendar format
@@ -284,7 +284,7 @@ import { createFetchCalendarFormData } from '../lib/types';
     const formData = createFetchCalendarFormData(startDate, endDate);
     
     try {
-      const result = await actions.fetchCalendar(formData);
+      const result = await actions.googleCalendar.fetchCalendar(formData);
       return result;
     } catch (error) {
       console.error('Error fetching calendar for date range:', error);
@@ -330,7 +330,7 @@ import { createFetchCalendarFormData } from '../lib/types';
       // Create typesafe FormData with proper date range
       const formData = createFetchCalendarFormData(startOfCurrentMonth, endOfCurrentMonth);
       
-      const result = await actions.fetchCalendar(formData);
+      const result = await actions.googleCalendar.fetchCalendar(formData);
       
       if (result.data?.success) {
         jsonOutput.textContent = JSON.stringify(result.data, null, 2);
