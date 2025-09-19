@@ -4,7 +4,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { useRef, useState } from 'react';
-import type { CalendarEvent } from '../lib/types';
+import type { CalendarEvent } from '../features/calendar/models/Calendar.types';
 import EventModal from './EventModal';
 
 interface FullCalendarProps {

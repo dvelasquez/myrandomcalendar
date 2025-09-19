@@ -7,8 +7,8 @@ import { transformTimeSlotsToBackgroundEvents, DEFAULT_BACKGROUND_EVENT_CONFIG }
 import type { ScheduleBlock } from '../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../layouts/Layout.astro';
 import { transformGoogleApiEventsToFullCalendar, type FullCalendarEvent } from '../features/calendar/lib/calendar-utils.ts';
-import { createFetchCalendarFormData } from '../lib/types';
-import type { GoogleCalendarApiEvent, CalendarEvent } from '../lib/types.ts';
+import { createFetchCalendarFormData } from '../features/calendar/models/Calendar.types';
+import type { GoogleCalendarApiEvent, CalendarEvent } from '../features/calendar/models/Calendar.types';
 
 export const prerender = false; // Required for server actions
 
@@ -274,7 +274,7 @@ if (user) {
 <script>
   import { actions } from 'astro:actions';
 import { endOfMonth, startOfMonth } from 'date-fns';
-import { createFetchCalendarFormData } from '../lib/types';
+  import { createFetchCalendarFormData } from '../features/calendar/models/Calendar.types';
   
   const refreshBtn = document.getElementById('refreshBtn') as HTMLButtonElement | null;
   const jsonOutput = document.getElementById('jsonOutput') as HTMLPreElement | null;

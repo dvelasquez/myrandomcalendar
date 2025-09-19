@@ -7,7 +7,7 @@ import type { CalendarEvent, TimeSlot } from '../../features/calendar/models/Cal
 import type { GoogleCalendarApiEvent } from '../../features/calendar/providers/google-calendar/models/GoogleCalendar.types';
 import type { ScheduleBlock } from '../../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../../layouts/Layout.astro';
-import { createFetchCalendarFormData } from '../../lib/types';
+import { createFetchCalendarFormData } from '../../features/calendar/models/Calendar.types';
 
 export const prerender = false; // Required for server actions
 

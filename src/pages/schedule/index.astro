@@ -6,7 +6,7 @@ import type { CalendarEvent } from '../../features/calendar/models/Calendar.type
 import type { GoogleCalendarApiEvent } from '../../features/calendar/providers/google-calendar/models/GoogleCalendar.types';
 import type { ScheduleBlock } from '../../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../../layouts/Layout.astro';
-import { createFetchCalendarFormData } from '../../lib/types';
+import { createFetchCalendarFormData } from '../../features/calendar/models/Calendar.types';
 
 export const prerender = false; // Required for server actions
 
@@ -360,7 +360,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 <script>
   import { actions } from 'astro:actions';
   import { startOfDay, endOfDay } from 'date-fns';
-  import { createFetchCalendarFormData } from '../../lib/types';
+  import { createFetchCalendarFormData } from '../../features/calendar/models/Calendar.types';
   
   // Handle calendar refresh
   const refreshBtn = document.getElementById('refreshCalendarBtn') as HTMLButtonElement | null;
