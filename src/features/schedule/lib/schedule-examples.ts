@@ -1,7 +1,7 @@
-import { combineAndSortEvents } from '../features/calendar/domain/event-aggregator';
-import { scheduleBlocksToCalendarEvents } from '../features/calendar/domain/schedule-event-transformer';
-import type { CalendarEvent } from '../features/calendar/models/Calendar.types';
-import type { ScheduleBlock } from '../features/schedule/models/ScheduleBlocks.types';
+import { combineAndSortEvents } from '../../calendar/domain/event-aggregator';
+import { scheduleBlocksToCalendarEvents } from '../../calendar/domain/schedule-event-transformer';
+import type { CalendarEvent } from '../../calendar/models/Calendar.types';
+import type { ScheduleBlock } from '../models/ScheduleBlocks.types';
 
 /**
  * Example usage of the ScheduleBlock architecture

@@ -1,6 +1,6 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
-import { auth } from "../../../lib/better-auth";
+import { auth } from "../../auth/lib/better-auth";
 import { createScheduleBlock } from "../db/create";
 import type { ScheduleBlockType, SchedulePriority } from "../models/ScheduleBlocks.types";
 

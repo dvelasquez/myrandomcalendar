@@ -2,7 +2,7 @@
 import { actions } from 'astro:actions';
 import type { PeriodicEventData } from '../../features/periodic-events/models/PeriodicEvents.types';
 import Layout from '../../layouts/Layout.astro';
-import { auth } from '../../lib/better-auth';
+import { auth } from '../../features/auth/lib/better-auth';
 
 // Get the current session
 const session = await auth.api.getSession({

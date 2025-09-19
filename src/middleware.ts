@@ -1,5 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
-import { auth } from './lib/better-auth';
+import { auth } from './features/auth/lib/better-auth';
 
 export const onRequest = defineMiddleware(async (context, next) => {
     const session = await auth.api.getSession({

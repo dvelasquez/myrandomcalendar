@@ -90,7 +90,7 @@ const result = Astro.getActionResult(actions.auth.login);
 <script>
   import { actions } from 'astro:actions';
   import { navigate } from 'astro:transitions/client';
-  import { authClient } from '../lib/auth-client';
+  import { authClient } from '../features/auth/lib/auth-client';
   
   const form = document.querySelector('form');
   const googleSignInBtn = document.getElementById('google-signin-btn');

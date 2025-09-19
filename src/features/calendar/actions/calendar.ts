@@ -1,6 +1,6 @@
 import { defineAction, ActionError } from 'astro:actions';
 import { parseISO } from 'date-fns';
-import { auth } from '../../../lib/better-auth';
+import { auth } from "../../auth/lib/better-auth";
 import type { ScheduleBlock } from '../../schedule/models/ScheduleBlocks.types';
 import { calculateAvailabilityForDateRange, DEFAULT_AVAILABILITY_CONFIG } from '../domain/availability-calculator';
 import { transformTimeSlotsToBackgroundEvents, DEFAULT_BACKGROUND_EVENT_CONFIG } from '../domain/background-event-transformer';

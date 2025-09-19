@@ -1,7 +1,7 @@
 import { defineAction, ActionError } from 'astro:actions';
 import { parseISO } from 'date-fns';
 import { google } from 'googleapis';
-import { auth } from '../../../../../lib/better-auth';
+import { auth } from '../../../../auth/lib/better-auth';
 import { getGoogleCalendarCredentials, hasGoogleCalendarAccess } from '../db/get';
 import { fetchCalendarSchema } from '../models/GoogleCalendar.schema';
 import type { GoogleCalendarListResponse } from '../models/GoogleCalendar.types';

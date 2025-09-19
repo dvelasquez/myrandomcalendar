@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatEventTime, formatEventDate } from '../lib/event-utils';
+import { formatEventTime, formatEventDate } from './event-utils';
 
 describe('event-utils', () => {
   describe('formatEventTime', () => {
