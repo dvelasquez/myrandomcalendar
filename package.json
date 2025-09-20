@@ -32,11 +32,15 @@
     "astro": "5.13.7",
     "better-auth": "1.3.10",
     "better-sqlite3": "12.2.0",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
     "date-fns": "4.1.0",
     "googleapis": "159.0.0",
+    "lucide-react": "0.544.0",
     "pg": "8.16.3",
     "react": "19.1.1",
     "react-dom": "19.1.1",
+    "tailwind-merge": "3.3.1",
     "tailwindcss": "4.1.13",
     "typescript": "5.9.2"
   },
@@ -49,6 +53,7 @@
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-jsx-a11y": "6.10.2",
     "globals": "16.4.0",
+    "tw-animate-css": "1.3.8",
     "typescript-eslint": "8.44.0",
     "vitest": "3.2.4"
   },
