@@ -25,6 +25,7 @@
     "@fullcalendar/interaction": "6.1.19",
     "@fullcalendar/react": "6.1.19",
     "@fullcalendar/timegrid": "6.1.19",
+    "@radix-ui/react-slot": "1.2.3",
     "@tailwindcss/vite": "4.1.13",
     "@types/pg": "8.15.5",
     "@types/react": "19.1.13",
