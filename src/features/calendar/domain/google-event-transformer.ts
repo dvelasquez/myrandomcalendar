@@ -1,6 +1,6 @@
 import { parseISO, isValid } from 'date-fns';
+import type { CalendarEvent } from '../models/Calendar.types';
 import type { 
-  CalendarEvent, 
   GoogleCalendarApiEvent, 
   GoogleCalendarEventFields 
 } from '../providers/google-calendar/models/GoogleCalendar.types';

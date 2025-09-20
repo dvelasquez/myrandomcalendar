@@ -1,8 +1,4 @@
 import type { calendar_v3 } from 'googleapis';
-import type { CalendarEvent } from '../../../models/Calendar.types';
-
-// Re-export CalendarEvent from main calendar models
-export type { CalendarEvent };
 
 // Re-export Google Calendar API types
 export type GoogleCalendarApiEvent = calendar_v3.Schema$Event;
