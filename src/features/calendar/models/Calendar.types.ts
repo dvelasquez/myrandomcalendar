@@ -26,14 +26,11 @@ export interface CalendarEvent {
   };
 }
 
-// Google Calendar API event type (re-export from googleapis)
-export type GoogleCalendarApiEvent = import('googleapis').calendar_v3.Schema$Event;
-
-// Utility type to extract only the fields we need from Google Calendar
-export type GoogleCalendarEventFields = Pick<
-  GoogleCalendarApiEvent,
-  'id' | 'summary' | 'description' | 'location' | 'start' | 'end' | 'htmlLink' | 'status' | 'created' | 'updated'
->;
+// Re-export Google Calendar types from provider-specific models
+export type { 
+  GoogleCalendarApiEvent, 
+  GoogleCalendarEventFields 
+} from '../providers/google-calendar/models/GoogleCalendar.types';
 
 // Type mapping utilities
 export type GoogleToFullCalendarMapper = {
@@ -48,7 +45,7 @@ export type GoogleToFullCalendarMapper = {
 
 // Reverse mapping (FullCalendar to Google)
 export type FullCalendarToGoogleMapper = {
-  [K in keyof GoogleCalendarApiEvent]: K extends 'summary' 
+  [K in keyof import('googleapis').calendar_v3.Schema$Event]: K extends 'summary' 
     ? 'title' 
     : K extends 'htmlLink' 
     ? 'url' 

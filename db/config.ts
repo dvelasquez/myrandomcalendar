@@ -1,6 +1,6 @@
 import { defineDb } from 'astro:db';
 import { Users, Sessions, Accounts, Verifications } from '../src/features/auth/models';
-import { PeriodicEvents } from '../src/features/periodic-events/models/PeriodicEvents.db';
+import { PeriodicEvent } from '../src/features/periodic-events/models/PeriodicEvents.db';
 import { ScheduleBlocks } from '../src/features/schedule/models/ScheduleBlock.db';
 
 
@@ -8,7 +8,7 @@ import { ScheduleBlocks } from '../src/features/schedule/models/ScheduleBlock.db
 
 
 // Export tables for use in actions
-export { Users, Sessions, Accounts, Verifications, ScheduleBlocks, PeriodicEvents };
+export { Users, Sessions, Accounts, Verifications, ScheduleBlocks, PeriodicEvent };
 
 // https://astro.build/db/config
 export default defineDb({
@@ -17,7 +17,7 @@ export default defineDb({
     Sessions,
     Accounts,
     Verifications,
-    PeriodicEvents,
+    PeriodicEvent,
     ScheduleBlocks,
   }
 });

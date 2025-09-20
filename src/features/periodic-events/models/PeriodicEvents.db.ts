@@ -1,8 +1,8 @@
-import { column, defineTable } from "astro:db";
+import { column, defineTable, NOW } from "astro:db";
 import { Users } from "../../../../db/config";
 
- // Periodic Events table for recurring activities without fixed times
- export const PeriodicEvents = defineTable({
+// Periodic Event table for recurring activities without fixed times
+export const PeriodicEvent = defineTable({
   columns: {
     id: column.text({ primaryKey: true }),
     userId: column.text({ references: () => Users.columns.id }),
@@ -15,7 +15,7 @@ import { Users } from "../../../../db/config";
     priority: column.text({ default: 'medium' }), // 'high', 'medium', 'low'
     isActive: column.boolean({ default: true }),
     color: column.text({ default: '#10b981' }),
-    createdAt: column.date(),
-    updatedAt: column.date(),
+    createdAt: column.date({ default: NOW }),
+    updatedAt: column.date({ default: NOW }),
   },
 });

@@ -1,15 +1,16 @@
 import { ActionError, defineAction } from "astro:actions";
 import { auth } from "../../auth/lib/better-auth";
 import { createPeriodicEventDb } from "../db/create";
-import { periodicEventSchema } from "../models/PeriodicEvents.schema";
+import { PeriodicEventFormSchema } from "../models/PeriodicEvents.schema";
+import type { NewPeriodicEvent, PeriodicEvent as PeriodicEventType } from "../models/PeriodicEvents.types";
 
 /**
  * Create a new periodic event
  */
 export const createPeriodicEvent = defineAction({
   accept: 'form',
-  input: periodicEventSchema,
-  handler: async ({ title, description, frequency, frequencyCount, duration, category, priority, color }, { request }) => {
+  input: PeriodicEventFormSchema,
+  handler: async ({ title, description, frequency, frequencyCount, duration, category, priority, color }, { request }): Promise<PeriodicEventType> => {
     try {
       const session = await auth.api.getSession({
         headers: request.headers,
@@ -22,12 +23,21 @@ export const createPeriodicEvent = defineAction({
         });
       }
 
-      const result = await createPeriodicEventDb({ title, description, frequency, frequencyCount, duration, category, priority, color }, session.user.id);
-
-      return {
-        success: true,
-        data: result
+      const newPeriodicEvent: NewPeriodicEvent = {
+        title,
+        description,
+        frequency,
+        frequencyCount,
+        duration,
+        category,
+        priority,
+        color,
+        userId: session.user.id,
       };
+
+      const result = await createPeriodicEventDb(newPeriodicEvent);
+
+      return result;
     } catch (error) {
       console.error('Error in createPeriodicEvent:', error);
       

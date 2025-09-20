@@ -4,10 +4,10 @@ import { startOfDay, endOfDay, format, addDays, subDays } from 'date-fns';
 import { calculateAvailability, DEFAULT_AVAILABILITY_CONFIG } from '../../features/calendar/domain/availability-calculator';
 import { transformGoogleApiEventsToFullCalendar } from '../../features/calendar/domain/google-event-transformer';
 import type { CalendarEvent, TimeSlot } from '../../features/calendar/models/Calendar.types';
+import { createFetchCalendarFormData } from '../../features/calendar/models/Calendar.types';
 import type { GoogleCalendarApiEvent } from '../../features/calendar/providers/google-calendar/models/GoogleCalendar.types';
 import type { ScheduleBlock } from '../../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../../layouts/Layout.astro';
-import { createFetchCalendarFormData } from '../../features/calendar/models/Calendar.types';
 
 export const prerender = false; // Required for server actions
 

@@ -1,13 +1,14 @@
 import { ActionError, defineAction } from "astro:actions";
 import { auth } from "../../auth/lib/better-auth";
 import { getPeriodicEventsDb } from "../db/get";
+import type { PeriodicEvent as PeriodicEventType } from "../models/PeriodicEvents.types";
 
 /**
  * Get all periodic events for the current user
  */
 export const getPeriodicEvents = defineAction({
   accept: 'form',
-  handler: async (_, { request }) => {
+  handler: async (_, { request }): Promise<PeriodicEventType[]> => {
     try {
       const session = await auth.api.getSession({
         headers: request.headers,
@@ -22,10 +23,7 @@ export const getPeriodicEvents = defineAction({
 
       const events = await getPeriodicEventsDb(session.user.id);
 
-      return {
-        success: true,
-        data: events
-      };
+      return events;
     } catch (error) {
       console.error('Error in getPeriodicEventsAction:', error);
       

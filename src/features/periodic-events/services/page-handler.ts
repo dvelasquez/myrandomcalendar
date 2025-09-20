@@ -1,12 +1,14 @@
+import type { AstroGlobal } from 'astro';
+import { actions } from 'astro:actions';
 import { auth } from '../../auth/lib/better-auth';
 import { FREQUENCY_OPTIONS, CATEGORY_OPTIONS, PRIORITY_OPTIONS, COLOR_OPTIONS } from '../lib/constants'; 
-import type { PeriodicEvent } from '../models/PeriodicEvents.types';
+import type { PeriodicEvent as PeriodicEventType } from '../models/PeriodicEvents.types';
 
 /**
  * Page data for periodic events index page
  */
 export interface PeriodicEventsIndexPageData {
-  periodicEvents: PeriodicEvent[];
+  periodicEvents: PeriodicEventType[];
   user: {
     id: string;
     name: string;
@@ -24,15 +26,10 @@ export interface PeriodicEventsCreatePageData {
     priorityOptions: typeof PRIORITY_OPTIONS;
     colorOptions: typeof COLOR_OPTIONS;
   };
-  actionResult?: {
-    success?: boolean;
-    error?: {
-      message: string;
-    };
-    data?: {
-      data?: PeriodicEvent;
-    };
-  };
+  // Only pass the actual data we need, not the entire action result
+  createdEvent?: PeriodicEventType;
+  hasError?: boolean;
+  errorMessage?: string;
 }
 
 /**
@@ -42,7 +39,7 @@ export interface PeriodicEventsCreatePageData {
  */
 export async function handlePeriodicEventsIndexPage(
   request: Request,
-  periodicEvents: PeriodicEvent[]
+  periodicEvents: PeriodicEventType[]
 ): Promise<PeriodicEventsIndexPageData | null> {
   // 1. Authentication check (infrastructure concern)
   const session = await auth.api.getSession({
@@ -67,16 +64,12 @@ export async function handlePeriodicEventsIndexPage(
 /**
  * Handle periodic events create page logic
  * Orchestrates form options and action results
+ * Note: actionResult uses any due to Astro's complex SafeResult form schema inference
  */
-export function handlePeriodicEventsCreatePage(actionResult?: {
-  success?: boolean;
-  error?: {
-    message: string;
-  };
-  data?: {
-    data?: PeriodicEvent;
-  };
-}): PeriodicEventsCreatePageData {
+export function handlePeriodicEventsCreatePage(Astro: AstroGlobal): PeriodicEventsCreatePageData {
+
+  const actionResult = Astro.getActionResult(actions.periodicEvents.create);
+  
   // 1. Prepare form options (domain concern)
   const formOptions = {
     frequencyOptions: FREQUENCY_OPTIONS,
@@ -85,9 +78,23 @@ export function handlePeriodicEventsCreatePage(actionResult?: {
     colorOptions: COLOR_OPTIONS,
   };
 
-  // 2. Return structured page data
+  // 2. Extract only the data we need from the action result
+  let createdEvent: PeriodicEventType | undefined;
+  let hasError = false;
+  let errorMessage: string | undefined;
+
+  if (actionResult?.error) {
+    hasError = true;
+    errorMessage = actionResult.error.message;
+  } else if (actionResult?.data) {
+    createdEvent = actionResult.data;
+  }
+
+  // 3. Return structured page data
   return {
     formOptions,
-    actionResult,
+    createdEvent,
+    hasError,
+    errorMessage,
   };
 }

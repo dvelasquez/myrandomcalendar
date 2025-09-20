@@ -160,23 +160,48 @@ src/features/
 ### **File Naming Conventions**
 - **Actions**: `camelCase.ts` (e.g., `createScheduleBlock.ts`)
 - **DB**: `camelCase.ts` (e.g., `create.ts`, `get.ts`)
-- **Models**: `PascalCase.{db|schema|types}.ts` (e.g., `ScheduleBlocks.db.ts`)
+- **Models**: `PascalCase.{db|schema|types}.ts` (e.g., `ScheduleBlock.db.ts`)
 
 ### **Action Pattern**
 ```typescript
 // actions/{actionName}.ts
 export const {actionName} = defineAction({
   accept: 'form',
-  input: {featureName}Schema,
-  handler: async (data, { request }) => {
-    // Authentication check
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user) throw new ActionError({ code: 'UNAUTHORIZED' });
-    
-    // Call DB function
-    const result = await {dbFunction}({...data, userId: session.user.id});
-    
-    return { success: true, data: result };
+  input: {FeatureName}FormSchema,
+  handler: async (data, { request }): Promise<{FeatureName}Type> => {
+    try {
+      // Authentication check
+      const session = await auth.api.getSession({ headers: request.headers });
+      if (!session?.user) {
+        throw new ActionError({ 
+          code: 'UNAUTHORIZED',
+          message: 'You must be logged in to {action description}'
+        });
+      }
+      
+      // Prepare data with userId
+      const {featureName}Data: New{FeatureName} = {
+        ...data,
+        userId: session.user.id,
+      };
+      
+      // Call DB function
+      const result = await {dbFunction}({featureName}Data);
+      
+      // Return result directly
+      return result;
+    } catch (error) {
+      console.error('Error in {actionName}:', error);
+      
+      if (error instanceof ActionError) {
+        throw error;
+      }
+      
+      throw new ActionError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to {action description}',
+      });
+    }
   },
 });
 ```

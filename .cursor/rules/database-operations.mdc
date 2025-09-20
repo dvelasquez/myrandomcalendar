@@ -1,0 +1,87 @@
+---
+globs: src/features/**/db/**/*.ts
+alwaysApply: true
+---
+
+# Database Operations Rules
+
+## Import Requirements
+- Always import from `astro:db`: `import { db, {TableName}, eq } from "astro:db"`
+- Import types with aliases: `import type { {TableName} as {TableName}Type } from "../models/{TableName}.types"`
+- Use singular table names: `PeriodicEvent`, not `PeriodicEvents`
+
+## Function Naming Pattern
+- Use descriptive names: `create{FeatureName}Db`, `get{FeatureName}Db`, `update{FeatureName}Db`, `delete{FeatureName}Db`
+- Include "Db" suffix to distinguish from action functions
+- Use camelCase: `createPeriodicEventDb`
+
+## Type Safety Requirements
+- Function parameters must use proper types: `New{FeatureName}`, `{FeatureName}Update`
+- Return types must be explicit: `Promise<{FeatureName}Type>`
+- Handle optional fields properly: `description?.trim() || null`
+
+## CRUD Operation Patterns
+
+### Create Operations
+```typescript
+export const create{FeatureName}Db = async (data: New{FeatureName}): Promise<{FeatureName}Type> => {
+  const id = crypto.randomUUID();
+  
+  const newRecord = {
+    id,
+    ...data,
+    // Handle defaults and transformations
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  
+  await db.insert({TableName}).values(newRecord);
+  return newRecord;
+};
+```
+
+### Read Operations
+```typescript
+export const get{FeatureName}Db = async (userId: string): Promise<{FeatureName}Type[]> => {
+  const records = await db
+    .select()
+    .from({TableName})
+    .where(eq({TableName}.userId, userId));
+  return records;
+};
+```
+
+### Update Operations
+```typescript
+export const update{FeatureName}Db = async (id: string, data: {FeatureName}Update): Promise<{FeatureName}Type> => {
+  const updatedData = {
+    ...data,
+    updatedAt: new Date(),
+  };
+  
+  await db.update({TableName}).set(updatedData).where(eq({TableName}.id, id));
+  
+  // Return updated record
+  const [updated] = await db.select().from({TableName}).where(eq({TableName}.id, id));
+  return updated;
+};
+```
+
+### Delete Operations
+```typescript
+export const delete{FeatureName}Db = async (id: string): Promise<void> => {
+  await db.delete({TableName}).where(eq({TableName}.id, id));
+};
+```
+
+## Error Handling
+- Database operations should not throw custom errors
+- Let database errors bubble up to action layer
+- Use proper TypeScript types to catch errors at compile time
+
+## Field Handling Rules
+- Handle optional fields: `description?.trim() || null`
+- Apply defaults: `category: category || 'default'`
+- Trim string fields: `title.trim()`
+- Generate IDs: `crypto.randomUUID()`
+- Set timestamps: `createdAt: new Date()`, `updatedAt: new Date()`

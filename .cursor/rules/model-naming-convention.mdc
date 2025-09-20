@@ -1,0 +1,60 @@
+---
+globs: src/features/**/models/**/*.ts
+alwaysApply: true
+---
+
+# Model Naming Convention Rules
+
+## Table Definitions (.db.ts files)
+- Use **PascalCase singular nouns** for table names: `PeriodicEvent`, `ScheduleBlock`, `User`
+- Export the table as the singular form: `export const PeriodicEvent = defineTable({...})`
+- Use descriptive comments for table purpose
+- Follow Astro DB column definitions: `column.text()`, `column.number()`, `column.boolean()`, etc.
+
+## Zod Schemas (.schema.ts files)
+- **Auto-generated schemas** from Drizzle tables using `drizzle-zod`:
+  - `PeriodicEventInsertSchema = createInsertSchema(PeriodicEvent)`
+  - `PeriodicEventSelectSchema = createSelectSchema(PeriodicEvent)`
+  - `PeriodicEventUpdateSchema = createUpdateSchema(PeriodicEvent)`
+- **Custom form schemas** for transformations:
+  - `PeriodicEventFormSchema` for form data with string-to-number transformations
+- Use **PascalCase + "Schema" suffix** for all schema exports
+- Include custom validation rules and error messages for form schemas
+
+## TypeScript Types (.types.ts files)
+- **Core database types** (inferred from Astro DB):
+  - `PeriodicEvent = InferSelectModel<typeof PeriodicEvent>`
+  - `NewPeriodicEvent = Omit<InferInsertModel<typeof PeriodicEvent>, 'id' | 'createdAt' | 'updatedAt'>`
+  - `PeriodicEventUpdate = Partial<NewPeriodicEvent>`
+- **Application interfaces**:
+  - `PeriodicEventData extends PeriodicEvent` for computed fields
+- **Form/API types**:
+  - `CreatePeriodicEventFormData` for creation forms
+  - `UpdatePeriodicEventFormData` for update forms
+- Use **PascalCase** for all type exports
+- Use **"FormData"** suffix for form-specific interfaces
+
+## Import Patterns
+- Import table definitions: `import { PeriodicEvent } from "astro:db"`
+- Import schemas: `import { PeriodicEventInsertSchema } from "./PeriodicEvents.schema"`
+- Import types: `import type { PeriodicEvent as PeriodicEventType } from "./PeriodicEvents.types"`
+- Use type aliases to avoid naming conflicts: `PeriodicEvent as PeriodicEventType`
+
+## File Structure Requirements
+```
+src/features/{feature-name}/models/
+├── {FeatureName}.db.ts      # Table definition (singular)
+├── {FeatureName}.schema.ts # Zod schemas
+└── {FeatureName}.types.ts   # TypeScript types
+```
+
+## Database Configuration
+- Export tables in `db/config.ts` using singular names
+- Use singular names in `defineDb({ tables: { PeriodicEvent, ... } })`
+- Maintain consistent import/export patterns
+
+## Validation Rules
+- Always use auto-generated schemas for database operations
+- Use custom form schemas only for form data transformations
+- Ensure type safety between database operations and form handling
+- Test type compatibility with `npm run astro -- check`

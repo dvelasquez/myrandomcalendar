@@ -3,10 +3,10 @@ import { actions } from 'astro:actions';
 import { endOfDay, startOfDay } from 'date-fns';
 import { transformGoogleApiEventsToFullCalendar } from '../../features/calendar/domain/google-event-transformer';
 import type { CalendarEvent } from '../../features/calendar/models/Calendar.types';
+import { createFetchCalendarFormData } from '../../features/calendar/models/Calendar.types';
 import type { GoogleCalendarApiEvent } from '../../features/calendar/providers/google-calendar/models/GoogleCalendar.types';
 import type { ScheduleBlock } from '../../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../../layouts/Layout.astro';
-import { createFetchCalendarFormData } from '../../features/calendar/models/Calendar.types';
 
 export const prerender = false; // Required for server actions
 

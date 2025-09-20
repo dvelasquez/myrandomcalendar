@@ -1,17 +1,17 @@
 ---
 import { actions } from 'astro:actions';
 import { formatDuration, formatFrequency, getCategoryColor } from '../../features/periodic-events/lib/formatters'; 
-import type { PeriodicEvent } from '../../features/periodic-events/models/PeriodicEvents.types';
+import type { PeriodicEvent as PeriodicEventType } from '../../features/periodic-events/models/PeriodicEvents.types';
 import { handlePeriodicEventsIndexPage } from '../../features/periodic-events/services/page-handler';
 import Layout from '../../layouts/Layout.astro';
 
 // Fetch periodic events server-side using Astro.callAction
-let periodicEvents: PeriodicEvent[] = [];
+let periodicEvents: PeriodicEventType[] = [];
 try {
   const formData = new FormData();
   const result = await Astro.callAction(actions.periodicEvents.get, formData);
   if (result.data && !result.error) {
-    periodicEvents = result.data.data;
+    periodicEvents = result.data;
   }
 } catch (error) {
   console.error('Error fetching periodic events:', error);

@@ -1,0 +1,46 @@
+---
+globs: src/features/**/models/**/*.ts
+alwaysApply: false
+---
+
+# MyRandomCalendar - Model Consistency Rules
+
+This project follows a strict naming convention and architecture pattern for maintaining consistency across all features.
+
+## Core Rules Files
+- `model-naming-convention.mdc` - Table, schema, and type naming rules
+- `database-operations.mdc` - DB function patterns and type safety
+- `rules.mdc` - Overall project rules and feature architecture
+- `rules-astro.mdc` - Astro-specific patterns and data fetching
+- `rules-react.mdc` - React component patterns and best practices
+- `rules-testing.mdc` - Testing philosophy and patterns
+
+## Quick Reference
+
+### Table Definitions
+- Use **singular PascalCase**: `PeriodicEvent`, `ScheduleBlock`
+- Export as: `export const PeriodicEvent = defineTable({...})`
+
+### Zod Schemas
+- Auto-generated: `PeriodicEventInsertSchema`, `PeriodicEventSelectSchema`
+- Custom forms: `PeriodicEventFormSchema` for transformations
+
+### TypeScript Types
+- Database: `PeriodicEvent`, `NewPeriodicEvent`, `PeriodicEventUpdate`
+- Application: `PeriodicEventData extends PeriodicEvent`
+- Forms: `CreatePeriodicEventFormData`, `UpdatePeriodicEventFormData`
+
+### File Structure
+```
+src/features/{feature-name}/
+├── actions/     # API endpoints
+├── db/          # Database operations
+├── models/      # Data definitions
+└── services/    # Page orchestration
+```
+
+## Type Safety
+- Always run `npm run astro -- check` after changes
+- Use proper type aliases to avoid conflicts
+- Import from `astro:db` for table definitions
+- Use `drizzle-zod` for auto-generated schemas

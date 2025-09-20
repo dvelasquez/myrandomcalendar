@@ -1,10 +1,10 @@
-import { db, PeriodicEvents, eq } from "astro:db";
-import type { PeriodicEvent } from "../models/PeriodicEvents.types";
+import { db, PeriodicEvent, eq } from "astro:db";
+import type { PeriodicEvent as PeriodicEventType } from "../models/PeriodicEvents.types";
 
-export const getPeriodicEventsDb = async (userId: string): Promise<PeriodicEvent[]> => {
+export const getPeriodicEventsDb = async (userId: string): Promise<PeriodicEventType[]> => {
   const events = await db
     .select()
-    .from(PeriodicEvents)
-    .where(eq(PeriodicEvents.userId, userId));
+    .from(PeriodicEvent)
+    .where(eq(PeriodicEvent.userId, userId));
   return events;
 };

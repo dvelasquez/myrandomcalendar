@@ -1,31 +1,29 @@
-import { db, PeriodicEvents } from "astro:db";
-import { z } from "astro:schema";
-import { periodicEventSchema } from "../models/PeriodicEvents.schema";
+import { db, PeriodicEvent, eq } from "astro:db";
+import type { NewPeriodicEvent, PeriodicEvent as PeriodicEventType } from "../models/PeriodicEvents.types";
 
-type PeriodicEvent = z.infer<typeof periodicEventSchema>;
-
-export const createPeriodicEventDb = async ({ title, description, frequency, frequencyCount, duration, category, priority, color }: Omit<PeriodicEvent, 'id' | 'createdAt' | 'updatedAt'>, userId: string): Promise<PeriodicEvent> => {
+export const createPeriodicEventDb = async ({ title, description, frequency, frequencyCount, duration, category, priority, color, userId }: NewPeriodicEvent): Promise<PeriodicEventType> => {
   const id = crypto.randomUUID();
 
   const newPeriodicEvent = {
     id,
     userId,
     title: title.trim(),
-    description: description?.trim() || undefined,
+    description: description?.trim() || null,
     frequency,
     frequencyCount,
     duration,
-    category,
-    priority,
+    category: category || 'personal',
+    priority: priority || 'medium',
     color: color || '#10b981',
     isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    // ✅ Timestamps are now handled automatically by the database
   }
 
   // Create the periodic event
-  await db.insert(PeriodicEvents).values(newPeriodicEvent);
+  await db.insert(PeriodicEvent).values(newPeriodicEvent);
 
-  return newPeriodicEvent;
+  // Return the created record (with auto-generated timestamps)
+  const [created] = await db.select().from(PeriodicEvent).where(eq(PeriodicEvent.id, id));
+  return created;
 
 };
