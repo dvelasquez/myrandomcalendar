@@ -1,12 +1,9 @@
 ---
 import { actions } from 'astro:actions';
-import { endOfDay, startOfDay } from 'date-fns';
-import { transformGoogleApiEventsToFullCalendar } from '../../features/calendar/domain/google-event-transformer';
-import type { CalendarEvent } from '../../features/calendar/models/Calendar.types';
-import { createFetchCalendarFormData } from '../../features/calendar/models/Calendar.types';
-import type { GoogleCalendarApiEvent } from '../../features/calendar/providers/google-calendar/models/GoogleCalendar.types';
 import type { ScheduleBlock } from '../../features/schedule/models/ScheduleBlocks.types';
+import { PRIORITY_COLORS, formatDaysOfWeek } from '../../features/schedule/services/constants';
 import Layout from '../../layouts/Layout.astro';
+import type { CalendarEvent } from '@/features/calendar/models';
 
 export const prerender = false; // Required for server actions
 
@@ -18,58 +15,23 @@ const url = new URL(Astro.request.url);
 const successMessage = url.searchParams.get('success');
 const errorMessage = url.searchParams.get('error');
 
-// Fetch schedule blocks server-side
+// Fetch schedule page data using new service
 let scheduleBlocks: ScheduleBlock[] = [];
-if (user) {
-  try {
-    const result = await Astro.callAction(actions.schedule.getScheduleBlocks, new FormData());
-    if (result.data) {
-      scheduleBlocks = result.data;
-    }
-  } catch (error) {
-    console.error('Error fetching schedule blocks:', error);
-  }
-}
-
-// Fetch calendar events for the current month
 let googleCalendarEvents: CalendarEvent[] = [];
 let calendarError: string | null = null;
 
 if (user) {
   try {
-    // Get date range from search params for calendar events
-    const startDateParam = url.searchParams.get('startDate');
-    const endDateParam = url.searchParams.get('endDate');
-
-    // Default to current month if no params provided
-    const today = new Date();
-    const startDate = startDateParam ? new Date(startDateParam) : startOfDay(today);
-    const endDate = endDateParam ? new Date(endDateParam) : endOfDay(today);
-    
-    // Create typesafe FormData with proper date range
-    const formData = createFetchCalendarFormData(startDate, endDate);
-    
-    const result = await Astro.callAction(actions.calendar.providers.google.fetchCalendar, formData);
-    if (result.data?.success) {
-      // Transform Google Calendar API events to CalendarEvent format
-      const googleApiEvents = result.data.events as GoogleCalendarApiEvent[];
-      googleCalendarEvents = transformGoogleApiEventsToFullCalendar(googleApiEvents);
-    } else {
-      calendarError = result.error?.message || 'Failed to fetch calendar data';
-      console.warn('Calendar fetch error:', calendarError);
+    const result = await Astro.callAction(actions.schedule.getSchedulePageData, new FormData());
+    if (result.data) {
+      scheduleBlocks = result.data.scheduleBlocks;
+      googleCalendarEvents = result.data.googleCalendarEvents;
+      calendarError = result.data.calendarError;
     }
-  } catch (err) {
-    calendarError = (err as Error).message || 'An error occurred while fetching calendar data';
-    console.error('Calendar fetch error:', err);
+  } catch (error) {
+    console.error('Error fetching schedule page data:', error);
   }
 }
-
-// Schedule types for display
-const PRIORITY_COLORS: Record<string, string> = {
-  high: 'bg-red-100 text-red-800 border-red-200',
-  medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  low: 'bg-green-100 text-green-800 border-green-200'
-};
 ---
 
 <Layout>
@@ -240,10 +202,7 @@ const PRIORITY_COLORS: Record<string, string> = {
                         <div class="text-sm text-gray-600 space-y-1">
                           <div class="flex items-center space-x-4">
                             <span>⏰ {block.startTime} - {block.endTime}</span>
-                            <span>📅 {JSON.parse(block.daysOfWeek).map((day: number) => {
-                              const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                              return dayNames[day];
-                            }).join(', ')}</span>
+                            <span>📅 {formatDaysOfWeek(block.daysOfWeek)}</span>
                           </div>
                           
                           {block.description && (
@@ -358,44 +317,8 @@ const PRIORITY_COLORS: Record<string, string> = {
 </Layout>
 
 <script>
-  import { actions } from 'astro:actions';
-  import { startOfDay, endOfDay } from 'date-fns';
-  import { createFetchCalendarFormData } from '../../features/calendar/models/Calendar.types';
+  import { setupCalendarRefreshButton } from '../../features/schedule/lib/calendar-refresh';
   
-  // Handle calendar refresh
-  const refreshBtn = document.getElementById('refreshCalendarBtn') as HTMLButtonElement | null;
-  
-  refreshBtn?.addEventListener('click', async () => {
-    if (!refreshBtn) return;
-    
-    refreshBtn.textContent = 'Refreshing...';
-    refreshBtn.disabled = true;
-    
-    try {
-      // Create proper date range for refresh
-      const today = new Date();
-      const startOfCurrentMonth = startOfDay(today);
-      const endOfCurrentMonth = endOfDay(today);
-      
-      // Create typesafe FormData
-      const formData = createFetchCalendarFormData(startOfCurrentMonth, endOfCurrentMonth);
-      
-      // Fetch fresh calendar data
-      const result = await actions.calendar.providers.google.fetchCalendar(formData);
-      
-      if (result.data?.success) {
-        // Reload the page to update with fresh data
-        window.location.reload();
-      } else {
-        console.error('Error refreshing calendar:', result.error?.message);
-        refreshBtn.textContent = 'Refresh Calendar';
-        refreshBtn.disabled = false;
-      }
-    } catch (error) {
-      console.error('Error refreshing calendar:', error);
-      refreshBtn.textContent = 'Refresh Calendar';
-      refreshBtn.disabled = false;
-    }
-  });
-  
+  // Setup calendar refresh button
+  setupCalendarRefreshButton('refreshCalendarBtn');
 </script>

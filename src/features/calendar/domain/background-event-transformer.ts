@@ -33,7 +33,7 @@ export interface BackgroundEvent extends CalendarEvent {
 export function transformTimeSlotsToBackgroundEvents(
   timeSlots: TimeSlot[],
   config: BackgroundEventConfig = DEFAULT_BACKGROUND_EVENT_CONFIG
-): CalendarEvent[] {
+): BackgroundEvent[] {
   return timeSlots.map(slot => ({
     id: `availability-${slot.start}`,
     title: getBackgroundEventTitle(slot),

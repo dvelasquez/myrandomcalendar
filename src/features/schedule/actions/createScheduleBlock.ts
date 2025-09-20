@@ -22,7 +22,7 @@ export const createScheduleBlock = defineAction({
       const scheduleBlockData: NewScheduleBlock = {
         ...data,
         userId: session.user.id,
-        daysOfWeek: JSON.stringify(data.daysOfWeek), // Convert array to JSON string
+        // daysOfWeek is already a JSON string from the form schema
       };
       
       // Call DB function

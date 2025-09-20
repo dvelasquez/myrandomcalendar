@@ -1,14 +1,11 @@
 ---
 import { actions } from 'astro:actions';
-import { startOfMonth, endOfMonth, subDays, addDays } from 'date-fns';
+import { startOfMonth, endOfMonth } from 'date-fns';
 import FullCalendarComponent from '../components/FullCalendar.tsx';
-import { calculateAvailabilityForDateRange, DEFAULT_AVAILABILITY_CONFIG } from '../features/calendar/domain/availability-calculator';
-import { transformTimeSlotsToBackgroundEvents, DEFAULT_BACKGROUND_EVENT_CONFIG } from '../features/calendar/domain/background-event-transformer';
-import { transformGoogleApiEventsToFullCalendar, type FullCalendarEvent } from '../features/calendar/lib/calendar-utils.ts';
-import { createFetchCalendarFormData } from '../features/calendar/models/Calendar.types';
-import type { GoogleCalendarApiEvent, CalendarEvent } from '../features/calendar/models/Calendar.types';
 import type { ScheduleBlock } from '../features/schedule/models/ScheduleBlocks.types';
 import Layout from '../layouts/Layout.astro';
+import type { BackgroundEvent } from '@/features/calendar/domain/background-event-transformer';
+import type { CalendarEvent } from '@/features/calendar/models';
 
 export const prerender = false; // Required for server actions
 
@@ -16,14 +13,15 @@ export const prerender = false; // Required for server actions
 const { user } = Astro.locals;
 
 // Initialize calendar data
-let calendarData: { success: boolean; events: GoogleCalendarApiEvent[]; calendarId: string | null | undefined; timeZone: string | null | undefined } | null = null;
+let calendarData: { success: boolean; events: CalendarEvent[]; calendarId: string | null | undefined; timeZone: string | null | undefined } | null = null;
 let error: string | null = null;
-let fullCalendarEvents: FullCalendarEvent[] = [];
+// Combined events for FullCalendar component
+let fullCalendarEvents: CalendarEvent[] = [];
 let scheduleBlocks: ScheduleBlock[] = [];
-let availabilityBackgroundEvents: FullCalendarEvent[] = [];
+let availabilityBackgroundEvents: BackgroundEvent[] = [];
 let calendarEvents: CalendarEvent[] = [];
 
-// Try to fetch calendar data and schedule blocks if user is logged in
+// Try to fetch calendar data if user is logged in
 if (user) {
   try {
     // For initial load, fetch events for a reasonable default range (current month)
@@ -31,87 +29,30 @@ if (user) {
     const startOfCurrentMonth = startOfMonth(today);
     const endOfCurrentMonth = endOfMonth(today);
     
-    // Create typesafe FormData with proper date range
-    const formData = createFetchCalendarFormData(startOfCurrentMonth, endOfCurrentMonth);
+    const formData = new FormData();
+    formData.append('startDate', startOfCurrentMonth.toISOString());
+    formData.append('endDate', endOfCurrentMonth.toISOString());
     
-    // Fetch Google Calendar events for initial date range
-    const result = await Astro.callAction(actions.calendar.providers.google.fetchCalendar, formData);
-    if (result.data?.success) {
-      calendarData = result.data;
-      // Transform Google Calendar events to FullCalendar format
-      fullCalendarEvents = transformGoogleApiEventsToFullCalendar(calendarData?.events || []);
+    // Fetch calendar page data using new service
+    const result = await Astro.callAction(actions.schedule.getCalendarPageData, formData);
+    if (result.data) {
+      scheduleBlocks = result.data.scheduleBlocks;
+      calendarEvents = result.data.googleCalendarEvents;
+      availabilityBackgroundEvents = result.data.availabilityBackgroundEvents;
+      error = result.data.calendarError;
+      
+      // Create calendar data structure for compatibility
+      calendarData = {
+        success: !error,
+        events: calendarEvents,
+        calendarId: 'primary',
+        timeZone: 'UTC'
+      };
+      
+      // Combine calendar events with background events
+      fullCalendarEvents = [...calendarEvents, ...availabilityBackgroundEvents];
     } else {
-      error = result.error?.message || 'Failed to fetch calendar data';
-    }
-
-    // Fetch schedule blocks
-    try {
-      const result = await Astro.callAction(actions.schedule.getScheduleBlocks, new FormData());
-      if (result.data) {
-        scheduleBlocks = result.data;
-      }
-    } catch (scheduleError) {
-      console.error('Error fetching schedule blocks:', scheduleError);
-      // Continue with empty array if fetch fails
-    }
-
-    // Convert FullCalendarEvent[] to CalendarEvent[] for component usage
-    calendarEvents = fullCalendarEvents.map(event => ({
-      id: event.id,
-      title: event.title,
-      start: event.start,
-      end: event.end,
-      allDay: event.allDay,
-      description: event.description,
-      location: event.location,
-      url: event.url,
-      backgroundColor: event.backgroundColor,
-      borderColor: event.borderColor,
-      textColor: event.textColor,
-      extendedProps: event.extendedProps as CalendarEvent['extendedProps']
-    }));
-
-    // Calculate availability and create background events if we have schedule blocks
-    if (scheduleBlocks.length > 0) {
-      try {
-        // Calculate availability for a 6-week range (typical FullCalendar month view)
-        const today = new Date();
-        const startDate = subDays(today, 7); // Start 1 week ago
-        const endDate = addDays(today, 35); // End 5 weeks from now
-        
-        const timeSlots = await calculateAvailabilityForDateRange(
-          startDate,
-          endDate,
-          scheduleBlocks,
-          calendarEvents,
-          DEFAULT_AVAILABILITY_CONFIG
-        );
-
-        // Transform time slots to background events
-        const backgroundEvents = transformTimeSlotsToBackgroundEvents(
-          timeSlots,
-          DEFAULT_BACKGROUND_EVENT_CONFIG
-        );
-
-        // Convert background events to FullCalendar format
-        availabilityBackgroundEvents = backgroundEvents.map(event => ({
-          id: event.id,
-          title: event.title,
-          start: event.start,
-          end: event.end,
-          allDay: event.allDay,
-          backgroundColor: event.backgroundColor,
-          borderColor: event.borderColor,
-          textColor: event.textColor,
-          extendedProps: event.extendedProps
-        }));
-
-        // Combine calendar events with background events
-        fullCalendarEvents = [...fullCalendarEvents, ...availabilityBackgroundEvents];
-      } catch (availabilityError) {
-        console.error('Error calculating availability:', availabilityError);
-        // Continue without background events if calculation fails
-      }
+      error = 'Failed to fetch calendar data';
     }
   } catch (err) {
     error = (err as Error).message || 'An error occurred while fetching calendar data';
@@ -171,7 +112,7 @@ if (user) {
               
               <div class="mb-4">
                 <FullCalendarComponent 
-                  events={calendarEvents}
+                  events={fullCalendarEvents}
                   showEventModal={true}
                   onDateRangeChange={(startDate, endDate) => (window as unknown as { handleDateRangeChange?: (startDate: Date, endDate: Date) => void }).handleDateRangeChange?.(startDate, endDate)}
                   client:load
@@ -272,79 +213,12 @@ if (user) {
 </Layout>
 
 <script>
-  import { actions } from 'astro:actions';
-import { endOfMonth, startOfMonth } from 'date-fns';
-  import { createFetchCalendarFormData } from '../features/calendar/models/Calendar.types';
+  import { setupCalendarRefreshWithJsonOutput, createDateRangeChangeHandler, setupDateRangeChangeHandler } from '../features/schedule/lib/calendar-refresh';
   
-  const refreshBtn = document.getElementById('refreshBtn') as HTMLButtonElement | null;
-  const jsonOutput = document.getElementById('jsonOutput') as HTMLPreElement | null;
+  // Setup calendar refresh button with JSON output
+  setupCalendarRefreshWithJsonOutput('refreshBtn', 'jsonOutput');
   
-  // Function to fetch calendar data for a specific date range
-  async function fetchCalendarForDateRange(startDate: Date, endDate: Date) {
-    const formData = createFetchCalendarFormData(startDate, endDate);
-    
-    try {
-      const result = await actions.calendar.providers.google.fetchCalendar(formData);
-      return result;
-    } catch (error) {
-      console.error('Error fetching calendar for date range:', error);
-      return { error: { message: 'Failed to fetch calendar data' } };
-    }
-  }
-  
-  // Function to handle date range changes from FullCalendar
-  function handleDateRangeChange(startDate: Date, endDate: Date) {
-    console.log('Date range changed:', { startDate, endDate });
-    
-    // Fetch new calendar data for the visible date range
-    fetchCalendarForDateRange(startDate, endDate).then(result => {
-      if ('data' in result && result.data?.success && jsonOutput) {
-        jsonOutput.textContent = JSON.stringify(result.data, null, 2);
-        
-        // Update the events count display
-        const eventsCountElement = document.querySelector('p:has(strong:contains("Events Found"))');
-        if (eventsCountElement) {
-          eventsCountElement.textContent = `Events Found: ${result.data.events.length}`;
-        }
-      } else if ('error' in result && result.error && jsonOutput) {
-        jsonOutput.textContent = JSON.stringify({ error: result.error.message }, null, 2);
-      }
-    });
-  }
-  
-  // Make the function globally available for the FullCalendar component
-  (window as unknown as { handleDateRangeChange: (startDate: Date, endDate: Date) => void }).handleDateRangeChange = handleDateRangeChange;
-  
-  refreshBtn?.addEventListener('click', async () => {
-    if (!refreshBtn || !jsonOutput) return;
-    
-    refreshBtn.textContent = 'Refreshing...';
-    refreshBtn.disabled = true;
-    
-    try {
-      // For refresh, use the current month as default range
-      const today = new Date();
-      const startOfCurrentMonth = startOfMonth(today);
-      const endOfCurrentMonth = endOfMonth(today);
-      
-      // Create typesafe FormData with proper date range
-      const formData = createFetchCalendarFormData(startOfCurrentMonth, endOfCurrentMonth);
-      
-      const result = await actions.calendar.providers.google.fetchCalendar(formData);
-      
-      if (result.data?.success) {
-        jsonOutput.textContent = JSON.stringify(result.data, null, 2);
-        // Reload the page to update the FullCalendar with new data
-        window.location.reload();
-      } else {
-        jsonOutput.textContent = JSON.stringify({ error: result.error?.message || 'Failed to fetch calendar data' }, null, 2);
-      }
-    } catch (error) {
-      jsonOutput.textContent = JSON.stringify({ error: (error as Error).message || 'An error occurred' }, null, 2);
-    } finally {
-      refreshBtn.textContent = 'Refresh Calendar';
-      refreshBtn.disabled = false;
-    }
-  });
-  
+  // Setup date range change handler
+  const dateRangeHandler = createDateRangeChangeHandler('jsonOutput');
+  setupDateRangeChangeHandler(dateRangeHandler);
 </script>

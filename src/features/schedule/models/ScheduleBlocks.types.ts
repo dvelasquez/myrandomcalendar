@@ -20,12 +20,6 @@ export type ScheduleBlock = InferSelectModel<typeof ScheduleBlock>;
 export type NewScheduleBlock = Omit<InferInsertModel<typeof ScheduleBlock>, 'id' | 'createdAt' | 'updatedAt'>;
 export type ScheduleBlockUpdate = Partial<NewScheduleBlock>;
 
-// Application interface (extends database type with computed fields)
-export interface ScheduleBlockData extends ScheduleBlock {
-  // Add any computed fields or transformations here
-  daysOfWeekArray: number[]; // Parsed from JSON string
-}
-
 // Helper function to parse daysOfWeek from database
 export function parseDaysOfWeek(daysOfWeekString: string): number[] {
   try {
@@ -38,27 +32,4 @@ export function parseDaysOfWeek(daysOfWeekString: string): number[] {
 // Helper function to serialize daysOfWeek for database
 export function serializeDaysOfWeek(daysOfWeekArray: number[]): string {
   return JSON.stringify(daysOfWeekArray);
-}
-
-// Form/API types
-export interface CreateScheduleBlockFormData {
-  title: string;
-  type: ScheduleBlockType;
-  startTime: string;
-  endTime: string;
-  daysOfWeek: number[];
-  isRecurring: boolean;
-  priority: SchedulePriority;
-  isActive: boolean;
-  timezone: string;
-  startDate?: Date;
-  endDate?: Date;
-  description?: string;
-  color: string;
-  bufferBefore: number;
-  bufferAfter: number;
-}
-
-export interface UpdateScheduleBlockFormData extends Partial<CreateScheduleBlockFormData> {
-  id: string;
 }

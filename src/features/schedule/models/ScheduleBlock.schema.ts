@@ -30,18 +30,15 @@ export const ScheduleBlockFormSchema = z.object({
   }),
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
-  // ✅ Transform JSON string to array for form data
-  daysOfWeek: z.string().transform((val) => {
+  // ✅ Validate JSON string format but keep as string for database
+  daysOfWeek: z.string().refine((val) => {
     try {
       const parsed = JSON.parse(val);
-      if (Array.isArray(parsed) && parsed.every(d => typeof d === 'number' && d >= 0 && d <= 6)) {
-        return parsed;
-      }
-      throw new Error('Invalid days of week format');
+      return Array.isArray(parsed) && parsed.every(d => typeof d === 'number' && d >= 0 && d <= 6);
     } catch {
-      throw new Error('Days of week must be a valid JSON array of numbers 0-6');
+      return false;
     }
-  }),
+  }, 'Days of week must be a valid JSON array of numbers 0-6'),
   // ✅ Transform string inputs to booleans for form data
   isRecurring: z.string().optional().transform((val) => val === 'true' || val === 'on' || val === undefined).default('true'),
   priority: z.enum(['high', 'medium', 'low'], {

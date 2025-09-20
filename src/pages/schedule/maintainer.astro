@@ -1,6 +1,7 @@
 ---
 import { actions } from 'astro:actions';
-import type { ScheduleBlock, ScheduleBlockType, SchedulePriority } from '../../features/schedule/models/ScheduleBlocks.types';
+import type { ScheduleBlock } from '../../features/schedule/models/ScheduleBlocks.types';
+import { SCHEDULE_TYPES, PRIORITIES, DAYS_OF_WEEK, isDaySelected } from '../../features/schedule/services/constants';
 import Layout from '../../layouts/Layout.astro';
 
 export const prerender = false; // Required for server actions
@@ -49,35 +50,6 @@ if (user) {
     console.error('Error fetching schedule blocks:', error);
   }
 }
-
-// Schedule types and priorities
-const SCHEDULE_TYPES: { value: ScheduleBlockType; label: string }[] = [
-  { value: 'work', label: 'Work' },
-  { value: 'sleep', label: 'Sleep' },
-  { value: 'personal', label: 'Personal' },
-  { value: 'travel', label: 'Travel' },
-  { value: 'meal', label: 'Meals' },
-  { value: 'exercise', label: 'Exercise' },
-  { value: 'family', label: 'Family' },
-  { value: 'study', label: 'Study' },
-  { value: 'other', label: 'Other' }
-];
-
-const PRIORITIES: { value: SchedulePriority; label: string }[] = [
-  { value: 'high', label: 'High' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'low', label: 'Low' }
-];
-
-const DAYS_OF_WEEK = [
-  { value: 0, label: 'Sunday', short: 'Sun' },
-  { value: 1, label: 'Monday', short: 'Mon' },
-  { value: 2, label: 'Tuesday', short: 'Tue' },
-  { value: 3, label: 'Wednesday', short: 'Wed' },
-  { value: 4, label: 'Thursday', short: 'Thu' },
-  { value: 5, label: 'Friday', short: 'Fri' },
-  { value: 6, label: 'Saturday', short: 'Sat' }
-];
 ---
 
 <Layout>
@@ -246,7 +218,7 @@ const DAYS_OF_WEEK = [
                       type="checkbox"
                       name="daysOfWeekCheckbox"
                       value={day.value}
-                      checked={editingBlock?.daysOfWeek ? JSON.parse(editingBlock.daysOfWeek).includes(day.value) : false}
+                      checked={editingBlock?.daysOfWeek ? isDaySelected(editingBlock.daysOfWeek, day.value) : false}
                       class="mb-1 daysOfWeekCheckbox"
                     />
                     <span class="font-medium">{day.short}</span>
@@ -451,26 +423,8 @@ const DAYS_OF_WEEK = [
 </Layout>
 
 <script>
-  // Handle days of week checkbox changes
-  document.addEventListener('DOMContentLoaded', function() {
-    const checkboxes = document.querySelectorAll('.daysOfWeekCheckbox') as NodeListOf<HTMLInputElement>;
-    const hiddenInput = document.getElementById('daysOfWeekJson') as HTMLInputElement;
-    
-    function updateDaysOfWeek() {
-      const selectedDays = Array.from(checkboxes)
-        .filter(checkbox => checkbox.checked)
-        .map(checkbox => parseInt(checkbox.value));
-      
-      if (hiddenInput) {
-        hiddenInput.value = JSON.stringify(selectedDays);
-      }
-    }
-    
-    checkboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', updateDaysOfWeek);
-    });
-    
-    // Initialize on page load
-    updateDaysOfWeek();
-  });
+  import { initializeDaysOfWeekHandler } from '../../features/schedule/lib/form-handlers';
+  
+  // Initialize days of week checkbox handler
+  initializeDaysOfWeekHandler();
 </script>

@@ -1,13 +1,8 @@
 ---
 import { actions } from 'astro:actions';
-import { startOfDay, endOfDay, format, addDays, subDays } from 'date-fns';
-import { calculateAvailability, DEFAULT_AVAILABILITY_CONFIG } from '../../features/calendar/domain/availability-calculator';
-import { transformGoogleApiEventsToFullCalendar } from '../../features/calendar/domain/google-event-transformer';
-import type { CalendarEvent, TimeSlot } from '../../features/calendar/models/Calendar.types';
-import { createFetchCalendarFormData } from '../../features/calendar/models/Calendar.types';
-import type { GoogleCalendarApiEvent } from '../../features/calendar/providers/google-calendar/models/GoogleCalendar.types';
-import type { ScheduleBlock } from '../../features/schedule/models/ScheduleBlocks.types';
+import { format, addDays, subDays } from 'date-fns';
 import Layout from '../../layouts/Layout.astro';
+import type { TimeSlot, CalendarEvent } from '@/features/calendar/models';
 
 export const prerender = false; // Required for server actions
 
@@ -19,53 +14,24 @@ const url = new URL(Astro.request.url);
 const selectedDateParam = url.searchParams.get('date');
 const selectedDate = selectedDateParam ? new Date(selectedDateParam) : new Date();
 
-// Fetch schedule blocks server-side
-let scheduleBlocks: ScheduleBlock[] = [];
-if (user) {
-  try {
-    const result = await Astro.callAction(actions.schedule.getScheduleBlocks, new FormData());
-    if (result.data) {
-      scheduleBlocks = result.data;
-    }
-  } catch (error) {
-    console.error('Error fetching schedule blocks:', error);
-  }
-}
-
-// Fetch calendar events for the selected day
+// Fetch availability page data using new service
 let googleCalendarEvents: CalendarEvent[] = [];
 let calendarError: string | null = null;
 let availabilityTimeSlots: TimeSlot[] = [];
 
 if (user) {
   try {
-    // Only fetch the selected day
-    const startDate = startOfDay(selectedDate);
-    const endDate = endOfDay(selectedDate);
+    const formData = new FormData();
+    formData.append('selectedDate', selectedDate.toISOString());
     
-    // Create typesafe FormData with proper date range
-    const formData = createFetchCalendarFormData(startDate, endDate);
-    
-    const result = await Astro.callAction(actions.calendar.providers.google.fetchCalendar, formData);
-    if (result.data?.success) {
-      // Transform Google Calendar API events to CalendarEvent format
-      const googleApiEvents = result.data.events as GoogleCalendarApiEvent[];
-      googleCalendarEvents = transformGoogleApiEventsToFullCalendar(googleApiEvents);
-      
-      // Calculate availability
-      availabilityTimeSlots = await calculateAvailability(
-        selectedDate,
-        scheduleBlocks,
-        googleCalendarEvents,
-        DEFAULT_AVAILABILITY_CONFIG
-      );
-    } else {
-      calendarError = result.error?.message || 'Failed to fetch calendar data';
-      console.warn('Calendar fetch error:', calendarError);
+    const result = await Astro.callAction(actions.schedule.getAvailabilityPageData, formData);
+    if (result.data) {
+      googleCalendarEvents = result.data.googleCalendarEvents;
+      calendarError = result.data.calendarError;
+      availabilityTimeSlots = result.data.availabilityTimeSlots;
     }
-  } catch (err) {
-    calendarError = (err as Error).message || 'An error occurred while fetching calendar data';
-    console.error('Calendar fetch error:', err);
+  } catch (error) {
+    console.error('Error fetching availability page data:', error);
   }
 }
 ---

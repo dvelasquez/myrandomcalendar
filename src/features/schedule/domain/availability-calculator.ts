@@ -1,6 +1,6 @@
 import { endOfDay, isAfter, isBefore, startOfDay, subDays } from 'date-fns';
-import type { ScheduleBlock } from '../../schedule/models/ScheduleBlocks.types';
-import type { CalendarEvent, TimeSlot, AvailabilityConfig } from '../models/Calendar.types';
+import type { CalendarEvent, TimeSlot, AvailabilityConfig } from '../../calendar/models/Calendar.types';
+import type { ScheduleBlock } from '../models/ScheduleBlocks.types';
 
 // Re-export TimeSlot for external use
 export type { TimeSlot };
@@ -149,7 +149,7 @@ export async function getScheduleBlockEventsForDate(
   includeOvernight: boolean
 ): Promise<CalendarEvent[]> {
   // Import the transformer function dynamically to avoid circular dependencies
-  const { scheduleBlocksToCalendarEvents } = await import('./schedule-event-transformer');
+  const { scheduleBlocksToCalendarEvents } = await import('../../calendar/domain/schedule-event-transformer');
   
   let startDate = startOfDay;
   if (includeOvernight) {

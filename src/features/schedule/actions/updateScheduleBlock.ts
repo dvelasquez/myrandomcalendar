@@ -25,7 +25,7 @@ export const updateScheduleBlock = defineAction({
       // Prepare update data
       const updateData: ScheduleBlockUpdate = {
         ...data,
-        daysOfWeek: data.daysOfWeek ? JSON.stringify(data.daysOfWeek) : undefined, // Convert array to JSON string
+        // daysOfWeek is already a JSON string from the form schema
       };
 
       // Call DB function
