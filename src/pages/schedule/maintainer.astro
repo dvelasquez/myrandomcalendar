@@ -1,7 +1,7 @@
 ---
 import { actions } from 'astro:actions';
-import type { ScheduleBlock } from '../../features/schedule/models/ScheduleBlocks.types';
-import { SCHEDULE_TYPES, PRIORITIES, DAYS_OF_WEEK, isDaySelected } from '../../features/schedule/services/constants';
+import { isDaySelected } from '../../features/schedule/services/constants';
+import { getSuccessMessageText, getActionErrorText } from '../../features/schedule/services/maintainer-handler';
 import Layout from '../../layouts/Layout.astro';
 
 export const prerender = false; // Required for server actions
@@ -31,40 +31,42 @@ if (deleteResult && !deleteResult.error) {
   return Astro.redirect('/schedule?success=deleted');
 }
 
-// Fetch schedule blocks using Astro.callAction
-let scheduleBlocks: ScheduleBlock[] = [];
-let editingBlock: ScheduleBlock | undefined;
+// Fetch maintainer page data using new service
+let maintainerData = null;
 
 if (user) {
   try {
-    const { data, error } = await Astro.callAction(actions.schedule.getScheduleBlocks, new FormData());
-    if (!error && data) {
-      scheduleBlocks = data;
-      
-      // If editing, find the block
-      if (editId) {
-        editingBlock = scheduleBlocks.find(block => block.id === editId);
-      }
+    const formData = new FormData();
+    if (editId) formData.append('editId', editId);
+    if (successMessage) formData.append('successMessage', successMessage);
+    if (errorMessage) formData.append('errorMessage', errorMessage);
+    if (createResult?.error) formData.append('createError', createResult.error.message);
+    if (updateResult?.error) formData.append('updateError', updateResult.error.message);
+    if (deleteResult?.error) formData.append('deleteError', deleteResult.error.message);
+    
+    const result = await Astro.callAction(actions.schedule.getMaintainerPageData, formData);
+    if (result.data) {
+      maintainerData = result.data;
     }
   } catch (error) {
-    console.error('Error fetching schedule blocks:', error);
+    console.error('Error fetching maintainer page data:', error);
   }
 }
 ---
 
 <Layout>
   <div class="container mx-auto px-4 py-8">
-    {user ? (
+    {user && maintainerData ? (
       <div class="max-w-4xl mx-auto">
         <!-- Header -->
         <div class="mb-8">
           <div class="flex justify-between items-start">
             <div>
               <h1 class="text-3xl font-bold text-gray-900 mb-2">
-                {editingBlock ? 'Edit Schedule Block' : 'Create Schedule Block'}
+                {maintainerData.editingBlock ? 'Edit Schedule Block' : 'Create Schedule Block'}
               </h1>
               <p class="text-gray-600">
-                {editingBlock ? 'Update your schedule block details' : 'Add a new schedule block to manage your time'}
+                {maintainerData.editingBlock ? 'Update your schedule block details' : 'Add a new schedule block to manage your time'}
               </p>
             </div>
             <a 
@@ -77,56 +79,28 @@ if (user) {
         </div>
 
         <!-- Success/Error Messages -->
-        {successMessage && (
+        {maintainerData.successMessage && (
           <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
             <h3 class="font-bold">Success!</h3>
-            <p>
-              {successMessage === 'created' && 'Schedule block created successfully!'}
-              {successMessage === 'updated' && 'Schedule block updated successfully!'}
-              {successMessage === 'deleted' && 'Schedule block deleted successfully!'}
-            </p>
+            <p>{getSuccessMessageText(maintainerData.successMessage)}</p>
           </div>
         )}
         
-        {errorMessage && (
+        {maintainerData.errorMessage && (
           <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
             <h3 class="font-bold">Error:</h3>
-            <p>{errorMessage}</p>
+            <p>{maintainerData.errorMessage}</p>
           </div>
         )}
 
         <!-- Handle action results -->
         {(() => {
-          const createResult = Astro.getActionResult(actions.schedule.createScheduleBlock);
-          const updateResult = Astro.getActionResult(actions.schedule.updateScheduleBlock);
-          const deleteResult = Astro.getActionResult(actions.schedule.deleteScheduleBlock);
-          
-          // Show create action errors
-          if (createResult?.error) {
+          const actionError = getActionErrorText(maintainerData.actionErrors);
+          if (actionError) {
             return (
               <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
                 <h3 class="font-bold">Error:</h3>
-                <p>{createResult.error.message}</p>
-              </div>
-            );
-          }
-          
-          // Show update action errors
-          if (updateResult?.error) {
-            return (
-              <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                <h3 class="font-bold">Error:</h3>
-                <p>{updateResult.error.message}</p>
-              </div>
-            );
-          }
-          
-          // Show delete action errors
-          if (deleteResult?.error) {
-            return (
-              <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                <h3 class="font-bold">Error:</h3>
-                <p>{deleteResult.error.message}</p>
+                <p>{actionError}</p>
               </div>
             );
           }
@@ -134,9 +108,9 @@ if (user) {
 
         <!-- Schedule Block Form -->
         <div class="bg-white rounded-lg shadow-md p-6">
-          <form method="POST" action={editingBlock ? actions.schedule.updateScheduleBlock : actions.schedule.createScheduleBlock} class="space-y-6">
+          <form method="POST" action={maintainerData.editingBlock ? actions.schedule.updateScheduleBlock : actions.schedule.createScheduleBlock} class="space-y-6">
             <!-- Hidden fields -->
-            {editingBlock && <input type="hidden" name="id" value={editingBlock.id} />}
+            {maintainerData.editingBlock && <input type="hidden" name="id" value={maintainerData.editingBlock.id} />}
             <input type="hidden" name="timezone" value="UTC" />
 
             <!-- Basic Information -->
@@ -149,7 +123,7 @@ if (user) {
                   type="text"
                   id="title"
                   name="title"
-                  value={editingBlock?.title || ''}
+                  value={maintainerData.editingBlock?.title || ''}
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="e.g., Work Hours, Sleep Time"
                   required
@@ -166,8 +140,8 @@ if (user) {
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 >
-                  {SCHEDULE_TYPES.map(type => (
-                    <option value={type.value} selected={editingBlock?.type === type.value || (!editingBlock && type.value === 'work')}>
+                  {maintainerData.formOptions.scheduleTypes.map(type => (
+                    <option value={type.value} selected={maintainerData.editingBlock?.type === type.value || (!maintainerData.editingBlock && type.value === 'work')}>
                       {type.label}
                     </option>
                   ))}
@@ -185,7 +159,7 @@ if (user) {
                   type="time"
                   id="startTime"
                   name="startTime"
-                  value={editingBlock?.startTime || '09:00'}
+                  value={maintainerData.editingBlock?.startTime || '09:00'}
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -199,7 +173,7 @@ if (user) {
                   type="time"
                   id="endTime"
                   name="endTime"
-                  value={editingBlock?.endTime || '17:00'}
+                  value={maintainerData.editingBlock?.endTime || '17:00'}
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -212,13 +186,13 @@ if (user) {
                 Days of Week *
               </label>
               <div class="grid grid-cols-7 gap-2">
-                {DAYS_OF_WEEK.map(day => (
+                {maintainerData.formOptions.daysOfWeek.map(day => (
                   <label class="flex flex-col items-center p-2 text-sm rounded-md border cursor-pointer hover:bg-gray-50">
                     <input
                       type="checkbox"
                       name="daysOfWeekCheckbox"
                       value={day.value}
-                      checked={editingBlock?.daysOfWeek ? isDaySelected(editingBlock.daysOfWeek, day.value) : false}
+                      checked={maintainerData.editingBlock?.daysOfWeek ? isDaySelected(maintainerData.editingBlock.daysOfWeek, day.value) : false}
                       class="mb-1 daysOfWeekCheckbox"
                     />
                     <span class="font-medium">{day.short}</span>
@@ -226,7 +200,7 @@ if (user) {
                 ))}
               </div>
               <!-- Hidden input to send daysOfWeek as JSON -->
-              <input type="hidden" name="daysOfWeek" value={JSON.stringify(editingBlock?.daysOfWeek || [1, 2, 3, 4, 5])} id="daysOfWeekJson" />
+              <input type="hidden" name="daysOfWeek" value={JSON.stringify(maintainerData.editingBlock?.daysOfWeek || [1, 2, 3, 4, 5])} id="daysOfWeekJson" />
             </div>
 
             <!-- Priority and Settings -->
@@ -240,8 +214,8 @@ if (user) {
                   name="priority"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  {PRIORITIES.map(priority => (
-                    <option value={priority.value} selected={editingBlock?.priority === priority.value || (!editingBlock && priority.value === 'medium')}>
+                  {maintainerData.formOptions.priorities.map(priority => (
+                    <option value={priority.value} selected={maintainerData.editingBlock?.priority === priority.value || (!maintainerData.editingBlock && priority.value === 'medium')}>
                       {priority.label}
                     </option>
                   ))}
@@ -256,7 +230,7 @@ if (user) {
                   type="color"
                   id="color"
                   name="color"
-                  value={editingBlock?.color || '#3b82f6'}
+                  value={maintainerData.editingBlock?.color || '#3b82f6'}
                   class="w-full h-10 border border-gray-300 rounded cursor-pointer"
                 />
               </div>
@@ -272,7 +246,7 @@ if (user) {
                   type="number"
                   id="bufferBefore"
                   name="bufferBefore"
-                  value={editingBlock?.bufferBefore || 0}
+                  value={maintainerData.editingBlock?.bufferBefore || 0}
                   min="0"
                   max="120"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -287,7 +261,7 @@ if (user) {
                   type="number"
                   id="bufferAfter"
                   name="bufferAfter"
-                  value={editingBlock?.bufferAfter || 0}
+                  value={maintainerData.editingBlock?.bufferAfter || 0}
                   min="0"
                   max="120"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -306,7 +280,7 @@ if (user) {
                 rows="3"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Optional description or notes about this schedule block"
-              >{editingBlock?.description || ''}</textarea>
+              >{maintainerData.editingBlock?.description || ''}</textarea>
             </div>
 
             <!-- Settings -->
@@ -316,7 +290,7 @@ if (user) {
                   type="checkbox"
                   name="isRecurring"
                   value="true"
-                  checked={editingBlock?.isRecurring ?? true}
+                  checked={maintainerData.editingBlock?.isRecurring ?? true}
                   class="mr-2"
                 />
                 <span class="text-sm text-gray-700">Recurring</span>
@@ -327,7 +301,7 @@ if (user) {
                   type="checkbox"
                   name="isActive"
                   value="true"
-                  checked={editingBlock?.isActive ?? true}
+                  checked={maintainerData.editingBlock?.isActive ?? true}
                   class="mr-2"
                 />
                 <span class="text-sm text-gray-700">Active</span>
@@ -347,18 +321,18 @@ if (user) {
                 type="submit"
                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
-                {editingBlock ? 'Update' : 'Create'}
+                {maintainerData.editingBlock ? 'Update' : 'Create'}
               </button>
             </div>
           </form>
         </div>
 
         <!-- Existing Schedule Blocks -->
-        {scheduleBlocks.length > 0 && (
+        {maintainerData.scheduleBlocks.length > 0 && (
           <div class="mt-8 bg-white rounded-lg shadow-md p-6">
             <h2 class="text-xl font-bold text-gray-900 mb-4">Existing Schedule Blocks</h2>
             <div class="space-y-4">
-              {scheduleBlocks.map(block => (
+              {maintainerData.scheduleBlocks.map(block => (
                 <div class="border rounded-lg p-4 flex justify-between items-center">
                   <div>
                     <h3 class="font-medium text-gray-900">{block.title}</h3>
