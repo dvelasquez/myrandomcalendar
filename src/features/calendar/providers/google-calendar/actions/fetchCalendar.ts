@@ -1,23 +1,19 @@
 import { defineAction, ActionError, type ActionAPIContext } from 'astro:actions';
 import { parseISO } from 'date-fns';
 import { google } from 'googleapis';
-import { auth } from '../../../../auth/lib/better-auth';
 import { getGoogleCalendarCredentials, hasGoogleCalendarAccess } from '../db/get';
 import { fetchCalendarSchema } from '../models/GoogleCalendar.schema';
 import type { GoogleCalendarListResponse } from '../models/GoogleCalendar.types';
 
 export const handleFetchCalendar = async ({ startDate, endDate }: { startDate: Date, endDate: Date }, context: ActionAPIContext): Promise<GoogleCalendarListResponse> => {
-  const session = await auth.api.getSession({
-    headers: context.request.headers,
-  });
-  if (!session) {
+  if (!context.locals.user) {
     throw new ActionError({
       code: 'UNAUTHORIZED',
       message: 'You must be logged in to access calendar data',
     });
   } 
 
-  const hasAccess = await hasGoogleCalendarAccess(session.user.id);
+  const hasAccess = await hasGoogleCalendarAccess(context.locals.user.id);
   if (!hasAccess) {
     throw new ActionError({
       code: 'NOT_FOUND',
@@ -26,7 +22,7 @@ export const handleFetchCalendar = async ({ startDate, endDate }: { startDate: D
   }
 
   // Get Google Calendar credentials
-  const credentials = await getGoogleCalendarCredentials(session.user.id);
+  const credentials = await getGoogleCalendarCredentials(context.locals.user.id);
   if (!credentials) {
     throw new ActionError({
       code: 'NOT_FOUND',

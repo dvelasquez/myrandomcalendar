@@ -1,6 +1,5 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
-import { auth } from "../../auth/lib/better-auth";
 import { toggleScheduleBlockDb } from "../db/toggle";
 import type { ScheduleBlock } from "../models/ScheduleBlocks.types";
 
@@ -9,11 +8,10 @@ export const toggleScheduleBlock = defineAction({
   input: z.object({
     id: z.string().min(1, 'Schedule block ID is required'),
   }),
-  handler: async ({ id }, { request }): Promise<ScheduleBlock> => {
+  handler: async ({ id }, context): Promise<ScheduleBlock> => {
     try {
       // Authentication check
-      const session = await auth.api.getSession({ headers: request.headers });
-      if (!session?.user) {
+      if (!context.locals.user) {
         throw new ActionError({ 
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to toggle schedule blocks'

@@ -1,15 +1,13 @@
 import { ActionError, defineAction } from "astro:actions";
-import { auth } from "../../auth/lib/better-auth";
 import { getScheduleBlocksDb } from "../db/get";
 import type { ScheduleBlock } from "../models/ScheduleBlocks.types";
 
 export const getScheduleBlocks = defineAction({
   accept: 'form',
-  handler: async (_, { request }): Promise<ScheduleBlock[]> => {
+  handler: async (_, context): Promise<ScheduleBlock[]> => {
     try {
       // Authentication check
-      const session = await auth.api.getSession({ headers: request.headers });
-      if (!session?.user) {
+      if (!context.locals.user) {
         throw new ActionError({ 
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to access schedule blocks'
@@ -17,7 +15,7 @@ export const getScheduleBlocks = defineAction({
       }
 
       // Call DB function
-      const blocks = await getScheduleBlocksDb(session.user.id);
+      const blocks = await getScheduleBlocksDb(context.locals.user.id);
       
       // Return result directly
       return blocks;

@@ -1,5 +1,4 @@
 import { ActionError, defineAction } from "astro:actions";
-import { auth } from "../../auth/lib/better-auth";
 import { getPeriodicEventsDb } from "../db/get";
 import type { PeriodicEvent as PeriodicEventType } from "../models/PeriodicEvents.types";
 
@@ -8,20 +7,16 @@ import type { PeriodicEvent as PeriodicEventType } from "../models/PeriodicEvent
  */
 export const getPeriodicEvents = defineAction({
   accept: 'form',
-  handler: async (_, { request }): Promise<PeriodicEventType[]> => {
+  handler: async (_, context): Promise<PeriodicEventType[]> => {
     try {
-      const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-      
-      if (!session?.user) {
+      if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to view periodic events',
         });
       }
 
-      const events = await getPeriodicEventsDb(session.user.id);
+      const events = await getPeriodicEventsDb(context.locals.user.id);
 
       return events;
     } catch (error) {

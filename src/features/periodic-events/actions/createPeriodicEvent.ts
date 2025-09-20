@@ -1,5 +1,4 @@
 import { ActionError, defineAction } from "astro:actions";
-import { auth } from "../../auth/lib/better-auth";
 import { createPeriodicEventDb } from "../db/create";
 import { PeriodicEventFormSchema } from "../models/PeriodicEvents.schema";
 import type { NewPeriodicEvent, PeriodicEvent as PeriodicEventType } from "../models/PeriodicEvents.types";
@@ -10,13 +9,9 @@ import type { NewPeriodicEvent, PeriodicEvent as PeriodicEventType } from "../mo
 export const createPeriodicEvent = defineAction({
   accept: 'form',
   input: PeriodicEventFormSchema,
-  handler: async ({ title, description, frequency, frequencyCount, duration, category, priority, color }, { request }): Promise<PeriodicEventType> => {
+  handler: async ({ title, description, frequency, frequencyCount, duration, category, priority, color }, context): Promise<PeriodicEventType> => {
     try {
-      const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-      
-      if (!session?.user) {
+      if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to create periodic events',
@@ -32,7 +27,7 @@ export const createPeriodicEvent = defineAction({
         category,
         priority,
         color,
-        userId: session.user.id,
+        userId: context.locals.user.id,
       };
 
       const result = await createPeriodicEventDb(newPeriodicEvent);

@@ -1,6 +1,5 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
-import { auth } from "../../auth/lib/better-auth";
 import { createScheduleBlockDb } from "../db/create";
 import type { NewScheduleBlock } from "../models/ScheduleBlocks.types";
 import { serializeDaysOfWeek } from "../models/ScheduleBlocks.types";
@@ -14,13 +13,9 @@ export const createDefaultScheduleBlocks = defineAction({
   input: z.object({
     timezone: z.string().default('UTC'),
   }),
-  handler: async ({ timezone }, { request }) => {
+  handler: async ({ timezone }, context) => {
     try {
-      const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-      
-      if (!session?.user) {
+      if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to create default schedule blocks',
@@ -29,7 +24,7 @@ export const createDefaultScheduleBlocks = defineAction({
 
       const defaultBlocks: NewScheduleBlock[] = [
         {
-          userId: session.user.id,
+          userId: context.locals.user.id,
           title: 'Work Hours',
           type: 'work',
           startTime: '09:00',
@@ -45,7 +40,7 @@ export const createDefaultScheduleBlocks = defineAction({
           bufferAfter: 15,
         },
         {
-          userId: session.user.id,
+          userId: context.locals.user.id,
           title: 'Sleep Schedule',
           type: 'sleep',
           startTime: '22:00',
@@ -61,7 +56,7 @@ export const createDefaultScheduleBlocks = defineAction({
           bufferAfter: 30,
         },
         {
-          userId: session.user.id,
+          userId: context.locals.user.id,
           title: 'Personal Time',
           type: 'personal',
           startTime: '18:00',

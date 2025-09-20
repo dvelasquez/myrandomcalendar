@@ -1,6 +1,5 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
-import { auth } from "../../auth/lib/better-auth";
 import { getSchedulePageData, getAvailabilityPageData, getCalendarPageData } from "../services/page-handler";
 import type { SchedulePageData, AvailabilityPageData } from "../services/page-handler";
 
@@ -12,10 +11,8 @@ export const getSchedulePageDataAction = defineAction({
     endDate: z.string().optional(),
   }),
   handler: async ({ startDate, endDate }, context): Promise<SchedulePageData> => {
-    const { request } = context;
     try {
-      const session = await auth.api.getSession({ headers: request.headers });
-      if (!session?.user) {
+      if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to fetch schedule data'
@@ -49,10 +46,8 @@ export const getAvailabilityPageDataAction = defineAction({
     selectedDate: z.string(),
   }),
   handler: async ({ selectedDate }, context): Promise<AvailabilityPageData> => {
-    const { request } = context;
     try {
-      const session = await auth.api.getSession({ headers: request.headers });
-      if (!session?.user) {
+      if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to fetch availability data'
@@ -85,10 +80,8 @@ export const getCalendarPageDataAction = defineAction({
     endDate: z.string(),
   }),
   handler: async ({ startDate, endDate }, context) => {
-    const { request } = context;
     try {
-      const session = await auth.api.getSession({ headers: request.headers });
-      if (!session?.user) {
+      if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to fetch calendar data'
@@ -123,10 +116,8 @@ export const refreshCalendarDataAction = defineAction({
     endDate: z.string(),
   }),
   handler: async ({ startDate, endDate }, context) => {
-    const { request } = context;
     try {
-      const session = await auth.api.getSession({ headers: request.headers });
-      if (!session?.user) {
+      if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to refresh calendar data'

@@ -1,5 +1,4 @@
 import { ActionError, defineAction } from "astro:actions";
-import { auth } from "../../auth/lib/better-auth";
 import { createScheduleBlockDb } from "../db/create";
 import { ScheduleBlockFormSchema } from "../models/ScheduleBlock.schema";
 import type { NewScheduleBlock } from "../models/ScheduleBlocks.types";
@@ -7,11 +6,10 @@ import type { NewScheduleBlock } from "../models/ScheduleBlocks.types";
 export const createScheduleBlock = defineAction({
   accept: 'form',
   input: ScheduleBlockFormSchema,
-  handler: async (data, { request }): Promise<NewScheduleBlock> => {
+  handler: async (data, context): Promise<NewScheduleBlock> => {
     try {
       // Authentication check
-      const session = await auth.api.getSession({ headers: request.headers });
-      if (!session?.user) {
+      if (!context.locals.user) {
         throw new ActionError({ 
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to create schedule blocks'
@@ -21,7 +19,7 @@ export const createScheduleBlock = defineAction({
       // Prepare data with userId
       const scheduleBlockData: NewScheduleBlock = {
         ...data,
-        userId: session.user.id,
+        userId: context.locals.user.id,
         // daysOfWeek is already a JSON string from the form schema
       };
       

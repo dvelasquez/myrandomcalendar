@@ -1,6 +1,5 @@
 import { defineAction, ActionError } from 'astro:actions';
 import { parseISO } from 'date-fns';
-import { auth } from "../../auth/lib/better-auth";
 import { calculateAvailabilityForDateRange, DEFAULT_AVAILABILITY_CONFIG } from '../../schedule/domain/availability-calculator';
 import type { ScheduleBlock } from '../../schedule/models/ScheduleBlocks.types';
 import { transformTimeSlotsToBackgroundEvents, DEFAULT_BACKGROUND_EVENT_CONFIG } from '../domain/background-event-transformer';
@@ -10,18 +9,13 @@ import type { CalendarEvent } from '../models/Calendar.types';
 export const calculateAvailability = defineAction({
   accept: 'form',
   input: availabilityCalculationSchema,
-  handler: async ({ startDate, endDate, includeOvernightEvents, timezone }, { request }) => {
+  handler: async ({ startDate, endDate, includeOvernightEvents, timezone }, context) => {
     try {
       // Parse dates using date-fns (already validated by Zod)
       const start = parseISO(startDate);
       const end = parseISO(endDate);
 
-      // Get the current session
-      const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-
-      if (!session) {
+      if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to calculate availability',
@@ -72,18 +66,13 @@ export const calculateAvailability = defineAction({
 export const getBackgroundEvents = defineAction({
   accept: 'form',
   input: availabilityCalculationSchema,
-  handler: async ({ startDate, endDate, includeOvernightEvents, timezone }, { request }) => {
+  handler: async ({ startDate, endDate, includeOvernightEvents, timezone }, context) => {
     try {
       // Parse dates using date-fns (already validated by Zod)
       const start = parseISO(startDate);
       const end = parseISO(endDate);
 
-      // Get the current session
-      const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-
-      if (!session) {
+      if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to get background events',

@@ -1,6 +1,5 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
-import { auth } from "../../auth/lib/better-auth";
 import { deleteScheduleBlockDb } from "../db/delete";
 
 export const deleteScheduleBlock = defineAction({
@@ -8,11 +7,10 @@ export const deleteScheduleBlock = defineAction({
   input: z.object({
     id: z.string().min(1, 'Schedule block ID is required'),
   }),
-  handler: async ({ id }, { request }): Promise<void> => {
+  handler: async ({ id }, context): Promise<void> => {
     try {
       // Authentication check
-      const session = await auth.api.getSession({ headers: request.headers });
-      if (!session?.user) {
+      if (!context.locals.user) {
         throw new ActionError({ 
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to delete schedule blocks'
