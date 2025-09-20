@@ -1,43 +1,16 @@
 ---
 import { actions } from 'astro:actions';
-import type { PeriodicFrequency, PeriodicCategory } from '../../features/periodic-events/models/PeriodicEvents.types';
-import type { SchedulePriority } from '../../features/schedule/models/ScheduleBlocks.types';
+import { handlePeriodicEventsCreatePage } from '../../features/periodic-events/services/page-handler'; 
 import Layout from '../../layouts/Layout.astro';
 
 // Handle action results
 const result = Astro.getActionResult(actions.periodicEvents.create);
 
-// Define options for form selects 
-const frequencyOptions: { value: PeriodicFrequency; label: string }[] = [
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-];
+// Handle page logic using service
+const pageData = handlePeriodicEventsCreatePage(result);
 
-const categoryOptions: { value: PeriodicCategory; label: string }[] = [
-  { value: 'exercise', label: 'Exercise' },
-  { value: 'personal', label: 'Personal' },
-  { value: 'family', label: 'Family' },
-  { value: 'work', label: 'Work' },
-  { value: 'health', label: 'Health' },
-  { value: 'hobby', label: 'Hobby' },
-  { value: 'other', label: 'Other' },
-];
-
-const priorityOptions: { value: SchedulePriority; label: string }[] = [
-  { value: 'high', label: 'High' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'low', label: 'Low' },
-];
-
-const colorOptions = [
-  { value: '#10b981', label: 'Green', class: 'bg-green-500' },
-  { value: '#3b82f6', label: 'Blue', class: 'bg-blue-500' },
-  { value: '#f59e0b', label: 'Orange', class: 'bg-orange-500' },
-  { value: '#ef4444', label: 'Red', class: 'bg-red-500' },
-  { value: '#8b5cf6', label: 'Purple', class: 'bg-purple-500' },
-  { value: '#06b6d4', label: 'Cyan', class: 'bg-cyan-500' },
-];
+// Destructure page data
+const { formOptions, actionResult } = pageData;
 ---
 
 <Layout title="Create Periodic Event">
@@ -63,10 +36,10 @@ const colorOptions = [
       </div>
 
       <!-- Success/Error Messages -->
-      {result && !result.error && (
+      {actionResult && !actionResult.error && (
         <div class="mb-6 p-4 rounded-lg bg-green-50 border border-green-200 text-green-800">
           <h3 class="font-semibold">Event Created Successfully!</h3>
-          <p>Your periodic event "{result.data?.data?.title}" has been created.</p>
+          <p>Your periodic event "{actionResult.data?.data?.title}" has been created.</p>
           <div class="mt-3">
             <a 
               href="/periodic-events" 
@@ -81,10 +54,10 @@ const colorOptions = [
         </div>
       )}
       
-      {result?.error && (
+      {actionResult?.error && (
         <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800">
           <h3 class="font-semibold">Error</h3>
-          <p>{result.error.message}</p>
+          <p>{actionResult.error.message}</p>
         </div>
       )}
 
@@ -132,7 +105,7 @@ const colorOptions = [
                 required
                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {frequencyOptions.map(option => (
+                {formOptions.frequencyOptions.map(option => (
                   <option value={option.value}>{option.label}</option>
                 ))}
               </select>
@@ -186,7 +159,7 @@ const colorOptions = [
                 required
                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {categoryOptions.map(option => (
+                {formOptions.categoryOptions.map(option => (
                   <option value={option.value}>{option.label}</option>
                 ))}
               </select>
@@ -202,7 +175,7 @@ const colorOptions = [
                 required
                 class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {priorityOptions.map(option => (
+                {formOptions.priorityOptions.map(option => (
                   <option value={option.value}>{option.label}</option>
                 ))}
               </select>
@@ -215,7 +188,7 @@ const colorOptions = [
               Color *
             </label>
             <div class="grid grid-cols-6 gap-2">
-              {colorOptions.map(color => (
+              {formOptions.colorOptions.map(color => (
                 <label class="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
