@@ -151,6 +151,8 @@ src/features/
 │   │   ├── delete.ts
 │   │   └── [other-crud].ts
 │   ├── domain/           # Business logic (reserved for future use)
+│   ├── services/         # Page-specific business logic
+│   │   └── {page}-handler.ts
 │   └── models/           # Data definitions
 │       ├── {FeatureName}.db.ts      # Astro DB table definition
 │       ├── {FeatureName}.schema.ts  # Zod validation schemas
@@ -161,6 +163,7 @@ src/features/
 - **Actions**: `camelCase.ts` (e.g., `createScheduleBlock.ts`)
 - **DB**: `camelCase.ts` (e.g., `create.ts`, `get.ts`)
 - **Models**: `PascalCase.{db|schema|types}.ts` (e.g., `ScheduleBlock.db.ts`)
+- **Services**: `{page}-handler.ts` (e.g., `maintainer-handler.ts`)
 
 ### **Action Pattern**
 ```typescript
@@ -168,11 +171,10 @@ src/features/
 export const {actionName} = defineAction({
   accept: 'form',
   input: {FeatureName}FormSchema,
-  handler: async (data, { request }): Promise<{FeatureName}Type> => {
+  handler: async (data, context): Promise<{FeatureName}Type> => {
     try {
-      // Authentication check
-      const session = await auth.api.getSession({ headers: request.headers });
-      if (!session?.user) {
+      // ✅ UPDATED: Use context.locals.user for better performance
+      if (!context.locals.user) {
         throw new ActionError({ 
           code: 'UNAUTHORIZED',
           message: 'You must be logged in to {action description}'
@@ -182,7 +184,7 @@ export const {actionName} = defineAction({
       // Prepare data with userId
       const {featureName}Data: New{FeatureName} = {
         ...data,
-        userId: session.user.id,
+        userId: context.locals.user.id,
       };
       
       // Call DB function
@@ -204,6 +206,45 @@ export const {actionName} = defineAction({
     }
   },
 });
+```
+
+### **Services Pattern**
+```typescript
+// services/{page}-handler.ts
+export interface {Page}PageData {
+  // Structured data interface
+  data1: Type1[];
+  data2: Type2[];
+  formOptions: FormOptions;
+  successMessage?: string;
+  errorMessage?: string;
+}
+
+export async function handle{Page}Page(
+  context: ActionAPIContext,
+  ...params
+): Promise<{Page}PageData | null> {
+  try {
+    if (!context.locals.user) {
+      return null;
+    }
+
+    // Pure business logic
+    // Data fetching and transformation
+    // No presentation concerns
+    
+    return {
+      data1,
+      data2,
+      formOptions,
+      successMessage,
+      errorMessage
+    };
+  } catch (error) {
+    console.error('Error in handle{Page}Page:', error);
+    return null;
+  }
+}
 ```
 
 ### **DB Pattern**

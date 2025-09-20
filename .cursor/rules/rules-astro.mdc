@@ -48,6 +48,153 @@ useEffect(() => {
 - **UX**: No loading states or empty screens
 - **Architecture**: Clean separation of concerns
 
+## 🏗️ Service Layer Pattern (CRITICAL)
+
+### **When to Use Services**
+- Complex pages with multiple data sources
+- Business logic that needs to be testable
+- Data transformation and aggregation
+- Reusable logic across multiple pages
+
+### **Service Structure**
+```typescript
+// services/{page}-handler.ts
+export interface {Page}PageData {
+  // Structured data interface
+  data1: Type1[];
+  data2: Type2[];
+  formOptions: FormOptions;
+  successMessage?: string;
+  errorMessage?: string;
+}
+
+export async function handle{Page}Page(
+  context: ActionAPIContext,
+  ...params
+): Promise<{Page}PageData | null> {
+  try {
+    if (!context.locals.user) {
+      return null;
+    }
+
+    // Pure business logic
+    // Data fetching and transformation
+    // No presentation concerns
+    
+    return {
+      data1,
+      data2,
+      formOptions,
+      successMessage,
+      errorMessage
+    };
+  } catch (error) {
+    console.error('Error in handle{Page}Page:', error);
+    return null;
+  }
+}
+```
+
+### **Benefits**
+- **Testable**: Pure functions with no side effects
+- **Reusable**: Can be used by actions and other services
+- **Maintainable**: Clear separation of business logic
+- **Type Safe**: Full TypeScript coverage
+
+## 📄 Page Data Actions Pattern (CRITICAL)
+
+### **For Complex Pages**
+When pages have complex data fetching, use this pattern:
+
+1. **Service Layer**: Pure business logic
+2. **Action Layer**: API interface with validation
+3. **Template Layer**: Presentation only
+
+### **Implementation**
+```typescript
+// actions/get{Page}Data.ts
+export const get{Page}DataAction = defineAction({
+  accept: 'form',
+  input: z.object({
+    // Page parameters
+    editId: z.string().optional(),
+    successMessage: z.string().optional(),
+    errorMessage: z.string().optional(),
+  }),
+  handler: async (params, context): Promise<{Page}PageData> => {
+    try {
+      if (!context.locals.user) {
+        throw new ActionError({
+          code: 'UNAUTHORIZED',
+          message: 'You must be logged in to access this page'
+        });
+      }
+
+      const data = await handle{Page}Page(context, ...params);
+      
+      if (!data) {
+        throw new ActionError({
+          code: 'UNAUTHORIZED',
+          message: 'You must be logged in to access this page'
+        });
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error in get{Page}DataAction:', error);
+      if (error instanceof ActionError) {
+        throw error;
+      }
+      throw new ActionError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to fetch page data',
+      });
+    }
+  },
+});
+```
+
+### **Template Usage**
+```astro
+---
+import { actions } from 'astro:actions';
+
+// Get query parameters
+const url = new URL(Astro.request.url);
+const editId = url.searchParams.get('edit');
+const successMessage = url.searchParams.get('success');
+
+// Fetch page data using action
+let pageData = null;
+if (user) {
+  try {
+    const formData = new FormData();
+    if (editId) formData.append('editId', editId);
+    if (successMessage) formData.append('successMessage', successMessage);
+    
+    const result = await Astro.callAction(actions.feature.getPageData, formData);
+    if (result.data) {
+      pageData = result.data;
+    }
+  } catch (error) {
+    console.error('Error fetching page data:', error);
+  }
+}
+---
+
+<Layout>
+  {user && pageData ? (
+    <!-- Use structured pageData -->
+    <div>
+      <h1>{pageData.editingItem ? 'Edit' : 'Create'}</h1>
+      <!-- Form and content using pageData -->
+    </div>
+  ) : (
+    <!-- Authentication required -->
+  )}
+</Layout>
+```
+
 ## 🎯 Astro Actions API (Latest)
 
 ### **Actions Definition**
@@ -120,7 +267,7 @@ import { ActionError, defineAction } from 'astro:actions';
 export const server = {
   protectedAction: defineAction({
     handler: async (input, context) => {
-      // Check authentication
+      // ✅ UPDATED: Use context.locals.user for better performance
       if (!context.locals.user) {
         throw new ActionError({ 
           code: 'UNAUTHORIZED',
@@ -150,7 +297,8 @@ export const server = {
 - Use `astro:db` for database operations
 
 ### **Authentication**
-- Use `auth.api.getSession()` in middleware and Astro pages
+- ✅ **Use `context.locals.user`** in actions for better performance
+- ❌ **Avoid `auth.api.getSession()`** in actions (use middleware instead)
 - Check authentication status in Astro frontmatter
 - Pass user data as props to React components
 
@@ -169,23 +317,30 @@ export const server = {
 ### **Page with Authentication**
 ```astro
 ---
-import { auth } from '../lib/better-auth';
-import { redirect } from 'astro:actions';
+import { actions } from 'astro:actions';
 
-const session = await auth.api.getSession({
-  headers: Astro.request.headers
-});
+// ✅ UPDATED: Use context.locals.user from middleware
+const { user } = Astro.locals;
 
-if (!session) {
-  return redirect('/login');
+if (!user) {
+  return Astro.redirect('/login');
 }
 
-// Fetch data server-side
-const data = await fetchUserData(session.user.id);
+// Fetch data server-side using actions
+let pageData = null;
+try {
+  const formData = new FormData();
+  const result = await Astro.callAction(actions.feature.getPageData, formData);
+  if (result.data) {
+    pageData = result.data;
+  }
+} catch (error) {
+  console.error('Error fetching page data:', error);
+}
 ---
 
 <Layout title="Dashboard">
-  <DashboardComponent user={session.user} data={data} client:load />
+  <DashboardComponent user={user} data={pageData} client:load />
 </Layout>
 ```
 
@@ -235,6 +390,82 @@ if (searchQuery) {
 ---
 ```
 
+## 🔄 Complex Page Refactoring Guidelines
+
+### **When to Refactor**
+Refactor `.astro` files when they have:
+- **200+ lines** of mixed logic
+- **Multiple data sources** (database, APIs, calculations)
+- **Complex business logic** in templates
+- **Hard to test** functionality
+- **Poor maintainability** due to mixed concerns
+
+### **Refactoring Process**
+1. **Identify Logic**: Extract business logic from template
+2. **Create Service**: Move logic to `services/{page}-handler.ts`
+3. **Create Action**: Add `actions/get{Page}Data.ts`
+4. **Update Template**: Simplify to presentation only
+5. **Test**: Ensure functionality remains the same
+
+### **Before vs After**
+```typescript
+// ❌ BEFORE: Mixed logic in template
+---
+const { user } = Astro.locals;
+const url = new URL(Astro.request.url);
+const editId = url.searchParams.get('edit');
+
+// Complex data fetching
+let scheduleBlocks = [];
+let editingBlock;
+if (user) {
+  try {
+    const { data, error } = await Astro.callAction(actions.schedule.getScheduleBlocks, new FormData());
+    if (!error && data) {
+      scheduleBlocks = data;
+      if (editId) {
+        editingBlock = scheduleBlocks.find(block => block.id === editId);
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching schedule blocks:', error);
+  }
+}
+---
+
+// ✅ AFTER: Clean separation
+---
+import { actions } from 'astro:actions';
+
+const { user } = Astro.locals;
+const url = new URL(Astro.request.url);
+const editId = url.searchParams.get('edit');
+
+// Simple data fetching
+let pageData = null;
+if (user) {
+  try {
+    const formData = new FormData();
+    if (editId) formData.append('editId', editId);
+    
+    const result = await Astro.callAction(actions.schedule.getMaintainerPageData, formData);
+    if (result.data) {
+      pageData = result.data;
+    }
+  } catch (error) {
+    console.error('Error fetching page data:', error);
+  }
+}
+---
+```
+
+### **Benefits of Refactoring**
+- **50%+ Reduction** in template complexity
+- **100% Testable** business logic
+- **Better Performance** with optimized data fetching
+- **Easier Maintenance** with clear separation
+- **Type Safety** throughout the application
+
 ## 🔒 Security with Actions
 
 ### **Authorization in Actions**
@@ -244,7 +475,7 @@ import { ActionError, defineAction } from 'astro:actions';
 export const server = {
   getUserSettings: defineAction({
     handler: async (input, context) => {
-      // Check authentication from context.locals
+      // ✅ UPDATED: Use context.locals.user for better performance
       if (!context.locals.user) {
         throw new ActionError({ code: 'UNAUTHORIZED' });
       }
