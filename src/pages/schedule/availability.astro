@@ -2,7 +2,6 @@
 import { actions } from 'astro:actions';
 import { format, addDays, subDays } from 'date-fns';
 import Layout from '../../layouts/Layout.astro';
-import type { TimeSlot, CalendarEvent } from '@/features/calendar/models';
 
 export const prerender = false; // Required for server actions
 
@@ -15,20 +14,16 @@ const selectedDateParam = url.searchParams.get('date');
 const selectedDate = selectedDateParam ? new Date(selectedDateParam) : new Date();
 
 // Fetch availability page data using new service
-let googleCalendarEvents: CalendarEvent[] = [];
-let calendarError: string | null = null;
-let availabilityTimeSlots: TimeSlot[] = [];
+let availabilityData = null;
 
 if (user) {
   try {
     const formData = new FormData();
     formData.append('selectedDate', selectedDate.toISOString());
     
-    const result = await Astro.callAction(actions.schedule.getAvailabilityPageData, formData);
+    const result = await Astro.callAction(actions.schedule.getScheduleAvailabilityPageData, formData);
     if (result.data) {
-      googleCalendarEvents = result.data.googleCalendarEvents;
-      calendarError = result.data.calendarError;
-      availabilityTimeSlots = result.data.availabilityTimeSlots;
+      availabilityData = result.data;
     }
   } catch (error) {
     console.error('Error fetching availability page data:', error);
@@ -49,166 +44,177 @@ if (user) {
             </p>
           </div>
           <div class="flex items-center space-x-4">
-            <a
-              href="/schedule"
-              class="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-            >
-              ← Back to Schedule
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Day Navigation -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div class="flex justify-between items-center">
-          <h2 class="text-2xl font-bold text-gray-900">Daily Availability</h2>
-          <div class="flex items-center space-x-4">
-            <!-- Day Navigation -->
+            <!-- Date Navigation -->
             <div class="flex items-center space-x-2">
-              <a
+              <a 
                 href={`/schedule/availability?date=${format(subDays(selectedDate, 1), 'yyyy-MM-dd')}`}
-                class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md"
               >
-                ← Previous
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
               </a>
-              <span class="px-4 py-2 text-lg font-medium text-gray-900">
-                {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+              <span class="text-lg font-medium text-gray-900 min-w-[120px] text-center">
+                {format(selectedDate, 'MMM dd, yyyy')}
               </span>
-              <a
+              <a 
                 href={`/schedule/availability?date=${format(addDays(selectedDate, 1), 'yyyy-MM-dd')}`}
-                class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md"
               >
-                Next →
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
               </a>
             </div>
-            
-            <!-- Today Button -->
-            <a
-              href={`/schedule/availability?date=${format(new Date(), 'yyyy-MM-dd')}`}
-              class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+            <a 
+              href="/schedule" 
+              class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
             >
-              Today
+              Back to Schedule
             </a>
           </div>
         </div>
       </div>
 
-      {calendarError ? (
-        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
-          <h3 class="font-bold">Calendar Integration Notice:</h3>
-          <p class="mb-2">{calendarError}</p>
-          <p class="text-sm">
-            {calendarError.includes('calendar access') || calendarError.includes('INSUFFICIENT_SCOPE') ? (
-              <>
-                <strong>Solution:</strong> You need to sign out and sign in with Google again to grant calendar permissions.
-                <br />
-                <a href="/logout" class="underline">Sign out</a> and then <a href="/login" class="underline">sign in with Google</a> again.
-              </>
-            ) : (
-              'Make sure you\'re signed in with Google and have granted calendar access permissions.'
-            )}
-          </p>
-        </div>
-      ) : (
-        <div class="space-y-6">
-          <!-- Availability Summary -->
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-3">Availability Summary</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div class="text-center">
-                <div class="text-2xl font-bold text-green-600">
-                  {availabilityTimeSlots.filter(slot => slot.type === 'available').length}
-                </div>
-                <div class="text-sm text-gray-600">Available Slots</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-red-600">
-                  {availabilityTimeSlots.filter(slot => slot.type === 'busy').length}
-                </div>
-                <div class="text-sm text-gray-600">Busy Slots</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-blue-600">
-                  {availabilityTimeSlots.filter(slot => slot.type === 'schedule-block').length}
-                </div>
-                <div class="text-sm text-gray-600">Schedule Blocks</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-purple-600">
-                  {googleCalendarEvents.length}
-                </div>
-                <div class="text-sm text-gray-600">Calendar Events</div>
-              </div>
+      {user && availabilityData ? (
+        <div class="space-y-8">
+          <!-- Calendar Error Message -->
+          {availabilityData.calendarError && (
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              <h3 class="font-bold">Calendar Error:</h3>
+              <p>{availabilityData.calendarError}</p>
             </div>
-          </div>
+          )}
 
-          <!-- Time Slots -->
-          {availabilityTimeSlots.length > 0 ? (
+          <!-- Google Calendar Events -->
+          {availabilityData.googleCalendarEvents.length > 0 && (
             <div class="bg-white rounded-lg shadow-md p-6">
-              <h3 class="text-lg font-medium text-gray-900 mb-3">Time Slots</h3>
-              <div class="space-y-2">
-                {availabilityTimeSlots.map((slot) => (
-                  <div
-                    class={`p-3 rounded-lg border ${
-                      slot.type === 'available' 
-                        ? 'bg-green-50 border-green-200' 
-                        : slot.type === 'busy'
-                        ? 'bg-red-50 border-red-200'
-                        : 'bg-blue-50 border-blue-200'
-                    }`}
-                  >
-                    <div class="flex justify-between items-center">
-                      <div class="flex items-center space-x-3">
-                        <div class={`w-3 h-3 rounded-full ${
-                          slot.type === 'available' 
-                            ? 'bg-green-500' 
-                            : slot.type === 'busy'
-                            ? 'bg-red-500'
-                            : 'bg-blue-500'
-                        }`}></div>
-                        <div>
-                          <div class="font-medium text-gray-900">
-                            {slot.title || (slot.type === 'available' ? 'Available' : slot.type === 'busy' ? 'Busy' : 'Schedule Block')}
-                          </div>
-                          <div class="text-sm text-gray-600">
-                            {format(new Date(slot.start), 'h:mm a')} - {format(new Date(slot.end), 'h:mm a')}
-                          </div>
-                        </div>
-                      </div>
-                      <div class="text-sm text-gray-500">
-                        {slot.priority && (
-                          <span class={`px-2 py-1 text-xs rounded-full ${
-                            slot.priority === 'high' ? 'bg-red-100 text-red-800' :
-                            slot.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'
-                          }`}>
-                            {slot.priority}
-                          </span>
-                        )}
-                      </div>
+              <h2 class="text-xl font-bold text-gray-900 mb-4">Scheduled Events</h2>
+              <div class="space-y-3">
+                {availabilityData.googleCalendarEvents.map(event => (
+                  <div class="border rounded-lg p-4 flex justify-between items-center">
+                    <div>
+                      <h3 class="font-medium text-gray-900">{event.title}</h3>
+                      <p class="text-sm text-gray-600">
+                        {new Date(event.start).toLocaleTimeString()} - {event.end ? new Date(event.end).toLocaleTimeString() : 'All day'}
+                      </p>
+                      {event.description && (
+                        <p class="text-sm text-gray-500 mt-1">{event.description}</p>
+                      )}
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                        Google Calendar
+                      </span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-          ) : (
-            <div class="bg-white rounded-lg shadow-md p-6">
-              <div class="text-center py-12">
-                <div class="text-gray-400 text-6xl mb-4">📅</div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">No availability data</h3>
-                <p class="text-gray-500 mb-4">
-                  No schedule blocks or calendar events found for this day.
+          )}
+
+          <!-- Availability Time Slots -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Available Time Slots</h2>
+            
+            {availabilityData.availabilityTimeSlots.length > 0 ? (
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {availabilityData.availabilityTimeSlots.map((slot) => (
+                  <div class="border rounded-lg p-4 bg-green-50 border-green-200">
+                    <div class="flex items-center justify-between mb-2">
+                      <h3 class="font-medium text-green-900">{slot.title || 'Available'}</h3>
+                      <span class="text-xs text-green-700 bg-green-100 px-2 py-1 rounded-full">
+                        {Math.round((new Date(slot.end).getTime() - new Date(slot.start).getTime()) / (1000 * 60))} min
+                      </span>
+                    </div>
+                    <p class="text-sm text-green-800">
+                      {new Date(slot.start).toLocaleTimeString()} - {new Date(slot.end).toLocaleTimeString()}
+                    </p>
+                    {slot.priority && (
+                      <p class="text-xs text-green-700 mt-1">Priority: {slot.priority}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div class="text-center py-8">
+                <div class="text-gray-400 mb-4">
+                  <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No Available Time</h3>
+                <p class="text-gray-600 mb-4">
+                  No free time slots found for {format(selectedDate, 'MMMM dd, yyyy')}.
                 </p>
-                <a
-                  href="/schedule/maintainer"
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
+                <div class="space-x-4">
+                  <a 
+                    href="/schedule/maintainer" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Manage Schedule Blocks
+                  </a>
+                  <a 
+                    href="/calendar" 
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    View Calendar
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <!-- Summary Stats -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Summary</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">{availabilityData.googleCalendarEvents.length}</div>
+                <div class="text-sm text-gray-600">Scheduled Events</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">{availabilityData.availabilityTimeSlots.length}</div>
+                <div class="text-sm text-gray-600">Available Slots</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-purple-600">
+                  {availabilityData.availabilityTimeSlots.reduce((total, slot) => 
+                    total + Math.round((new Date(slot.end).getTime() - new Date(slot.start).getTime()) / (1000 * 60)), 0
+                  )}
+                </div>
+                <div class="text-sm text-gray-600">Total Free Minutes</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div class="max-w-2xl mx-auto">
+          <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+            <h2 class="text-xl font-bold">Access Denied</h2>
+            <p>You must be logged in to view your availability.</p>
+          </div>
+          
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="text-center space-y-4">
+              <p class="text-gray-600">Please log in to access your availability data.</p>
+              
+              <div class="flex space-x-4 justify-center">
+                <a 
+                  href="/login" 
+                  class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
                 >
-                  Create Schedule Block
+                  Login
+                </a>
+                <a 
+                  href="/register" 
+                  class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  Register
                 </a>
               </div>
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>

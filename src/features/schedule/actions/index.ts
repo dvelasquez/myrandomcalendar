@@ -2,7 +2,9 @@ import { createDefaultScheduleBlocks } from "./createDefaultSchemaBlocks";
 import { createScheduleBlock } from "./createScheduleBlock";
 import { deleteScheduleBlock } from "./deleteScheduleBlock";
 import { getMaintainerPageDataAction } from "./getMaintainerPageData";
+import { getScheduleAvailabilityPageDataAction } from "./getScheduleAvailabilityPageData";
 import { getScheduleBlocks } from "./getScheduleBlock";
+import { getScheduleIndexPageDataAction } from "./getScheduleIndexPageData";
 import { 
   getSchedulePageDataAction, 
   getAvailabilityPageDataAction, 
@@ -24,7 +26,9 @@ const schedule = {
   getAvailabilityPageData: getAvailabilityPageDataAction,
   getCalendarPageData: getCalendarPageDataAction,
   refreshCalendarData: refreshCalendarDataAction,
-  getMaintainerPageData: getMaintainerPageDataAction
+  getMaintainerPageData: getMaintainerPageDataAction,
+  getScheduleIndexPageData: getScheduleIndexPageDataAction,
+  getScheduleAvailabilityPageData: getScheduleAvailabilityPageDataAction
 };
 
 export default schedule;

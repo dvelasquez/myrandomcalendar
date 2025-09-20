@@ -1,9 +1,7 @@
 ---
 import { actions } from 'astro:actions';
-import type { ScheduleBlock } from '../../features/schedule/models/ScheduleBlocks.types';
 import { PRIORITY_COLORS, formatDaysOfWeek } from '../../features/schedule/services/constants';
 import Layout from '../../layouts/Layout.astro';
-import type { CalendarEvent } from '@/features/calendar/models';
 
 export const prerender = false; // Required for server actions
 
@@ -15,28 +13,28 @@ const url = new URL(Astro.request.url);
 const successMessage = url.searchParams.get('success');
 const errorMessage = url.searchParams.get('error');
 
-// Fetch schedule page data using new service
-let scheduleBlocks: ScheduleBlock[] = [];
-let googleCalendarEvents: CalendarEvent[] = [];
-let calendarError: string | null = null;
+// Fetch schedule index page data using new service
+let scheduleIndexData = null;
 
 if (user) {
   try {
-    const result = await Astro.callAction(actions.schedule.getSchedulePageData, new FormData());
+    const formData = new FormData();
+    if (successMessage) formData.append('successMessage', successMessage);
+    if (errorMessage) formData.append('errorMessage', errorMessage);
+    
+    const result = await Astro.callAction(actions.schedule.getScheduleIndexPageData, formData);
     if (result.data) {
-      scheduleBlocks = result.data.scheduleBlocks;
-      googleCalendarEvents = result.data.googleCalendarEvents;
-      calendarError = result.data.calendarError;
+      scheduleIndexData = result.data;
     }
   } catch (error) {
-    console.error('Error fetching schedule page data:', error);
+    console.error('Error fetching schedule index page data:', error);
   }
 }
 ---
 
 <Layout>
   <div class="container mx-auto px-4 py-8">
-    {user ? (
+    {user && scheduleIndexData ? (
       <div class="max-w-6xl mx-auto">
         <!-- Header -->
         <div class="mb-8">
@@ -46,254 +44,209 @@ if (user) {
               <p class="text-gray-600">
                 View and manage your schedule blocks and availability for optimal event planning.
               </p>
-              {!calendarError && (
+              {!scheduleIndexData.calendarError && (
                 <p class="text-sm mt-2">
-                  <strong>Google Calendar Events:</strong> {googleCalendarEvents.length} events loaded
+                  <span class="text-green-600">✓</span> Google Calendar connected
+                  {scheduleIndexData.googleCalendarEvents.length > 0 && (
+                    <span class="ml-2 text-blue-600">
+                      ({scheduleIndexData.googleCalendarEvents.length} events loaded)
+                    </span>
+                  )}
+                </p>
+              )}
+              {scheduleIndexData.calendarError && (
+                <p class="text-sm mt-2 text-red-600">
+                  <span class="text-red-600">⚠</span> Calendar error: {scheduleIndexData.calendarError}
                 </p>
               )}
             </div>
-        <!-- Action Buttons -->
-        <div class="mb-6 flex justify-between items-center">
-          <div class="flex space-x-4">
             <a 
               href="/schedule/maintainer" 
-              class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
-              Create New Schedule
-            </a>
-            <a 
-              href="/schedule/availability" 
-              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
-            >
-              View Availability
+              Add Schedule Block
             </a>
           </div>
-          <button 
-            id="refreshCalendarBtn"
-            class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm transition-colors"
-          >
-            Refresh Calendar
-          </button>
         </div>
-          </div>
-        </div>
-        
+
         <!-- Success/Error Messages -->
-        {successMessage && (
+        {scheduleIndexData.successMessage && (
           <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
             <h3 class="font-bold">Success!</h3>
             <p>
-              {successMessage === 'default-created' && 'Default schedule blocks created successfully!'}
+              {scheduleIndexData.successMessage === 'created' && 'Schedule block created successfully!'}
+              {scheduleIndexData.successMessage === 'updated' && 'Schedule block updated successfully!'}
+              {scheduleIndexData.successMessage === 'deleted' && 'Schedule block deleted successfully!'}
             </p>
           </div>
         )}
         
-        {errorMessage && (
+        {scheduleIndexData.errorMessage && (
           <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
             <h3 class="font-bold">Error:</h3>
-            <p>{errorMessage}</p>
+            <p>{scheduleIndexData.errorMessage}</p>
           </div>
         )}
 
-        <!-- Handle action results -->
-        {(() => {
-          const result = Astro.getActionResult(actions.schedule.createDefaultScheduleBlocks);
-          if (result && !result.error) {
-            return (
-              <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-                <h3 class="font-bold">Success!</h3>
-                <p>Default schedule blocks created successfully!</p>
-              </div>
-            );
-          }
-          if (result?.error) {
-            return (
-              <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                <h3 class="font-bold">Error:</h3>
-                <p>{result.error.message}</p>
-              </div>
-            );
-          }
-        })()}
-        
-        {calendarError ? (
-          <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
-            <h3 class="font-bold">Google Calendar Integration Notice:</h3>
-            <p class="mb-2">{calendarError}</p>
-            <p class="text-sm">
-              {calendarError.includes('calendar access') || calendarError.includes('INSUFFICIENT_SCOPE') ? (
-                <>
-                  <strong>Solution:</strong> You need to sign out and sign in with Google again to grant calendar permissions.
-                  <br />
-                  <a href="/logout" class="underline">Sign out</a> and then <a href="/login" class="underline">sign in with Google</a> again.
-                </>
-              ) : (
-                'Make sure you\'re signed in with Google and have granted calendar access permissions.'
-              )}
-            </p>
-          </div>
-        ) : null}
-        
-        <!-- Schedule Blocks Content -->
+        <!-- Schedule Blocks Overview -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Schedule Blocks -->
           <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-center mb-6">
-              <h2 class="text-2xl font-bold text-gray-900">Schedule Blocks</h2>
-              <div class="flex space-x-4">
-                <a
-                  href="/schedule/maintainer"
-                  class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors"
-                >
-                  Create New Schedule
-                </a>
-                {scheduleBlocks.length === 0 && (
-                  <form method="POST" action={actions.schedule.createDefaultScheduleBlocks} class="inline">
-                    <input type="hidden" name="timezone" value="UTC" />
-                    <button
-                      type="submit"
-                      class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
-                    >
-                      Create Default Schedule
-                    </button>
-                  </form>
-                )}
-              </div>
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold text-gray-900">Your Schedule Blocks</h2>
+              <span class="text-sm text-gray-500">{scheduleIndexData.scheduleBlocks.length} blocks</span>
             </div>
-
-            {scheduleBlocks.length === 0 ? (
-              <div class="text-center py-12">
-                <div class="text-gray-400 text-6xl mb-4">📅</div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">No schedule blocks found</h3>
-                <p class="text-gray-500 mb-4">Create your first schedule block to get started</p>
-                <a
-                  href="/schedule/maintainer"
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
-                >
-                  Create Schedule Block
-                </a>
-              </div>
-            ) : (
-              <div class="space-y-6">
-                {scheduleBlocks.map(block => (
-                  <div
-                    class={`border rounded-lg p-4 transition-colors ${
-                      block.isActive 
-                        ? 'bg-white border-gray-200 hover:border-gray-300' 
-                        : 'bg-gray-50 border-gray-200 opacity-75'
-                    }`}
-                  >
-                    <div class="flex items-start justify-between">
-                      <div class="flex-1">
-                        <div class="flex items-center space-x-3 mb-2">
-                          <h4 class="text-lg font-medium text-gray-900">
-                            {block.title}
-                          </h4>
-                          <span class={`px-2 py-1 text-xs font-medium rounded-full border ${
-                            PRIORITY_COLORS[block.priority]
-                          }`}>
-                            {block.priority}
-                          </span>
-                          {!block.isActive && (
-                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600 border border-gray-200">
-                              Inactive
-                            </span>
-                          )}
-                        </div>
-                        
-                        <div class="text-sm text-gray-600 space-y-1">
-                          <div class="flex items-center space-x-4">
-                            <span>⏰ {block.startTime} - {block.endTime}</span>
-                            <span>📅 {formatDaysOfWeek(block.daysOfWeek)}</span>
-                          </div>
-                          
-                          {block.description && (
-                            <p class="text-gray-500">{block.description}</p>
-                          )}
-                          
-                          {(block.bufferBefore > 0 || block.bufferAfter > 0) && (
-                            <div class="text-xs text-gray-500">
-                              Buffer: {block.bufferBefore > 0 && `-${block.bufferBefore}min`} 
-                              {block.bufferBefore > 0 && block.bufferAfter > 0 && ', '}
-                              {block.bufferAfter > 0 && `+${block.bufferAfter}min`}
-                            </div>
-                          )}
-                        </div>
+            
+            {scheduleIndexData.scheduleBlocks.length > 0 ? (
+              <div class="space-y-3">
+                {scheduleIndexData.scheduleBlocks.map(block => (
+                  <div class="border rounded-lg p-4 flex justify-between items-center">
+                    <div class="flex items-center space-x-3">
+                      <div 
+                        class="w-4 h-4 rounded-full" 
+                        style={{ backgroundColor: block.color }}
+                      ></div>
+                      <div>
+                        <h3 class="font-medium text-gray-900">{block.title}</h3>
+                        <p class="text-sm text-gray-600">
+                          {block.startTime} - {block.endTime} | {formatDaysOfWeek(block.daysOfWeek)}
+                        </p>
                       </div>
-                      
-                      <div class="flex items-center space-x-2 ml-4">
-                        <a
-                          href={`/schedule/maintainer?edit=${block.id}`}
-                          class="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors"
-                        >
-                          Edit
-                        </a>
-                      </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <span class={`px-2 py-1 text-xs rounded-full ${PRIORITY_COLORS[block.priority]}`}>
+                        {block.priority}
+                      </span>
+                      <a
+                        href={`/schedule/maintainer?edit=${block.id}`}
+                        class="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors"
+                      >
+                        Edit
+                      </a>
                     </div>
                   </div>
                 ))}
               </div>
+            ) : (
+              <div class="text-center py-8">
+                <div class="text-gray-400 mb-4">
+                  <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No Schedule Blocks</h3>
+                <p class="text-gray-600 mb-4">Create your first schedule block to start managing your time effectively.</p>
+                <a 
+                  href="/schedule/maintainer" 
+                  class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  Create Schedule Block
+                </a>
+              </div>
             )}
           </div>
-        <!-- Quick Stats -->
-        <div class="mt-8 bg-gray-50 rounded-lg p-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Stats</h3>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="text-center">
-              <div class="text-2xl font-bold text-blue-600">{scheduleBlocks.length}</div>
-              <div class="text-sm text-gray-600">Total Blocks</div>
+
+          <!-- Google Calendar Events -->
+          <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold text-gray-900">Recent Calendar Events</h2>
+              <span class="text-sm text-gray-500">{scheduleIndexData.googleCalendarEvents.length} events</span>
             </div>
-            <div class="text-center">
-              <div class="text-2xl font-bold text-green-600">
-                {scheduleBlocks.filter(b => b.isActive).length}
+            
+            {scheduleIndexData.googleCalendarEvents.length > 0 ? (
+              <div class="space-y-3">
+                {scheduleIndexData.googleCalendarEvents.slice(0, 5).map(event => (
+                  <div class="border rounded-lg p-4">
+                    <h3 class="font-medium text-gray-900">{event.title}</h3>
+                    <p class="text-sm text-gray-600">
+                      {new Date(event.start).toLocaleDateString()} at {new Date(event.start).toLocaleTimeString()}
+                    </p>
+                    {event.description && (
+                      <p class="text-sm text-gray-500 mt-1">{event.description}</p>
+                    )}
+                  </div>
+                ))}
+                {scheduleIndexData.googleCalendarEvents.length > 5 && (
+                  <p class="text-sm text-gray-500 text-center">
+                    ... and {scheduleIndexData.googleCalendarEvents.length - 5} more events
+                  </p>
+                )}
               </div>
-              <div class="text-sm text-gray-600">Active Blocks</div>
-            </div>
-            <div class="text-center">
-              <div class="text-2xl font-bold text-purple-600">
-                {scheduleBlocks.filter(b => b.isRecurring).length}
+            ) : (
+              <div class="text-center py-8">
+                <div class="text-gray-400 mb-4">
+                  <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No Calendar Events</h3>
+                <p class="text-gray-600">No events found for the current month.</p>
               </div>
-              <div class="text-sm text-gray-600">Recurring</div>
-            </div>
-            <div class="text-center">
-              <div class="text-2xl font-bold text-orange-600">
-                {scheduleBlocks.filter(b => b.priority === 'high').length}
-              </div>
-              <div class="text-sm text-gray-600">High Priority</div>
-            </div>
+            )}
           </div>
         </div>
-        
-        <!-- Navigation -->
-        <div class="mt-6">
-          <a 
-            href="/calendar" 
-            class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-4"
-          >
-            View Calendar
-          </a>
-          <a 
-            href="/" 
-            class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-4"
-          >
-            Back to Home
-          </a>
-          <a 
-            href="/logout" 
-            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Logout
-          </a>
+
+        <!-- Quick Actions -->
+        <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a 
+              href="/schedule/maintainer" 
+              class="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <div class="text-blue-600 mr-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-medium text-gray-900">Add Schedule Block</h3>
+                <p class="text-sm text-gray-600">Create a new time block</p>
+              </div>
+            </a>
+            
+            <a 
+              href="/schedule/availability" 
+              class="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <div class="text-green-600 mr-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-medium text-gray-900">View Availability</h3>
+                <p class="text-sm text-gray-600">Check your free time</p>
+              </div>
+            </a>
+            
+            <a 
+              href="/calendar" 
+              class="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <div class="text-purple-600 mr-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-medium text-gray-900">Full Calendar</h3>
+                <p class="text-sm text-gray-600">View complete calendar</p>
+              </div>
+            </a>
+          </div>
         </div>
       </div>
     ) : (
       <div class="max-w-2xl mx-auto">
         <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
           <h2 class="text-xl font-bold">Access Denied</h2>
-          <p>You must be logged in to manage your schedule settings.</p>
+          <p>You must be logged in to manage your schedule blocks.</p>
         </div>
         
         <div class="bg-white rounded-lg shadow-md p-6">
           <div class="text-center space-y-4">
-            <p class="text-gray-600">Please log in to access your schedule settings.</p>
+            <p class="text-gray-600">Please log in to access your schedule management.</p>
             
             <div class="flex space-x-4 justify-center">
               <a 
@@ -315,10 +268,3 @@ if (user) {
     )}
   </div>
 </Layout>
-
-<script>
-  import { setupCalendarRefreshButton } from '../../features/schedule/lib/calendar-refresh';
-  
-  // Setup calendar refresh button
-  setupCalendarRefreshButton('refreshCalendarBtn');
-</script>
