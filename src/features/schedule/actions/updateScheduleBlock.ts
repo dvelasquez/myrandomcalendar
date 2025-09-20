@@ -1,44 +1,38 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
 import { auth } from "../../auth/lib/better-auth";
-import { updateScheduleBlock as updateScheduleBlockDb } from "../db/update";
-import { scheduleBlockBaseSchema } from "../models/ScheduleBlock.schema";
-import type { ScheduleBlockType, SchedulePriority } from "../models/ScheduleBlocks.types";
+import { updateScheduleBlockDb } from "../db/update";
+import { ScheduleBlockFormSchema } from "../models/ScheduleBlock.schema";
+import type { ScheduleBlockUpdate, ScheduleBlock } from "../models/ScheduleBlocks.types";
 
-/**
- * Update an existing schedule block
- */
 export const updateScheduleBlock = defineAction({
   accept: 'form',
   input: z.object({
     id: z.string().min(1, 'Schedule block ID is required'),
-    ...scheduleBlockBaseSchema.shape,
+    ...ScheduleBlockFormSchema.shape,
   }),
-  handler: async ({ id, ...data }, { request }) => {
+  handler: async ({ id, ...data }, { request }): Promise<ScheduleBlock> => {
     try {
-      const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-      
+      // Authentication check
+      const session = await auth.api.getSession({ headers: request.headers });
       if (!session?.user) {
-        throw new ActionError({
+        throw new ActionError({ 
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to update schedule blocks',
+          message: 'You must be logged in to update schedule blocks'
         });
       }
 
-      const updateData = {
+      // Prepare update data
+      const updateData: ScheduleBlockUpdate = {
         ...data,
-        type: data.type as ScheduleBlockType,
-        priority: data.priority as SchedulePriority,
+        daysOfWeek: data.daysOfWeek ? JSON.stringify(data.daysOfWeek) : undefined, // Convert array to JSON string
       };
 
-      const result = await updateScheduleBlockDb(id, session.user.id, updateData);
+      // Call DB function
+      const result = await updateScheduleBlockDb(id, updateData);
       
-      return {
-        success: true,
-        data: result
-      };
+      // Return result directly
+      return result;
     } catch (error) {
       console.error('Error in updateScheduleBlock:', error);
       

@@ -1,35 +1,26 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
 import { auth } from "../../auth/lib/better-auth";
-import { deleteScheduleBlock as deleteScheduleBlockDb } from "../db/delete";
+import { deleteScheduleBlockDb } from "../db/delete";
 
-/**
- * Delete a schedule block
- */
 export const deleteScheduleBlock = defineAction({
   accept: 'form',
   input: z.object({
     id: z.string().min(1, 'Schedule block ID is required'),
   }),
-  handler: async ({ id }, { request }) => {
+  handler: async ({ id }, { request }): Promise<void> => {
     try {
-      const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-      
+      // Authentication check
+      const session = await auth.api.getSession({ headers: request.headers });
       if (!session?.user) {
-        throw new ActionError({
+        throw new ActionError({ 
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to delete schedule blocks',
+          message: 'You must be logged in to delete schedule blocks'
         });
       }
 
-      await deleteScheduleBlockDb(id, session.user.id);
-      
-      return {
-        success: true,
-        message: 'Schedule block deleted successfully'
-      };
+      // Call DB function
+      await deleteScheduleBlockDb(id);
     } catch (error) {
       console.error('Error in deleteScheduleBlock:', error);
       

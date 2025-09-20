@@ -24,8 +24,8 @@ let scheduleBlocks: ScheduleBlock[] = [];
 if (user) {
   try {
     const result = await Astro.callAction(actions.schedule.getScheduleBlocks, new FormData());
-    if (result.data?.success && result.data.data) {
-      scheduleBlocks = result.data.data;
+    if (result.data) {
+      scheduleBlocks = result.data;
     }
   } catch (error) {
     console.error('Error fetching schedule blocks:', error);

@@ -47,8 +47,8 @@ if (user) {
     // Fetch schedule blocks
     try {
       const result = await Astro.callAction(actions.schedule.getScheduleBlocks, new FormData());
-      if (result.data?.success && result.data.data) {
-        scheduleBlocks = result.data.data;
+      if (result.data) {
+        scheduleBlocks = result.data;
       }
     } catch (scheduleError) {
       console.error('Error fetching schedule blocks:', scheduleError);

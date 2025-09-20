@@ -16,11 +16,13 @@ const userScheduleBlocks: ScheduleBlock[] = [
     type: 'work',
     startTime: '09:00',
     endTime: '17:00',
-    daysOfWeek: [1, 2, 3, 4, 5], // Mon-Fri
+    daysOfWeek: JSON.stringify([1, 2, 3, 4, 5]), // Mon-Fri
     isRecurring: true,
     priority: 'high',
     isActive: true,
     timezone: 'UTC',
+    startDate: null,
+    endDate: null,
     description: 'Regular work hours',
     color: '#3b82f6',
     bufferBefore: 15, // 15 min commute
@@ -35,11 +37,13 @@ const userScheduleBlocks: ScheduleBlock[] = [
     type: 'sleep',
     startTime: '23:00',
     endTime: '07:00',
-    daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // Every day
+    daysOfWeek: JSON.stringify([0, 1, 2, 3, 4, 5, 6]), // Every day
     isRecurring: true,
     priority: 'high',
     isActive: true,
     timezone: 'UTC',
+    startDate: null,
+    endDate: null,
     description: 'Sleep schedule',
     color: '#6366f1',
     bufferBefore: 30, // Wind-down time
@@ -54,11 +58,13 @@ const userScheduleBlocks: ScheduleBlock[] = [
     type: 'exercise',
     startTime: '18:00',
     endTime: '19:30',
-    daysOfWeek: [1, 3, 5], // Mon, Wed, Fri
+    daysOfWeek: JSON.stringify([1, 3, 5]), // Mon, Wed, Fri
     isRecurring: true,
     priority: 'medium',
     isActive: true,
     timezone: 'UTC',
+    startDate: null,
+    endDate: null,
     description: 'Workout session',
     color: '#ef4444',
     bufferBefore: 10, // Travel to gym

@@ -5,8 +5,7 @@ import { getScheduleBlocks } from "./getScheduleBlock";
 import { toggleScheduleBlock } from "./toggleScheduleBlock";
 import { updateScheduleBlock } from "./updateScheduleBlock";
 
-
-const schedule =  { 
+const schedule = { 
   createScheduleBlock, 
   deleteScheduleBlock, 
   getScheduleBlocks, 

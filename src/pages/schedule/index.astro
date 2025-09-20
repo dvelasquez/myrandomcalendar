@@ -23,8 +23,8 @@ let scheduleBlocks: ScheduleBlock[] = [];
 if (user) {
   try {
     const result = await Astro.callAction(actions.schedule.getScheduleBlocks, new FormData());
-    if (result.data?.success && result.data.data) {
-      scheduleBlocks = result.data.data;
+    if (result.data) {
+      scheduleBlocks = result.data;
     }
   } catch (error) {
     console.error('Error fetching schedule blocks:', error);
@@ -240,7 +240,7 @@ const PRIORITY_COLORS: Record<string, string> = {
                         <div class="text-sm text-gray-600 space-y-1">
                           <div class="flex items-center space-x-4">
                             <span>⏰ {block.startTime} - {block.endTime}</span>
-                            <span>📅 {block.daysOfWeek.map(day => {
+                            <span>📅 {JSON.parse(block.daysOfWeek).map((day: number) => {
                               const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
                               return dayNames[day];
                             }).join(', ')}</span>

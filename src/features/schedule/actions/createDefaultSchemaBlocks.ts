@@ -1,8 +1,9 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
 import { auth } from "../../auth/lib/better-auth";
-import { createScheduleBlock } from "../db/create";
-import type { ScheduleBlockType, SchedulePriority } from "../models/ScheduleBlocks.types";
+import { createScheduleBlockDb } from "../db/create";
+import type { NewScheduleBlock } from "../models/ScheduleBlocks.types";
+import { serializeDaysOfWeek } from "../models/ScheduleBlocks.types";
 
 
 /**
@@ -26,15 +27,16 @@ export const createDefaultScheduleBlocks = defineAction({
         });
       }
 
-      const defaultBlocks = [
+      const defaultBlocks: NewScheduleBlock[] = [
         {
+          userId: session.user.id,
           title: 'Work Hours',
-          type: 'work' as ScheduleBlockType,
+          type: 'work',
           startTime: '09:00',
           endTime: '17:00',
-          daysOfWeek: [1, 2, 3, 4, 5], // Monday to Friday
+          daysOfWeek: serializeDaysOfWeek([1, 2, 3, 4, 5]), // Monday to Friday
           isRecurring: true,
-          priority: 'high' as SchedulePriority,
+          priority: 'high',
           isActive: true,
           timezone,
           description: 'Regular work hours',
@@ -43,13 +45,14 @@ export const createDefaultScheduleBlocks = defineAction({
           bufferAfter: 15,
         },
         {
+          userId: session.user.id,
           title: 'Sleep Schedule',
-          type: 'sleep' as ScheduleBlockType,
+          type: 'sleep',
           startTime: '22:00',
           endTime: '07:00',
-          daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // Every day
+          daysOfWeek: serializeDaysOfWeek([0, 1, 2, 3, 4, 5, 6]), // Every day
           isRecurring: true,
-          priority: 'high' as SchedulePriority,
+          priority: 'high',
           isActive: true,
           timezone,
           description: 'Regular sleep schedule',
@@ -58,13 +61,14 @@ export const createDefaultScheduleBlocks = defineAction({
           bufferAfter: 30,
         },
         {
+          userId: session.user.id,
           title: 'Personal Time',
-          type: 'personal' as ScheduleBlockType,
+          type: 'personal',
           startTime: '18:00',
           endTime: '22:00',
-          daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // Every day
+          daysOfWeek: serializeDaysOfWeek([0, 1, 2, 3, 4, 5, 6]), // Every day
           isRecurring: true,
-          priority: 'medium' as SchedulePriority,
+          priority: 'medium',
           isActive: true,
           timezone,
           description: 'Personal time for hobbies and relaxation',
@@ -76,10 +80,7 @@ export const createDefaultScheduleBlocks = defineAction({
 
       const results = [];
       for (const blockData of defaultBlocks) {
-        const result = await createScheduleBlock({
-          userId: session.user.id,
-          ...blockData,
-        });
+        const result = await createScheduleBlockDb(blockData);
         results.push(result);
       }
       

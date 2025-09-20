@@ -1,35 +1,30 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
 import { auth } from "../../auth/lib/better-auth";
-import { toggleScheduleBlock as toggleScheduleBlockDb } from "../db/toggle";
+import { toggleScheduleBlockDb } from "../db/toggle";
+import type { ScheduleBlock } from "../models/ScheduleBlocks.types";
 
-/**
- * Toggle the active status of a schedule block
- */
 export const toggleScheduleBlock = defineAction({
   accept: 'form',
   input: z.object({
     id: z.string().min(1, 'Schedule block ID is required'),
   }),
-  handler: async ({ id }, { request }) => {
+  handler: async ({ id }, { request }): Promise<ScheduleBlock> => {
     try {
-      const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-      
+      // Authentication check
+      const session = await auth.api.getSession({ headers: request.headers });
       if (!session?.user) {
-        throw new ActionError({
+        throw new ActionError({ 
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to toggle schedule blocks',
+          message: 'You must be logged in to toggle schedule blocks'
         });
       }
 
-      const result = await toggleScheduleBlockDb(id, session.user.id);
+      // Call DB function
+      const result = await toggleScheduleBlockDb(id);
       
-      return {
-        success: true,
-        data: result
-      };
+      // Return result directly
+      return result;
     } catch (error) {
       console.error('Error in toggleScheduleBlock:', error);
       

@@ -1,8 +1,8 @@
-import { column, defineTable } from "astro:db";
+import { column, defineTable, NOW } from "astro:db";
 import { Users } from "../../../../db/config";
 
-// Schedule Blocks table for user schedule preferences
-export const ScheduleBlocks = defineTable({
+// Schedule Block table for user schedule preferences
+export const ScheduleBlock = defineTable({
   columns: {
     id: column.text({ primaryKey: true }),
     userId: column.text({ references: () => Users.columns.id }),
@@ -21,7 +21,7 @@ export const ScheduleBlocks = defineTable({
     color: column.text({ default: '#3b82f6' }),
     bufferBefore: column.number({ default: 0 }), // minutes
     bufferAfter: column.number({ default: 0 }),  // minutes
-    createdAt: column.date(),
-    updatedAt: column.date(),
+    createdAt: column.date({ default: NOW }),
+    updatedAt: column.date({ default: NOW }),
   },
 });

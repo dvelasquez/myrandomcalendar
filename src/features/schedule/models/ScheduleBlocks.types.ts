@@ -1,3 +1,6 @@
+import { ScheduleBlock } from 'astro:db';
+import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
+
 // Schedule Block types
 export type ScheduleBlockType = 
   | 'work'           // Work hours
@@ -12,25 +15,50 @@ export type ScheduleBlockType =
 
 export type SchedulePriority = 'high' | 'medium' | 'low';
 
-// Schedule Block interface
-export interface ScheduleBlock {
-  id: string;
-  userId: string;
+// Core database types (inferred from Astro DB)
+export type ScheduleBlock = InferSelectModel<typeof ScheduleBlock>;
+export type NewScheduleBlock = Omit<InferInsertModel<typeof ScheduleBlock>, 'id' | 'createdAt' | 'updatedAt'>;
+export type ScheduleBlockUpdate = Partial<NewScheduleBlock>;
+
+// Application interface (extends database type with computed fields)
+export interface ScheduleBlockData extends ScheduleBlock {
+  // Add any computed fields or transformations here
+  daysOfWeekArray: number[]; // Parsed from JSON string
+}
+
+// Helper function to parse daysOfWeek from database
+export function parseDaysOfWeek(daysOfWeekString: string): number[] {
+  try {
+    return JSON.parse(daysOfWeekString);
+  } catch {
+    return [];
+  }
+}
+
+// Helper function to serialize daysOfWeek for database
+export function serializeDaysOfWeek(daysOfWeekArray: number[]): string {
+  return JSON.stringify(daysOfWeekArray);
+}
+
+// Form/API types
+export interface CreateScheduleBlockFormData {
   title: string;
   type: ScheduleBlockType;
-  startTime: string;                 // "09:00" (24-hour format)
-  endTime: string;                   // "17:00"
-  daysOfWeek: number[];              // [1,2,3,4,5] (Mon-Fri)
+  startTime: string;
+  endTime: string;
+  daysOfWeek: number[];
   isRecurring: boolean;
   priority: SchedulePriority;
   isActive: boolean;
   timezone: string;
-  startDate?: Date;                  // Optional: for one-time blocks
-  endDate?: Date;                    // Optional: for temporary blocks
+  startDate?: Date;
+  endDate?: Date;
   description?: string;
   color: string;
-  bufferBefore: number;              // minutes
-  bufferAfter: number;               // minutes
-  createdAt: Date;
-  updatedAt: Date;
+  bufferBefore: number;
+  bufferAfter: number;
+}
+
+export interface UpdateScheduleBlockFormData extends Partial<CreateScheduleBlockFormData> {
+  id: string;
 }

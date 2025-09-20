@@ -1,42 +1,35 @@
 import { ActionError, defineAction } from "astro:actions";
 import { auth } from "../../auth/lib/better-auth";
-import { createScheduleBlock as createScheduleBlockDb } from "../db/create";
-import { scheduleBlockBaseSchema } from "../models/ScheduleBlock.schema";
-import type { ScheduleBlockType, SchedulePriority } from "../models/ScheduleBlocks.types";
+import { createScheduleBlockDb } from "../db/create";
+import { ScheduleBlockFormSchema } from "../models/ScheduleBlock.schema";
+import type { NewScheduleBlock } from "../models/ScheduleBlocks.types";
 
-/** 
- * Create a new schedule block
- */
 export const createScheduleBlock = defineAction({
   accept: 'form',
-  input: scheduleBlockBaseSchema,
-  handler: async (data, { request }) => {
+  input: ScheduleBlockFormSchema,
+  handler: async (data, { request }): Promise<NewScheduleBlock> => {
     try {
-      const session = await auth.api.getSession({
-        headers: request.headers,
-      });
-      
+      // Authentication check
+      const session = await auth.api.getSession({ headers: request.headers });
       if (!session?.user) {
-        throw new ActionError({
+        throw new ActionError({ 
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to create schedule blocks',
+          message: 'You must be logged in to create schedule blocks'
         });
       }
-
-      const scheduleBlockData = {
-        userId: session.user.id,
+      
+      // Prepare data with userId
+      const scheduleBlockData: NewScheduleBlock = {
         ...data,
-        type: data.type as ScheduleBlockType,
-        priority: data.priority as SchedulePriority,
-        color: data.color || '#10b981', // Provide default color
+        userId: session.user.id,
+        daysOfWeek: JSON.stringify(data.daysOfWeek), // Convert array to JSON string
       };
-
+      
+      // Call DB function
       const result = await createScheduleBlockDb(scheduleBlockData);
       
-      return {
-        success: true,
-        data: result
-      };
+      // Return result directly
+      return result;
     } catch (error) {
       console.error('Error in createScheduleBlock:', error);
       

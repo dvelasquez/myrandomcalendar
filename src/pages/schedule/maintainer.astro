@@ -37,8 +37,8 @@ let editingBlock: ScheduleBlock | undefined;
 if (user) {
   try {
     const { data, error } = await Astro.callAction(actions.schedule.getScheduleBlocks, new FormData());
-    if (!error && data?.success) {
-      scheduleBlocks = data.data;
+    if (!error && data) {
+      scheduleBlocks = data;
       
       // If editing, find the block
       if (editId) {
@@ -246,7 +246,7 @@ const DAYS_OF_WEEK = [
                       type="checkbox"
                       name="daysOfWeekCheckbox"
                       value={day.value}
-                      checked={editingBlock?.daysOfWeek?.includes(day.value) || false}
+                      checked={editingBlock?.daysOfWeek ? JSON.parse(editingBlock.daysOfWeek).includes(day.value) : false}
                       class="mb-1 daysOfWeekCheckbox"
                     />
                     <span class="font-medium">{day.short}</span>

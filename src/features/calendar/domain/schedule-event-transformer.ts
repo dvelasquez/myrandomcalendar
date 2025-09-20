@@ -1,5 +1,5 @@
 import { addDays, addMinutes, format, startOfDay, set, addDays as addDay } from 'date-fns';
-import type { ScheduleBlock, ScheduleBlockType } from '../../schedule/models/ScheduleBlocks.types';
+import type { ScheduleBlock, ScheduleBlockType, SchedulePriority } from '../../schedule/models/ScheduleBlocks.types';
 import type { CalendarEvent } from '../models/Calendar.types';
 
 /**
@@ -99,15 +99,15 @@ function generateEventForDate(
       start: bufferedStart.toISOString(),
       end: bufferedEnd.toISOString(),
       allDay: false,
-      description: block.description,
+      description: block.description || undefined,
       backgroundColor: block.color,
       borderColor: darkenColor(block.color),
       textColor: '#ffffff',
       // Add metadata to identify this as a schedule block
       extendedProps: {
         scheduleBlockId: block.id,
-        scheduleBlockType: block.type,
-        priority: block.priority,
+        scheduleBlockType: block.type as ScheduleBlockType,
+        priority: block.priority as SchedulePriority,
         isScheduleBlock: true
       }
     };
