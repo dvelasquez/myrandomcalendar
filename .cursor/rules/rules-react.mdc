@@ -326,6 +326,135 @@ return (
 - Validate input on the client side
 - Submit data via form actions or callback props
 
+## 📝 **Form Management Patterns (PROVEN)**
+
+### **Complex Forms with React Components**
+For complex forms with multiple fields, validation, and dynamic behavior:
+
+```typescript
+// ✅ DO THIS: React form component with client:load
+interface FormProps {
+  initialData?: Partial<FeatureType>;
+  formOptions: PageData['formOptions'];
+}
+
+export default function FeatureForm({ initialData, formOptions }: FormProps) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    
+    try {
+      // Dynamic import to avoid server-side issues
+      const { actions } = await import('astro:actions');
+      const result = await actions.feature.action(formData);
+      
+      if (!result.error) {
+        window.location.href = '/success-page';
+      } else {
+        console.error('Form submission error:', result.error);
+        alert('Error: ' + result.error.message);
+      }
+    } catch (error) {
+      console.error('Form submission failed:', error);
+      alert('Form submission failed. Please try again.');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* ShadCN form fields */}
+    </form>
+  );
+}
+```
+
+### **Astro Integration for Complex Forms**
+```astro
+<!-- ✅ CORRECT: Astro page with React form component -->
+---
+import FeatureForm from '../../components/FeatureForm.tsx';
+import type { PageData } from '@/features/feature/services/page-handler';
+---
+
+<Card>
+  <CardContent>
+    <FeatureForm 
+      client:load
+      initialData={pageData.editingItem}
+      formOptions={pageData.formOptions}
+    />
+  </CardContent>
+</Card>
+```
+
+### **Type Reuse Pattern**
+```typescript
+// ✅ DO THIS: Reuse existing feature types
+import type { FeatureType } from '@/features/feature/models/Feature.types';
+import type { PageData } from '@/features/feature/services/page-handler';
+
+interface FormProps {
+  initialData?: Partial<FeatureType>;
+  formOptions: PageData['formOptions'];
+}
+
+// ❌ DON'T DO THIS: Create new types
+interface FormProps {
+  initialData?: {
+    id?: string;
+    title?: string;
+    // ... manual field definitions
+  };
+  formOptions: {
+    // ... manual form option definitions
+  };
+}
+```
+
+### **ShadCN Form Components**
+```typescript
+// ✅ Form inputs with ShadCN
+<Input 
+  type="text" 
+  name="title" 
+  defaultValue={initialData?.title || ''} 
+  className="w-full"
+  required 
+/>
+
+<Textarea 
+  name="description" 
+  defaultValue={initialData?.description || ''} 
+  className="w-full"
+  rows={3}
+/>
+
+<Select name="category" defaultValue={initialData?.category || 'default'} required>
+  <SelectTrigger className="w-full">
+    <SelectValue placeholder="Select category" />
+  </SelectTrigger>
+  <SelectContent>
+    {formOptions.categories.map((option) => (
+      <SelectItem key={option.value} value={option.value}>
+        {option.label}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+
+<Checkbox 
+  name="isActive" 
+  defaultChecked={initialData?.isActive ?? true}
+  className="mr-2"
+/>
+```
+
+### **Form Complexity Decision Matrix**
+- **Simple Forms** (1-3 fields): Use ShadCN components directly in Astro
+- **Complex Forms** (4+ fields, validation, dynamic behavior): Use React component with `client:load`
+- **Forms with complex state**: Always use React component
+- **Forms with server actions**: Use React component with dynamic action imports
+
 ### **List Components**
 - Use proper `key` props for list items
 - Implement proper accessibility attributes

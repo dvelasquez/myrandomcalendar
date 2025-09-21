@@ -2,6 +2,7 @@
 import { actions } from 'astro:actions';
 import { handlePeriodicEventsCreatePage } from '../../features/periodic-events/services/page-handler'; 
 import Layout from '../../layouts/Layout.astro';
+import PeriodicEventForm from '../../components/PeriodicEventForm.tsx';
 import { Button } from '@/components/ui/button';
 import ButtonLink from '@/components/ui/button-link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -62,157 +63,10 @@ const { formOptions, createdEvent, hasError, errorMessage } = pageData;
       <!-- Form -->
       <Card>
         <CardContent>
-          <form method="POST" action={actions.periodicEvents.create} class="space-y-6">
-            <!-- Title -->
-            <div>
-              <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
-                Activity Title *
-              </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                required
-                placeholder="e.g., Go to the gym, Walk the dogs, Read books"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            <!-- Description -->
-            <div>
-              <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-                Description (Optional)
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                rows="3"
-                placeholder="Add more details about this activity..."
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              ></textarea>
-            </div>
-
-            <!-- Frequency and Count -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label for="frequency" class="block text-sm font-medium text-gray-700 mb-2">
-                  Frequency *
-                </label>
-                <select
-                  id="frequency"
-                  name="frequency"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {formOptions.frequencyOptions.map(option => (
-                    <option value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label for="frequencyCount" class="block text-sm font-medium text-gray-700 mb-2">
-                  How Many Times *
-                </label>
-                <input
-                  type="number"
-                  id="frequencyCount"
-                  name="frequencyCount"
-                  min="1"
-                  max="31"
-                  required
-                  placeholder="3"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <p class="text-xs text-gray-500 mt-1">e.g., 3 times a week</p>
-              </div>
-            </div>
-
-            <!-- Duration -->
-            <div>
-              <label for="duration" class="block text-sm font-medium text-gray-700 mb-2">
-                Duration (minutes) *
-              </label>
-              <input
-                type="number"
-                id="duration"
-                name="duration"
-                min="1"
-                max="1440"
-                required
-                placeholder="60"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              <p class="text-xs text-gray-500 mt-1">e.g., 60 minutes = 1 hour</p>
-            </div>
-
-            <!-- Category and Priority -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
-                  Category *
-                </label>
-                <select
-                  id="category"
-                  name="category"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {formOptions.categoryOptions.map(option => (
-                    <option value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">
-                  Priority *
-                </label>
-                <select
-                  id="priority"
-                  name="priority"
-                  required
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {formOptions.priorityOptions.map(option => (
-                    <option value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <!-- Color -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Color *
-              </label>
-              <div class="grid grid-cols-6 gap-2">
-                {formOptions.colorOptions.map(color => (
-                  <label class="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="color"
-                      value={color.value}
-                      class="sr-only"
-                      checked={color.value === '#10b981'}
-                    />
-                    <div class={`w-8 h-8 rounded-full ${color.class} border-2 border-gray-300 hover:border-gray-400`}></div>
-                    <span class="text-xs text-gray-600">{color.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="pt-4">
-              <Button
-                type="submit"
-                className="w-full"
-              >
-                Create Periodic Event
-              </Button>
-            </div>
-          </form>
+          <PeriodicEventForm 
+            client:load
+            formOptions={formOptions}
+          />
         </CardContent>
       </Card>
 

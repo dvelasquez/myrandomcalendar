@@ -4,6 +4,8 @@ import Layout from '../layouts/Layout.astro';
 import { Button } from '@/components/ui/button';
 import ButtonLink from '@/components/ui/button-link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export const prerender = false; // Required for server actions
 
@@ -28,36 +30,35 @@ const result = Astro.getActionResult(actions.auth.register);
         
         <form method="POST" action={actions.auth.register} class="space-y-4">
           <div>
-            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-            <input 
+            <Label htmlFor="name" className="text-gray-700">Name</Label>
+            <Input 
               type="text" 
               id="name" 
               name="name" 
               required 
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1"
             />
           </div>
           
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-            <input 
+            <Label htmlFor="email" className="text-gray-700">Email</Label>
+            <Input 
               type="email" 
               id="email" 
               name="email" 
               required 
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1"
             />
           </div>
           
           <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-            <input 
+            <Label htmlFor="password" className="text-gray-700">Password</Label>
+            <Input 
               type="password" 
               id="password" 
               name="password" 
               required 
-              minlength="6"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              className="mt-1"
             />
           </div>
           

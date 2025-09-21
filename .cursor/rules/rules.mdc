@@ -142,7 +142,31 @@ printenv | grep GOOGLE         # Check Google credentials
 - **Variant Selection**: Choose variants semantically (default, secondary, destructive, outline, ghost, link)
 - **Import Patterns**: Use `@/components/ui/button` in Astro, `./ui/button` in React
 - **Styling**: Use `className` for React components, `class` for Astro/HTML elements
+- **Form Management**: Use proven patterns for simple vs complex forms
+- **Type Reuse**: Always reuse existing feature types instead of creating new ones
 - See detailed rules in `rules-ui.mdc` and `rules-react.mdc`
+
+## 📝 Form Management Patterns (PROVEN)
+
+### **Form Complexity Decision Matrix**
+- **Simple Forms** (1-3 fields): Use ShadCN components directly in Astro
+- **Complex Forms** (4+ fields, validation, dynamic behavior): Use React component with `client:load`
+- **Forms with complex state**: Always use React component
+- **Forms with server actions**: Use React component with dynamic action imports
+
+### **Established Patterns**
+1. **React Form Component** with `client:load` for complex forms
+2. **Client-side form submission** with dynamic action imports
+3. **Type reuse** from existing feature models
+4. **ShadCN components** for all form elements
+5. **Proper error handling** and success redirects
+
+### **Examples**
+- ✅ **Schedule Maintainer Form** - Complex React component with client:load
+- ✅ **Periodic Events Create Form** - Complex React component with client:load
+- ✅ **Login/Register Forms** - Simple ShadCN components in Astro
+
+See detailed patterns in `rules-react.mdc` and `rules-ui.mdc`
 
 ## 🏗 Feature Architecture Pattern (MANDATORY)
 
