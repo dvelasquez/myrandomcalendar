@@ -1,7 +1,7 @@
 ---
 import { actions } from 'astro:actions';
 import { endOfMonth, startOfMonth } from 'date-fns';
-import FullCalendarComponent from '../components/FullCalendar.tsx';
+import FullCalendarComponent from '../components/FullCalendar';
 import AuthLayout from '../layouts/AuthLayout.astro';
 import PublicLayout from '../layouts/PublicLayout.astro';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -53,7 +53,7 @@ if (user) {
 {user ? (
   <AuthLayout title="Calendar - My Random Calendar">
     <div class="container mx-auto px-4 py-8">
-        <div class="max-w-4xl mx-auto">
+      <div class="max-w-4xl mx-auto">
           <Alert className="mb-6 border-blue-400 bg-blue-50 text-blue-800">
             <AlertTitle>Your Calendar with Availability</AlertTitle>
             <AlertDescription>
@@ -192,44 +192,9 @@ if (user) {
                 </div>
               )}
 
-              <div class="mt-6 space-x-4">
-                <ButtonLink href="/schedule">Schedule Management</ButtonLink>
-                <ButtonLink variant="secondary" href="/">
-                  Back to Home
-                </ButtonLink>
-                <ButtonLink variant="destructive" href="/logout">
-                  Logout
-                </ButtonLink>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
-        <div class="max-w-2xl mx-auto">
-          <Alert className="mb-6 border-yellow-400 bg-yellow-50 text-yellow-800">
-            <AlertTitle>Access Denied</AlertTitle>
-            <AlertDescription>
-              You must be logged in to view your calendar.
-            </AlertDescription>
-          </Alert>
-
-          <Card>
-            <CardContent>
-              <div class="text-center space-y-4">
-                <p class="text-gray-600">
-                  Please log in to access your Google Calendar.
-                </p>
-
-                <div class="flex space-x-4 justify-center">
-                  <ButtonLink href="/login">Login</ButtonLink>
-                  <ButtonLink variant="secondary" href="/register">
-                    Register
-                  </ButtonLink>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   </AuthLayout>
 ) : (

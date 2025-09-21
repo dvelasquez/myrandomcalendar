@@ -1,5 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import Navigation from '../components/Navigation';
 
 export interface Props {
   title?: string;
@@ -10,128 +11,17 @@ const { title = "My Random Calendar", description } = Astro.props;
 
 // Get user from middleware
 const { user } = Astro.locals;
+
+// Get current path for active link highlighting
+const currentPath = Astro.url.pathname;
 ---
 
 <BaseLayout title={title} description={description}>
-  <!-- Navigation Header -->
-  <header class="bg-white shadow-sm border-b border-gray-200">
-    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-16">
-        <!-- Logo and Brand -->
-        <div class="flex items-center">
-          <a href="/" class="flex items-center space-x-2">
-            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <span class="text-xl font-bold text-gray-900">My Random Calendar</span>
-          </a>
-        </div>
-
-        <!-- Desktop Navigation -->
-        <div class="hidden md:flex items-center space-x-8">
-          <a href="/" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
-            Dashboard
-          </a>
-          <a href="/calendar" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
-            Calendar
-          </a>
-          <a href="/schedule" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
-            Schedule
-          </a>
-          <a href="/periodic-events" class="text-gray-700 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
-            Events
-          </a>
-        </div>
-
-        <!-- User Menu -->
-        <div class="flex items-center space-x-4">
-          <!-- User Info -->
-          <div class="hidden sm:flex items-center space-x-3">
-            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-              <span class="text-sm font-medium text-gray-700">
-                {user?.name ? user.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || 'U'}
-              </span>
-            </div>
-            <div class="hidden lg:block">
-              <p class="text-sm font-medium text-gray-900">
-                {user?.name || 'User'}
-              </p>
-              <p class="text-xs text-gray-500">{user?.email}</p>
-            </div>
-          </div>
-
-          <!-- Logout Button -->
-          <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
-            Logout
-          </a>
-
-          <!-- Mobile Menu Button -->
-          <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Mobile Navigation Menu -->
-    <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-200">
-      <div class="px-2 pt-2 pb-3 space-y-1">
-        <a href="/" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">
-          Dashboard
-        </a>
-        <a href="/calendar" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">
-          Calendar
-        </a>
-        <a href="/schedule" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">
-          Schedule
-        </a>
-        <a href="/periodic-events" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md">
-          Events
-        </a>
-        <div class="border-t border-gray-200 pt-3 mt-3">
-          <div class="flex items-center px-3 py-2">
-            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-3">
-              <span class="text-sm font-medium text-gray-700">
-                {user?.name ? user.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || 'U'}
-              </span>
-            </div>
-            <div>
-              <p class="text-sm font-medium text-gray-900">{user?.name || 'User'}</p>
-              <p class="text-xs text-gray-500">{user?.email}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
+  <!-- ShadCN Navigation Component -->
+  <Navigation user={user} currentPath={currentPath} client:load />
 
   <!-- Main Content -->
   <main class="flex-1">
     <slot />
   </main>
 </BaseLayout>
-
-<script>
-  // Mobile menu toggle functionality
-  document.addEventListener('DOMContentLoaded', () => {
-    const mobileMenuButton = document.getElementById('mobile-menu-button');
-    const mobileMenu = document.getElementById('mobile-menu');
-
-    if (mobileMenuButton && mobileMenu) {
-      mobileMenuButton.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-      });
-
-      // Close mobile menu when clicking outside
-      document.addEventListener('click', (event) => {
-        if (!mobileMenuButton.contains(event.target as Node) && !mobileMenu.contains(event.target as Node)) {
-          mobileMenu.classList.add('hidden');
-        }
-      });
-    }
-  });
-</script>

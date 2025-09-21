@@ -1,6 +1,6 @@
 ---
 import { actions } from 'astro:actions';
-import ScheduleForm from '../../components/ScheduleForm.tsx';
+import ScheduleForm from '../../components/ScheduleForm';
 import {
   getSuccessMessageText,
   getActionErrorText,
@@ -92,9 +92,6 @@ if (user) {
                     : 'Add a new schedule block to manage your time'}
                 </p>
               </div>
-              <ButtonLink variant="secondary" href="/schedule">
-                Back to Schedule
-              </ButtonLink>
             </div>
           </div>
 
