@@ -8,12 +8,30 @@ export const authClient = createAuthClient({
   },
 });
 
-// Export a function to handle Google sign-in
+// Export functions to handle social sign-ins
 export async function handleGoogleSignIn() {
   try {
     await authClient.signIn.social({ provider: 'google' });
   } catch (error) {
     console.error('Google sign-in error:', error);
+    throw error;
+  }
+}
+
+export async function handleGithubSignIn() {
+  try {
+    await authClient.signIn.social({ provider: 'github' });
+  } catch (error) {
+    console.error('GitHub sign-in error:', error);
+    throw error;
+  }
+}
+
+export async function handleDiscordSignIn() {
+  try {
+    await authClient.signIn.social({ provider: 'discord' });
+  } catch (error) {
+    console.error('Discord sign-in error:', error);
     throw error;
   }
 }

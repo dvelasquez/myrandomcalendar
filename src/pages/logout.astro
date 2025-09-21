@@ -1,21 +1,17 @@
 ---
-import { actions } from 'astro:actions';
+import { auth } from '../features/auth/lib/better-auth';
 
 export const prerender = false; // Required for server-side operations
 
 // Get user from middleware
 const { user } = Astro.locals;
 
-// If user is logged in, perform logout using the existing action
+// If user is logged in, perform logout using BetterAuth API
 if (user) {
   try {
-    // Create a mock FormData for the action
-    const formData = new FormData();
-    const result = await Astro.callAction(actions.auth.logout, formData);
-
-    if (result.error) {
-      console.error('Logout error:', result.error);
-    }
+    await auth.api.signOut({
+      headers: Astro.request.headers,
+    });
   } catch (error) {
     console.error('Logout error:', error);
     // Continue with redirect even if logout fails

@@ -16,6 +16,7 @@ export const Accounts = defineTable({
     scope: column.text({ optional: true }),
     idToken: column.text({ optional: true }),
     sessionState: column.text({ optional: true }),
+    password: column.text({ optional: true }), // For email/password authentication
     createdAt: column.date(),
     updatedAt: column.date(),
   },

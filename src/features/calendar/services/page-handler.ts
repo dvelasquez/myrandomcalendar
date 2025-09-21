@@ -13,6 +13,7 @@ import {
 import type { BackgroundEvent } from '../domain/background-event-transformer';
 import type { CalendarEvent } from '../models/Calendar.types';
 import { handleFetchCalendar } from '../providers/google-calendar/actions/fetchCalendar';
+import { hasGoogleCalendarAccess } from '../providers/google-calendar/db/get';
 
 /**
  * Calendar page data interface
@@ -22,6 +23,7 @@ export interface CalendarPageData {
   googleCalendarEvents: CalendarEvent[];
   availabilityBackgroundEvents: BackgroundEvent[];
   calendarError: string | null;
+  hasGoogleCalendarAccess: boolean;
   calendarData: {
     success: boolean;
     events: CalendarEvent[];
@@ -54,44 +56,50 @@ export async function handleCalendarPage(
     // Fetch schedule blocks for the user
     const scheduleBlocks = await getScheduleBlocksDb(context.locals.user.id);
 
-    // Fetch Google Calendar events
+    // Fetch Google Calendar events (only if user has Google Calendar access)
     let googleCalendarEvents: CalendarEvent[] = [];
     let calendarError: string | null = null;
 
-    try {
-      const calendarResponse = await handleFetchCalendar(
-        { startDate: start, endDate: end },
-        context
-      );
-      googleCalendarEvents = calendarResponse.events.map(
-        event =>
-          ({
-            id: event.id || `google-${Date.now()}`,
-            title: event.summary || 'Untitled Event',
-            start:
-              event.start?.dateTime ||
-              event.start?.date ||
-              new Date().toISOString(),
-            end: event.end?.dateTime || event.end?.date || undefined,
-            allDay: !event.start?.dateTime && !!event.start?.date,
-            description: event.description || undefined,
-            location: event.location || undefined,
-            url: event.htmlLink || undefined,
-            backgroundColor: '#3b82f6',
-            borderColor: '#1e40af',
-            textColor: '#ffffff',
-            extendedProps: {
-              provider: 'google',
-              providerEventId: event.id,
-            },
-          }) as CalendarEvent
-      );
-    } catch (error) {
-      console.error('Error fetching Google Calendar events:', error);
-      calendarError =
-        error instanceof Error
-          ? error.message
-          : 'Failed to fetch calendar events';
+    const hasGoogleAccess = await hasGoogleCalendarAccess(
+      context.locals.user.id
+    );
+
+    if (hasGoogleAccess) {
+      try {
+        const calendarResponse = await handleFetchCalendar(
+          { startDate: start, endDate: end },
+          context
+        );
+        googleCalendarEvents = calendarResponse.events.map(
+          event =>
+            ({
+              id: event.id || `google-${Date.now()}`,
+              title: event.summary || 'Untitled Event',
+              start:
+                event.start?.dateTime ||
+                event.start?.date ||
+                new Date().toISOString(),
+              end: event.end?.dateTime || event.end?.date || undefined,
+              allDay: !event.start?.dateTime && !!event.start?.date,
+              description: event.description || undefined,
+              location: event.location || undefined,
+              url: event.htmlLink || undefined,
+              backgroundColor: '#3b82f6',
+              borderColor: '#1e40af',
+              textColor: '#ffffff',
+              extendedProps: {
+                provider: 'google',
+                providerEventId: event.id,
+              },
+            }) as CalendarEvent
+        );
+      } catch (error) {
+        console.error('Error fetching Google Calendar events:', error);
+        calendarError =
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch calendar events';
+      }
     }
 
     // Calculate availability background events
@@ -136,6 +144,7 @@ export async function handleCalendarPage(
       googleCalendarEvents,
       availabilityBackgroundEvents,
       calendarError,
+      hasGoogleCalendarAccess: hasGoogleAccess,
       calendarData,
       fullCalendarEvents,
     };

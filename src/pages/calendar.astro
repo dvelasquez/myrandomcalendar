@@ -116,17 +116,45 @@ if (user) {
                       </h3>
                       <div class="text-sm text-gray-600 space-y-1">
                         <p>
-                          <strong>Time Zone:</strong>{' '}
-                          {calendarPageData.calendarData?.timeZone}
+                          <strong>Google Calendar:</strong>{' '}
+                          {calendarPageData.hasGoogleCalendarAccess ? (
+                            <span class="text-green-600">✓ Connected</span>
+                          ) : (
+                            <span class="text-orange-600">
+                              ⚠ Not Connected
+                            </span>
+                          )}
                         </p>
-                        <p>
-                          <strong>Events Found:</strong>{' '}
-                          {calendarPageData.calendarData?.events.length}
-                        </p>
+                        {calendarPageData.hasGoogleCalendarAccess && (
+                          <>
+                            <p>
+                              <strong>Time Zone:</strong>{' '}
+                              {calendarPageData.calendarData?.timeZone}
+                            </p>
+                            <p>
+                              <strong>Events Found:</strong>{' '}
+                              {calendarPageData.calendarData?.events.length}
+                            </p>
+                          </>
+                        )}
                       </div>
                     </div>
-                    <Button id="refreshBtn">Refresh Calendar</Button>
+                    {calendarPageData.hasGoogleCalendarAccess && (
+                      <Button id="refreshBtn">Refresh Calendar</Button>
+                    )}
                   </div>
+
+                  {!calendarPageData.hasGoogleCalendarAccess && (
+                    <Alert className="mb-4">
+                      <AlertTitle>Google Calendar Not Connected</AlertTitle>
+                      <AlertDescription>
+                        You can still use the calendar to view your schedule
+                        blocks and availability. To see your Google Calendar
+                        events, please sign in with Google or connect your
+                        Google account.
+                      </AlertDescription>
+                    </Alert>
+                  )}
 
                   <div class="mb-4">
                     <FullCalendarComponent

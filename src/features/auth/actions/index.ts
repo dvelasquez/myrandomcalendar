@@ -1,11 +1,6 @@
-import { login } from './login';
-import { logout } from './logout';
-import { register } from './register';
+// Note: Login and register now use BetterAuth API routes directly
+// (/api/auth/sign-in/email, /api/auth/sign-up/email)
+// Logout is handled in /pages/logout.astro using BetterAuth API directly
 
-const auth = {
-  login,
-  logout,
-  register,
-};
-
-export default auth;
+// No auth actions needed anymore
+export default {};

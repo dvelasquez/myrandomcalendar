@@ -20,6 +20,8 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: false,
+    autoSignIn: false,
   },
   socialProviders: {
     google: {
@@ -31,6 +33,16 @@ export const auth = betterAuth({
         'profile',
         'https://www.googleapis.com/auth/calendar.readonly',
       ],
+    },
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID as string,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      scope: ['user:email'],
+    },
+    discord: {
+      clientId: process.env.DISCORD_CLIENT_ID as string,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
+      scope: ['identify', 'email'],
     },
   },
   session: {
@@ -44,5 +56,8 @@ export const auth = betterAuth({
         required: false,
       },
     },
+  },
+  advanced: {
+    useSecureCookies: false, // Allow cookies over HTTP during development
   },
 });
