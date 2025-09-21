@@ -1,12 +1,12 @@
 ---
 import { actions } from 'astro:actions';
-import { startOfMonth, endOfMonth } from 'date-fns';
+import { endOfMonth, startOfMonth } from 'date-fns';
 import FullCalendarComponent from '../components/FullCalendar.tsx';
 import Layout from '../layouts/Layout.astro';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import ButtonLink from '@/components/ui/button-link';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import type { CalendarPageData } from '@/features/calendar/services/page-handler';
 
 export const prerender = false; // Required for server actions
