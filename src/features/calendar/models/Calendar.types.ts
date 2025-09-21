@@ -16,6 +16,7 @@ export interface CalendarEvent {
   backgroundColor?: string;
   borderColor?: string;
   textColor?: string;
+  className?: string;
   extendedProps?: {
     scheduleBlockId?: string;
     scheduleBlockType?: ScheduleBlockType;

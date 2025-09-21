@@ -1,0 +1,248 @@
+/* FullCalendar theming with CSS variables */
+.fc {
+  font-family: inherit;
+  color: var(--color-foreground);
+}
+
+.fc-toolbar {
+  margin-bottom: 1rem;
+}
+
+/* Toolbar buttons */
+.fc-button {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.fc-button:hover {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  opacity: 0.9;
+}
+
+.fc-button-primary:not(:disabled):active,
+.fc-button-primary:not(:disabled).fc-button-active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  opacity: 0.8;
+}
+
+.fc-button:disabled {
+  background-color: var(--color-muted);
+  border-color: var(--color-muted);
+  color: var(--color-muted-foreground);
+}
+
+/* Calendar grid */
+.fc-daygrid-day {
+  background-color: var(--color-card);
+  border-color: var(--color-border);
+}
+
+.fc-daygrid-day-number {
+  color: var(--color-foreground);
+}
+
+.fc-daygrid-day:hover {
+  background-color: var(--color-accent);
+}
+
+.fc-day-today {
+  background-color: var(--color-accent);
+}
+
+.fc-day-today .fc-daygrid-day-number {
+  color: var(--color-accent-foreground);
+  font-weight: 600;
+}
+
+/* Events */
+.fc-event {
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  border: 1px solid var(--color-primary);
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+.fc-event:hover {
+  background-color: var(--color-primary);
+  opacity: 0.9;
+}
+
+/* Background events */
+.fc-event.fc-bg-event {
+  opacity: 0.3;
+  border: 1px solid var(--color-border);
+}
+
+/* Event type specific styling */
+.fc-event.availability-available {
+  background-color: var(--color-chart-4);
+  border-color: var(--color-chart-4);
+  color: var(--color-chart-4);
+}
+
+.fc-event.availability-busy {
+  background-color: var(--color-destructive);
+  border-color: var(--color-destructive);
+  color: var(--color-destructive);
+}
+
+.fc-event.schedule-block {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+.fc-event.google-event {
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+}
+
+/* Event priority styling */
+.fc-event.priority-high {
+  background-color: var(--color-destructive);
+  border-color: var(--color-destructive);
+  color: var(--color-destructive);
+}
+
+.fc-event.priority-medium {
+  background-color: var(--color-chart-3);
+  border-color: var(--color-chart-3);
+  color: var(--color-chart-3);
+}
+
+.fc-event.priority-low {
+  background-color: var(--color-muted);
+  border-color: var(--color-muted);
+  color: var(--color-muted-foreground);
+}
+
+.fc-daygrid-event {
+  margin: 1px 2px;
+}
+
+.fc-timegrid-event {
+  margin: 1px;
+}
+
+/* Event titles */
+.fc-event-title {
+  color: var(--color-primary-foreground);
+}
+
+/* Time grid */
+.fc-timegrid-slot {
+  border-color: var(--color-border);
+}
+
+.fc-timegrid-axis {
+  color: var(--color-muted-foreground);
+}
+
+.fc-timegrid-event-harness {
+  border-color: var(--color-border);
+}
+
+/* Header */
+.fc-col-header-cell {
+  background-color: var(--color-muted);
+  color: var(--color-muted-foreground);
+  border-color: var(--color-border);
+  font-weight: 600;
+}
+
+/* More link */
+.fc-more-link {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.fc-more-link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+/* Popover */
+.fc-popover {
+  background-color: var(--color-popover);
+  border-color: var(--color-border);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.fc-popover-header {
+  background-color: var(--color-muted);
+  color: var(--color-muted-foreground);
+  border-color: var(--color-border);
+}
+
+/* List view */
+.fc-list-event:hover td {
+  background-color: var(--color-accent);
+}
+
+.fc-list-day-cushion {
+  background-color: var(--color-muted);
+  color: var(--color-muted-foreground);
+}
+
+/* Dark mode specific adjustments */
+.dark .fc-event {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3);
+}
+
+.dark .fc-popover {
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.3),
+    0 4px 6px -2px rgb(0 0 0 / 0.1);
+}
+
+.dark .fc-button {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.1);
+}
+
+.dark .fc-button:hover {
+  box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.2);
+}
+
+/* Ensure proper contrast in dark mode */
+.dark .fc-daygrid-day-number {
+  color: var(--color-foreground);
+}
+
+.dark .fc-timegrid-axis {
+  color: var(--color-muted-foreground);
+}
+
+.dark .fc-col-header-cell {
+  color: var(--color-muted-foreground);
+}
+
+/* Event text color adjustments for dark mode */
+.dark .fc-event .fc-event-title {
+  color: var(--color-primary-foreground);
+}
+
+.dark .fc-event.availability-available .fc-event-title {
+  color: var(--color-chart-4);
+}
+
+.dark .fc-event.availability-busy .fc-event-title {
+  color: var(--color-destructive);
+}
+
+.dark .fc-event.schedule-block .fc-event-title {
+  color: var(--color-primary-foreground);
+}
+
+.dark .fc-event.google-event .fc-event-title {
+  color: var(--color-secondary-foreground);
+}

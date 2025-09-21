@@ -1,67 +1,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import './fullcalendar.css';
 
 @custom-variant dark (&:is(.dark *));
-
-/* FullCalendar basic styling */
-.fc {
-  font-family: inherit;
-}
-
-.fc-toolbar {
-  margin-bottom: 1rem;
-}
-
-.fc-button {
-  background-color: #3b82f6;
-  border-color: #3b82f6;
-  color: white;
-}
-
-.fc-button:hover {
-  background-color: #2563eb;
-  border-color: #2563eb;
-}
-
-.fc-button-primary:not(:disabled):active,
-.fc-button-primary:not(:disabled).fc-button-active {
-  background-color: #1d4ed8;
-  border-color: #1d4ed8;
-}
-
-.fc-event {
-  border-radius: 4px;
-  font-size: 0.875rem;
-}
-
-.fc-daygrid-event {
-  margin: 1px 2px;
-}
-
-.fc-timegrid-event {
-  margin: 1px;
-}
-
-/* Event Modal Styling */
-.event-modal {
-  backdrop-filter: blur(4px);
-}
-
-.event-modal-content {
-  animation: modalSlideIn 0.2s ease-out;
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);

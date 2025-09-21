@@ -125,7 +125,7 @@ function generateEventForDate(
       description: block.description || undefined,
       backgroundColor: block.color,
       borderColor: darkenColor(block.color),
-      textColor: '#ffffff',
+      textColor: 'var(--color-primary-foreground)',
       // Add metadata to identify this as a schedule block
       extendedProps: {
         scheduleBlockId: block.id,
@@ -202,24 +202,24 @@ export function combineCalendarEvents(
 }
 
 /**
- * Gets the default color for a schedule block type
+ * Gets the default color for a schedule block type using CSS variables
  */
 export function getDefaultColorForScheduleType(
   type: ScheduleBlockType
 ): string {
   const colorMap: Record<ScheduleBlockType, string> = {
-    work: '#3b82f6', // Blue
-    sleep: '#6366f1', // Indigo
-    personal: '#10b981', // Green
-    travel: '#f59e0b', // Yellow
-    meal: '#f97316', // Orange
-    exercise: '#ef4444', // Red
-    family: '#8b5cf6', // Purple
-    study: '#06b6d4', // Cyan
-    other: '#6b7280', // Gray
+    work: 'var(--color-primary)', // Primary color for work
+    sleep: 'var(--color-chart-2)', // Blue for sleep
+    personal: 'var(--color-chart-4)', // Green for personal
+    travel: 'var(--color-chart-3)', // Yellow for travel
+    meal: 'var(--color-chart-5)', // Orange for meal
+    exercise: 'var(--color-destructive)', // Red for exercise
+    family: 'var(--color-secondary)', // Secondary for family
+    study: 'var(--color-accent)', // Accent for study
+    other: 'var(--color-muted)', // Muted for other
   };
 
-  return colorMap[type] || '#6b7280';
+  return colorMap[type] || 'var(--color-muted)';
 }
 
 /**

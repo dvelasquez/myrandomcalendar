@@ -94,9 +94,6 @@ export default function FullCalendarComponent({
         dayMaxEvents={true}
         moreLinkClick="popover"
         eventDisplay="block"
-        eventTextColor="#ffffff"
-        eventBackgroundColor="#3b82f6"
-        eventBorderColor="#1d4ed8"
         weekends={true}
         editable={false}
         selectable={true}

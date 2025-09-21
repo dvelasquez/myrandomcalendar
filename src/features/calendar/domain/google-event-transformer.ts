@@ -52,7 +52,7 @@ export function transformGoogleApiEventsToFullCalendar(
     // Create color based on event properties
     const backgroundColor = getEventColor(event);
 
-    return {
+    const calendarEvent: CalendarEvent = {
       id: eventId,
       title: event.summary || 'Untitled Event',
       start: validStartTime,
@@ -62,9 +62,18 @@ export function transformGoogleApiEventsToFullCalendar(
       location: event.location || undefined,
       url: event.htmlLink || undefined,
       backgroundColor,
-      borderColor: darkenColor(backgroundColor),
-      textColor: '#ffffff',
+      borderColor: 'var(--color-border)',
+      textColor: 'var(--color-primary-foreground)',
+      className: 'google-event',
+      extendedProps: {
+        provider: 'google',
+        providerEventId: event.id || undefined,
+        description: event.description || undefined,
+        location: event.location || undefined,
+      },
     };
+
+    return calendarEvent;
   });
 }
 
@@ -147,18 +156,18 @@ export function mapFullCalendarToGoogle<T extends CalendarEvent>(
 }
 
 /**
- * Helper function to generate event colors
+ * Helper function to generate event colors using CSS variables
  */
 function getEventColor(event: GoogleCalendarApiEvent): string {
-  const colors = [
-    '#3b82f6', // Blue
-    '#10b981', // Green
-    '#f59e0b', // Yellow
-    '#ef4444', // Red
-    '#8b5cf6', // Purple
-    '#06b6d4', // Cyan
-    '#f97316', // Orange
-    '#84cc16', // Lime
+  const cssVariables = [
+    'var(--color-chart-1)', // Blue
+    'var(--color-chart-2)', // Green
+    'var(--color-chart-3)', // Yellow
+    'var(--color-chart-4)', // Red
+    'var(--color-chart-5)', // Purple
+    'var(--color-primary)', // Primary
+    'var(--color-secondary)', // Secondary
+    'var(--color-accent)', // Accent
   ];
 
   // Use event ID or summary to consistently assign colors
@@ -167,23 +176,7 @@ function getEventColor(event: GoogleCalendarApiEvent): string {
     return a & a;
   }, 0);
 
-  return colors[Math.abs(hash) % colors.length];
-}
-
-/**
- * Helper function to darken a color for borders
- */
-function darkenColor(color: string): string {
-  const hex = color.replace('#', '');
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-
-  const darkenedR = Math.max(0, r - 30);
-  const darkenedG = Math.max(0, g - 30);
-  const darkenedB = Math.max(0, b - 30);
-
-  return `#${darkenedR.toString(16).padStart(2, '0')}${darkenedG.toString(16).padStart(2, '0')}${darkenedB.toString(16).padStart(2, '0')}`;
+  return cssVariables[Math.abs(hash) % cssVariables.length];
 }
 
 /**

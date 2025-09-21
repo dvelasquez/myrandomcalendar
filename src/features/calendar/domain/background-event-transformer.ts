@@ -9,11 +9,11 @@ import type {
  * Default configuration for background events
  */
 export const DEFAULT_BACKGROUND_EVENT_CONFIG: BackgroundEventConfig = {
-  availableColor: '#10b981', // Green for available
-  busyColor: '#ef4444', // Red for busy
-  scheduleBlockColor: '#3b82f6', // Blue for schedule blocks
+  availableColor: 'var(--color-chart-4)', // Green for available (chart-4 is green)
+  busyColor: 'var(--color-destructive)', // Red for busy
+  scheduleBlockColor: 'var(--color-primary)', // Primary color for schedule blocks
   opacity: 0.3,
-  borderColor: '#ffffff',
+  borderColor: 'var(--color-border)',
   borderWidth: 1,
 };
 
@@ -93,10 +93,31 @@ export function getBackgroundEventColor(
 }
 
 /**
- * Pure function to get background event CSS class name
+ * Pure function to get background event CSS class based on slot type
  */
 export function getBackgroundEventClassName(slot: TimeSlot): string {
-  return `availability-${slot.type}`;
+  const baseClasses = ['fc-bg-event'];
+
+  switch (slot.type) {
+    case 'available':
+      baseClasses.push('availability-available');
+      break;
+    case 'busy':
+      baseClasses.push('availability-busy');
+      break;
+    case 'schedule-block':
+      baseClasses.push('schedule-block');
+      break;
+    default:
+      baseClasses.push('availability-busy');
+  }
+
+  // Add priority class if available
+  if (slot.priority) {
+    baseClasses.push(`priority-${slot.priority.toLowerCase()}`);
+  }
+
+  return baseClasses.join(' ');
 }
 
 /**
