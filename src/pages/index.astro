@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ButtonLink from '@/components/ui/button-link';
 
 export const prerender = false; // Required for server actions
 
@@ -65,18 +66,12 @@ const { user } = Astro.locals;
             <p class="text-gray-600">Get started by creating an account or logging in.</p>
             
             <div class="flex space-x-4 justify-center">
-              <a 
-                href="/login" 
-                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
-              >
+              <ButtonLink href="/login">
                 Login
-              </a>
-              <a 
-                href="/register" 
-                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-              >
+              </ButtonLink>              
+              <ButtonLink variant="secondary" href="/register">
                 Register
-              </a>
+              </ButtonLink>
             </div>
           </div>
         </div>

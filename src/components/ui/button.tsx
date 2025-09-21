@@ -1,3 +1,6 @@
+/**
+ * IMPORTANT: For button that are links, use ButtonLink component instead.
+ */
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import * as React from "react"
