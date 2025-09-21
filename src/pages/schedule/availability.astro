@@ -2,6 +2,7 @@
 import { actions } from 'astro:actions';
 import { format, addDays, subDays } from 'date-fns';
 import Layout from '../../layouts/Layout.astro';
+import ButtonLink from '@/components/ui/button-link';
 
 export const prerender = false; // Required for server actions
 
@@ -66,12 +67,9 @@ if (user) {
                 </svg>
               </a>
             </div>
-            <a 
-              href="/schedule" 
-              class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-            >
+            <ButtonLink variant="secondary" href="/schedule">
               Back to Schedule
-            </a>
+            </ButtonLink>
           </div>
         </div>
       </div>
@@ -148,18 +146,12 @@ if (user) {
                   No free time slots found for {format(selectedDate, 'MMMM dd, yyyy')}.
                 </p>
                 <div class="space-x-4">
-                  <a 
-                    href="/schedule/maintainer" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                  >
+                  <ButtonLink href="/schedule/maintainer">
                     Manage Schedule Blocks
-                  </a>
-                  <a 
-                    href="/calendar" 
-                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-                  >
+                  </ButtonLink>
+                  <ButtonLink variant="secondary" href="/calendar">
                     View Calendar
-                  </a>
+                  </ButtonLink>
                 </div>
               </div>
             )}
@@ -200,18 +192,12 @@ if (user) {
               <p class="text-gray-600">Please log in to access your availability data.</p>
               
               <div class="flex space-x-4 justify-center">
-                <a 
-                  href="/login" 
-                  class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
-                >
+                <ButtonLink href="/login">
                   Login
-                </a>
-                <a 
-                  href="/register" 
-                  class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-                >
+                </ButtonLink>
+                <ButtonLink variant="secondary" href="/register">
                   Register
-                </a>
+                </ButtonLink>
               </div>
             </div>
           </div>

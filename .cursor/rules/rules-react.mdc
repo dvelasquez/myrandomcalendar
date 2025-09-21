@@ -44,6 +44,18 @@ useEffect(() => {
 }, []);
 ```
 
+### **Avoid Custom Button Styling**
+```typescript
+// ❌ DON'T DO THIS
+<button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+  Click me
+</button>
+
+<a className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+  Link button
+</a>
+```
+
 ## ✅ What TO Do in React Components
 
 ### **Accept Data as Props**
@@ -91,20 +103,160 @@ export function UserForm({ onSubmit, initialData }: FormProps) {
 }
 ```
 
-## 🎨 Styling Guidelines
+## 🎨 ShadCN Component Guidelines
 
-### **Use TailwindCSS**
-- Prefer Tailwind utility classes
-- Use `className` prop for styling
-- Avoid inline styles unless absolutely necessary
+### **Button Components (CRITICAL)**
+- **Use `Button`** for all `<button>` elements
+- **Use `ButtonLink`** for all `<a>` tags styled as buttons
+- **Never use custom button styling** - only ShadCN variants
+- **Import both components** when needed in Astro files
 
 ```typescript
-// ✅ DO THIS
-<div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-md">
-  <h2 className="text-xl font-semibold text-gray-800">Title</h2>
-  <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-    Action
-  </button>
+// ✅ CORRECT: React components
+import { Button } from './ui/button';
+
+<Button type="submit" variant="destructive">
+  Delete
+</Button>
+
+<Button variant="outline" size="sm">
+  Edit
+</Button>
+```
+
+```astro
+<!-- ✅ CORRECT: Astro files -->
+---
+import { Button } from '@/components/ui/button';
+import ButtonLink from '@/components/ui/button-link';
+---
+
+<Button type="submit" className="w-full">
+  Submit
+</Button>
+
+<ButtonLink variant="secondary" href="/back">
+  Back
+</ButtonLink>
+```
+
+### **Variant Selection Rules**
+- `default` - Primary actions (create, submit, main CTAs)
+- `secondary` - Secondary actions (back, cancel, navigation)
+- `destructive` - Delete, remove, dangerous actions
+- `outline` - Alternative actions, form cancel buttons
+- `ghost` - Subtle actions, close buttons, icon buttons
+- `link` - Text links within content
+
+```typescript
+// ✅ CORRECT: Semantic variant usage
+<Button variant="default">Create New Event</Button>        // Primary action
+<Button variant="secondary">Cancel</Button>               // Secondary action
+<Button variant="destructive">Delete</Button>             // Dangerous action
+<Button variant="outline">Back to Schedule</Button>       // Alternative action
+<Button variant="ghost" size="icon">×</Button>            // Close button
+<ButtonLink variant="link" href="/login">Sign in</ButtonLink> // Text link
+```
+
+### **Size Guidelines**
+- `default` - Standard buttons (most common)
+- `sm` - Small buttons (edit, delete actions in lists)
+- `lg` - Large buttons (hero CTAs, important actions)
+- `icon` - Icon-only buttons (close, menu, etc.)
+
+```typescript
+// ✅ CORRECT: Size usage
+<Button size="default">Primary Action</Button>
+<Button size="sm" variant="destructive">Delete</Button>
+<Button size="lg">Get Started</Button>
+<Button size="icon" variant="ghost">×</Button>
+```
+
+## 🎨 Styling Guidelines
+
+### **Use ShadCN Components First**
+- **Prefer ShadCN components** over custom styling
+- **Use TailwindCSS utilities** for layout and spacing
+- **Use `className` prop** for React components
+- **Use `class` prop** for Astro/HTML elements
+- **Never override ShadCN component styles** - use variants instead
+
+```typescript
+// ✅ DO THIS: ShadCN components
+<div className="flex items-center justify-between p-4">
+  <h2 className="text-xl font-semibold">Title</h2>
+  <Button variant="outline">Action</Button>
+</div>
+
+// ❌ DON'T DO THIS: Custom button styling
+<button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+  Action
+</button>
+```
+
+### **Component Composition**
+- Compose ShadCN components rather than overriding styles
+- Use variants and sizes instead of custom CSS
+- Leverage ShadCN's built-in accessibility features
+- Pass styling props correctly to React components
+
+## 🔗 Astro + React Integration
+
+### **Import Patterns**
+```typescript
+// ✅ CORRECT: Astro page imports
+import { Button } from '@/components/ui/button';
+import ButtonLink from '@/components/ui/button-link';
+import MyReactComponent from '../components/MyReactComponent';
+
+// ✅ CORRECT: React component imports
+import { Button } from './ui/button';
+```
+
+### **Styling in Astro**
+- Use `class` for Astro/HTML elements
+- Use `className` for React components
+- Pass styling props correctly to React components
+
+```astro
+<!-- ✅ CORRECT: Astro with React components -->
+<Button type="submit" className="w-full">
+  Submit
+</Button>
+
+<ButtonLink variant="secondary" href="/back">
+  Back
+</ButtonLink>
+
+<!-- ✅ CORRECT: Native HTML elements -->
+<div class="flex items-center space-x-4">
+  <input class="px-3 py-2 border rounded-md" />
+</div>
+```
+
+### **Component Usage Patterns**
+```astro
+<!-- ✅ CORRECT: Form submission -->
+<form method="POST" action={action}>
+  <Button type="submit" className="w-full">
+    {editing ? 'Update' : 'Create'}
+  </Button>
+</form>
+
+<!-- ✅ CORRECT: Navigation -->
+<div class="flex space-x-4">
+  <ButtonLink href="/calendar">Calendar</ButtonLink>
+  <ButtonLink variant="secondary" href="/schedule">Schedule</ButtonLink>
+</div>
+
+<!-- ✅ CORRECT: Actions in lists -->
+<div class="flex space-x-2">
+  <ButtonLink variant="outline" size="sm" href={`/edit/${item.id}`}>
+    Edit
+  </ButtonLink>
+  <Button variant="destructive" size="sm">
+    Delete
+  </Button>
 </div>
 ```
 
@@ -215,10 +367,50 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>{title}</h2>
+        <div className="flex justify-between items-center">
+          <h2>{title}</h2>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            ×
+          </Button>
+        </div>
         {children}
       </div>
     </div>
   );
 }
 ```
+
+### **Button Usage Patterns**
+```typescript
+// ✅ Primary actions
+<Button type="submit">Create Event</Button>
+<ButtonLink href="/create">Add New</ButtonLink>
+
+// ✅ Secondary actions
+<Button variant="secondary">Cancel</Button>
+<ButtonLink variant="secondary" href="/back">Back</ButtonLink>
+
+// ✅ Destructive actions
+<Button variant="destructive">Delete</Button>
+<Button variant="destructive" size="sm">Remove</Button>
+
+// ✅ Alternative actions
+<Button variant="outline">Edit</Button>
+<ButtonLink variant="outline" href="/edit">Modify</ButtonLink>
+
+// ✅ Subtle actions
+<Button variant="ghost" size="icon">×</Button>
+<Button variant="ghost">Close</Button>
+
+// ✅ Text links
+<ButtonLink variant="link" href="/login">Sign in</ButtonLink>
+```
+
+## 🚨 Critical Rules Summary
+
+1. **ALWAYS use ShadCN Button components** - Never custom button styling
+2. **Use `ButtonLink` for all link buttons** - Never style `<a>` tags as buttons
+3. **Choose variants semantically** - Match variant to action type
+4. **Import correctly** - Use `@/components/ui/button` in Astro, `./ui/button` in React
+5. **Use `className` for React, `class` for Astro** - Maintain proper prop usage
+6. **Compose, don't override** - Use variants instead of custom CSS

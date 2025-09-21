@@ -2,6 +2,8 @@
 import { actions } from 'astro:actions';
 import { handlePeriodicEventsCreatePage } from '../../features/periodic-events/services/page-handler'; 
 import Layout from '../../layouts/Layout.astro';
+import { Button } from '@/components/ui/button';
+import ButtonLink from '@/components/ui/button-link';
 
 const pageData = handlePeriodicEventsCreatePage(Astro);
 
@@ -201,12 +203,12 @@ const { formOptions, createdEvent, hasError, errorMessage } = pageData;
 
           <!-- Submit Button -->
           <div class="pt-4">
-            <button
+            <Button
               type="submit"
-              class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium"
+              className="w-full"
             >
               Create Periodic Event
-            </button>
+            </Button>
           </div>
         </form>
       </div>

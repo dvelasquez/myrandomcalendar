@@ -4,6 +4,7 @@ import { formatDuration, formatFrequency, getCategoryColor } from '../../feature
 import type { PeriodicEvent as PeriodicEventType } from '../../features/periodic-events/models/PeriodicEvents.types';
 import { handlePeriodicEventsIndexPage } from '../../features/periodic-events/services/page-handler';
 import Layout from '../../layouts/Layout.astro';
+import ButtonLink from '@/components/ui/button-link';
 
 // Fetch periodic events server-side using Astro.callAction
 let periodicEvents: PeriodicEventType[] = [];
@@ -50,12 +51,9 @@ function getPriorityColor(priority: string): string {
             Activities you want to do regularly without fixed times
           </p>
         </div>
-        <a 
-          href="/periodic-events/create" 
-          class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium"
-        >
+        <ButtonLink href="/periodic-events/create">
           Create New Event
-        </a>
+        </ButtonLink>
       </div>
 
       <!-- Events List -->
@@ -71,12 +69,9 @@ function getPriorityColor(priority: string): string {
           <p class="text-gray-500 mb-6">
             Create your first periodic event to start tracking activities you want to do regularly.
           </p>
-          <a 
-            href="/periodic-events/create" 
-            class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium"
-          >
+          <ButtonLink href="/periodic-events/create">
             Create Your First Event
-          </a>
+          </ButtonLink>
         </div>
       ) : (
         // <!-- Events Grid -->

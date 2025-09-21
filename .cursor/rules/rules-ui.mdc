@@ -1,0 +1,214 @@
+---
+globs: *.astro,*.tsx
+alwaysApply: false
+---
+# ShadCN UI Component Guidelines
+
+## 🎨 **ShadCN Component Standards**
+
+### **Component Priority**
+1. **Use ShadCN components first** - Always prefer over custom styling
+2. **Use TailwindCSS utilities** for layout and spacing
+3. **Use custom components** only when ShadCN doesn't provide the functionality
+
+### **Import Patterns**
+```typescript
+import { Button } from '@/components/ui/button';
+import ButtonLink from '@/components/ui/button-link';
+```
+
+## 🔘 **Button Component Rules (CRITICAL)**
+
+### **Component Selection**
+- **`<Button>`** - For all `<button>` elements
+- **`<ButtonLink>`** - For all `<a>` tags styled as buttons
+- **Never** use custom button styling
+
+### **Variant Selection**
+- `default` - Primary actions (create, submit, main CTAs)
+- `secondary` - Secondary actions (back, cancel, navigation)  
+- `destructive` - Delete, remove, dangerous actions
+- `outline` - Alternative actions, form cancel buttons
+- `ghost` - Subtle actions, close buttons, icon buttons
+- `link` - Text links within content
+
+### **Size Guidelines**
+- `default` - Standard buttons (most common)
+- `sm` - Small buttons (edit, delete actions in lists)
+- `lg` - Large buttons (hero CTAs, important actions)
+- `icon` - Icon-only buttons (close, menu, etc.)
+
+### **Usage Examples**
+```typescript
+// ✅ Primary actions
+<Button type="submit">Create Event</Button>
+<ButtonLink href="/create">Add New</ButtonLink>
+
+// ✅ Secondary actions
+<Button variant="secondary">Cancel</Button>
+<ButtonLink variant="secondary" href="/back">Back</ButtonLink>
+
+// ✅ Destructive actions
+<Button variant="destructive">Delete</Button>
+<Button variant="destructive" size="sm">Remove</Button>
+
+// ✅ Alternative actions
+<Button variant="outline">Edit</Button>
+<ButtonLink variant="outline" href="/edit">Modify</ButtonLink>
+
+// ✅ Subtle actions
+<Button variant="ghost" size="icon">×</Button>
+<Button variant="ghost">Close</Button>
+
+// ✅ Text links
+<ButtonLink variant="link" href="/login">Sign in</ButtonLink>
+```
+
+## 🎨 **Styling Guidelines**
+
+### **Component Styling**
+- **Use ShadCN variants** instead of custom CSS
+- **Use TailwindCSS utilities** for layout and spacing
+- **Never override ShadCN component styles**
+- **Compose components** rather than modifying them
+
+### **Prop Usage**
+- **React components**: Use `className` prop
+- **Astro/HTML elements**: Use `class` prop
+- **Pass styling props correctly** to React components
+
+```typescript
+// ✅ CORRECT: React component styling
+<Button className="w-full" variant="outline">
+  Full Width Button
+</Button>
+
+// ✅ CORRECT: Astro HTML styling
+<div class="flex items-center space-x-4">
+  <input class="px-3 py-2 border rounded-md" />
+</div>
+```
+
+## 🚫 **Anti-Patterns (NEVER DO)**
+
+### **Custom Button Styling**
+```typescript
+// ❌ NEVER DO THIS
+<button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+  Click me
+</button>
+
+<a className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+  Link button
+</a>
+
+// ✅ DO THIS INSTEAD
+<Button>Click me</Button>
+<ButtonLink href="/path">Link button</ButtonLink>
+```
+
+### **Style Overrides**
+```typescript
+// ❌ NEVER DO THIS
+<Button className="bg-red-500 hover:bg-red-600">
+  Custom styled button
+</Button>
+
+// ✅ DO THIS INSTEAD
+<Button variant="destructive">
+  Properly styled button
+</Button>
+```
+
+## 🔗 **Astro Integration Patterns**
+
+### **Form Buttons**
+```astro
+<!-- ✅ CORRECT: Form submission -->
+<form method="POST" action={action}>
+  <Button type="submit" className="w-full">
+    {editing ? 'Update' : 'Create'}
+  </Button>
+</form>
+```
+
+### **Navigation Buttons**
+```astro
+<!-- ✅ CORRECT: Navigation -->
+<div class="flex space-x-4">
+  <ButtonLink href="/calendar">Calendar</ButtonLink>
+  <ButtonLink variant="secondary" href="/schedule">Schedule</ButtonLink>
+</div>
+```
+
+### **Action Buttons**
+```astro
+<!-- ✅ CORRECT: Actions in lists -->
+<div class="flex space-x-2">
+  <ButtonLink variant="outline" size="sm" href={`/edit/${item.id}`}>
+    Edit
+  </ButtonLink>
+  <Button variant="destructive" size="sm">
+    Delete
+  </Button>
+</div>
+```
+
+## 📋 **Component Checklist**
+
+Before adding any button or interactive element:
+
+- [ ] Is this a `<button>` element? → Use `<Button>`
+- [ ] Is this a `<a>` tag styled as button? → Use `<ButtonLink>`
+- [ ] Does the action match the variant? → Choose appropriate variant
+- [ ] Is the size appropriate? → Choose appropriate size
+- [ ] Are imports correct? → Use proper import paths
+- [ ] Is styling using props correctly? → `className` for React, `class` for Astro
+
+## 🎯 **Future ShadCN Components**
+
+When adding new ShadCN components, follow these patterns:
+
+### **Component Installation**
+```bash
+npx shadcn@latest add [component-name]
+```
+
+### **Usage Guidelines**
+- Follow the same import patterns as Button components
+- Use variants and sizes instead of custom styling
+- Compose components rather than overriding styles
+- Maintain accessibility features
+
+### **Examples for Future Components**
+```typescript
+// Card components
+<Card>
+  <CardHeader>
+    <CardTitle>Title</CardTitle>
+  </CardHeader>
+  <CardContent>
+    Content
+  </CardContent>
+</Card>
+
+// Input components
+<Input type="email" placeholder="Enter email" />
+<Label htmlFor="email">Email</Label>
+
+// Alert components
+<Alert>
+  <AlertTitle>Title</AlertTitle>
+  <AlertDescription>Description</AlertDescription>
+</Alert>
+```
+
+## 🚨 **Critical Rules Summary**
+
+1. **ALWAYS use ShadCN components** for UI elements
+2. **NEVER use custom button styling** - use Button/ButtonLink components
+3. **Choose variants semantically** - match variant to action type
+4. **Import correctly** - use proper import paths for file type
+5. **Use proper props** - `className` for React, `class` for Astro
+6. **Compose, don't override** - use variants instead of custom CSS
+7. **Maintain accessibility** - ShadCN components include built-in accessibility features

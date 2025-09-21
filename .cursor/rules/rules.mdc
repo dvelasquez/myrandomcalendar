@@ -11,6 +11,7 @@ A calendar application built with Astro 5, featuring BetterAuth authentication w
 - **Astro 5** - Web framework
 - **TailwindCSS 4** - Styling
 - **React 19** - UI components, pure and functional. Only manage presentational state, NO DATA FETCHING.
+- **ShadCN UI** - Component library for consistent UI elements
 - **ESLint 9** - Code linting
 - **Astro DB** - Database with Drizzle ORM client (accessible from "astro:db")
 - **libsql** - Database provider
@@ -131,7 +132,17 @@ printenv | grep GOOGLE         # Check Google credentials
 - ✅ Server-side data fetching implemented
 - ✅ **Background Events System** - Availability visualization with FullCalendar
 - ✅ **Pure Function Architecture** - Comprehensive test coverage (91 tests)
+- ✅ **ShadCN UI Integration** - Consistent button components across all pages
 - ✅ Documentation complete
+
+## 🎨 UI Component Guidelines
+- **ShadCN UI** is the primary component library for all UI elements
+- **Button Components**: Use `Button` for buttons, `ButtonLink` for link buttons
+- **Never use custom button styling** - only ShadCN variants
+- **Variant Selection**: Choose variants semantically (default, secondary, destructive, outline, ghost, link)
+- **Import Patterns**: Use `@/components/ui/button` in Astro, `./ui/button` in React
+- **Styling**: Use `className` for React components, `class` for Astro/HTML elements
+- See detailed rules in `rules-ui.mdc` and `rules-react.mdc`
 
 ## 🏗 Feature Architecture Pattern (MANDATORY)
 

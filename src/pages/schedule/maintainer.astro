@@ -3,6 +3,8 @@ import { actions } from 'astro:actions';
 import { isDaySelected } from '../../features/schedule/services/constants';
 import { getSuccessMessageText, getActionErrorText } from '../../features/schedule/services/maintainer-handler';
 import Layout from '../../layouts/Layout.astro';
+import { Button } from '@/components/ui/button';
+import ButtonLink from '@/components/ui/button-link';
 
 export const prerender = false; // Required for server actions
 
@@ -69,12 +71,9 @@ if (user) {
                 {maintainerData.editingBlock ? 'Update your schedule block details' : 'Add a new schedule block to manage your time'}
               </p>
             </div>
-            <a 
-              href="/schedule" 
-              class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-            >
+            <ButtonLink variant="secondary" href="/schedule">
               Back to Schedule
-            </a>
+            </ButtonLink>
           </div>
         </div>
 
@@ -311,18 +310,12 @@ if (user) {
 
             <!-- Form Actions -->
             <div class="flex justify-end space-x-4 pt-6 border-t">
-              <a
-                href="/schedule"
-                class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
-              >
+              <ButtonLink variant="outline" href="/schedule">
                 Cancel
-              </a>
-              <button
-                type="submit"
-                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
+              </ButtonLink>
+              <Button type="submit">
                 {maintainerData.editingBlock ? 'Update' : 'Create'}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -341,21 +334,23 @@ if (user) {
                     </p>
                   </div>
                   <div class="flex space-x-2">
-                    <a
+                    <ButtonLink
                       href={`/schedule/maintainer?edit=${block.id}`}
-                      class="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors"
+                      variant="outline"
+                      size="sm"
                     >
                       Edit
-                    </a>
+                    </ButtonLink>
                     <form method="POST" action={actions.schedule.deleteScheduleBlock} class="inline">
                       <input type="hidden" name="id" value={block.id} />
-                      <button
+                      <Button
                         type="submit"
-                        class="px-3 py-1 text-xs bg-red-100 text-red-800 rounded-md hover:bg-red-200 transition-colors"
+                        variant="destructive"
+                        size="sm"
                         onclick="return confirm('Are you sure you want to delete this schedule block?')"
                       >
                         Delete
-                      </button>
+                      </Button>
                     </form>
                   </div>
                 </div>
@@ -376,18 +371,12 @@ if (user) {
             <p class="text-gray-600">Please log in to access your schedule management.</p>
             
             <div class="flex space-x-4 justify-center">
-              <a 
-                href="/login" 
-                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
-              >
+              <ButtonLink href="/login">
                 Login
-              </a>
-              <a 
-                href="/register" 
-                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-              >
+              </ButtonLink>
+              <ButtonLink variant="secondary" href="/register">
                 Register
-              </a>
+              </ButtonLink>
             </div>
           </div>
         </div>

@@ -33,24 +33,15 @@ const { user } = Astro.locals;
           </div>
           
           <div class="mt-6 space-x-4">
-            <a 
-              href="/calendar" 
-              class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
+            <ButtonLink href="/calendar">
               View My Calendar
-            </a>
-            <a 
-              href="/schedule" 
-              class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-            >
+            </ButtonLink>
+            <ButtonLink variant="secondary" href="/schedule">
               Schedule Management
-            </a>
-            <a 
-              href="/logout" 
-              class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-            >
+            </ButtonLink>
+            <ButtonLink variant="destructive" href="/logout">
               Logout
-            </a>
+            </ButtonLink>
           </div>
         </div>
       </div>
