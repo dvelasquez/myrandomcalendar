@@ -3,6 +3,7 @@ import { actions } from 'astro:actions';
 import Layout from '../layouts/Layout.astro';
 import { Button } from '@/components/ui/button';
 import ButtonLink from '@/components/ui/button-link';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export const prerender = false; // Required for server actions
 
@@ -11,65 +12,71 @@ const result = Astro.getActionResult(actions.auth.register);
 ---
 
 <Layout title="Register">
-  <div class="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
-    <h1 class="text-2xl font-bold mb-6 text-center">Create Account</h1>
-    
-    <!-- Display error message if registration failed -->
-    {result?.error && (
-      <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-        {result.error.message}
-      </div>
-    )}
-    
-    <form method="POST" action={actions.auth.register} class="space-y-4">
-      <div>
-        <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-        <input 
-          type="text" 
-          id="name" 
-          name="name" 
-          required 
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        />
-      </div>
+  <div class="max-w-md mx-auto mt-8">
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-2xl text-center">Create Account</CardTitle>
+      </CardHeader>
       
-      <div>
-        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-        <input 
-          type="email" 
-          id="email" 
-          name="email" 
-          required 
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        />
-      </div>
-      
-      <div>
-        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-        <input 
-          type="password" 
-          id="password" 
-          name="password" 
-          required 
-          minlength="6"
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        />
-      </div>
-      
-      <Button 
-        type="submit" 
-        className="w-full"
-      >
-        Sign Up
-      </Button>
-    </form>
-    
-    <div class="mt-4 text-center">
-      <p class="text-sm text-gray-600">
-        Already have an account? 
-        <ButtonLink variant="link" href="/login">Sign in</ButtonLink>
-      </p>
-    </div>
+      <CardContent>
+        <!-- Display error message if registration failed -->
+        {result?.error && (
+          <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {result.error.message}
+          </div>
+        )}
+        
+        <form method="POST" action={actions.auth.register} class="space-y-4">
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+            <input 
+              type="text" 
+              id="name" 
+              name="name" 
+              required 
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+          
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              required 
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+          
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              required 
+              minlength="6"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+          
+          <Button 
+            type="submit" 
+            className="w-full"
+          >
+            Sign Up
+          </Button>
+        </form>
+        
+        <div class="mt-4 text-center">
+          <p class="text-sm text-gray-600">
+            Already have an account? 
+            <ButtonLink variant="link" href="/login">Sign in</ButtonLink>
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   </div>
 </Layout>
 

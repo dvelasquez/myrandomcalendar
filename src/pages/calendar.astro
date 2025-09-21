@@ -6,6 +6,7 @@ import Layout from '../layouts/Layout.astro';
 import type { CalendarPageData } from '@/features/calendar/services/page-handler';
 import { Button } from '@/components/ui/button';
 import ButtonLink from '@/components/ui/button-link';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export const prerender = false; // Required for server actions
 
@@ -57,100 +58,102 @@ if (user) {
           )}
         </div>
         
-        <div class="bg-white rounded-lg shadow-md p-6">
-          {error ? (
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              <h3 class="font-bold">Error:</h3>
-              <p>{error}</p>
-              <p class="text-sm mt-2">
-                {error.includes('calendar access') || error.includes('INSUFFICIENT_SCOPE') ? (
-                  <>
-                    <strong>Solution:</strong> You need to sign out and sign in with Google again to grant calendar permissions.
-                    <br />
-                    <a href="/logout" class="underline">Sign out</a> and then <a href="/login" class="underline">sign in with Google</a> again.
-                  </>
-                ) : (
-                  'Make sure you\'re signed in with Google and have granted calendar access permissions.'
+        <Card>
+          <CardContent>
+            {error ? (
+              <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <h3 class="font-bold">Error:</h3>
+                <p>{error}</p>
+                <p class="text-sm mt-2">
+                  {error.includes('calendar access') || error.includes('INSUFFICIENT_SCOPE') ? (
+                    <>
+                      <strong>Solution:</strong> You need to sign out and sign in with Google again to grant calendar permissions.
+                      <br />
+                      <a href="/logout" class="underline">Sign out</a> and then <a href="/login" class="underline">sign in with Google</a> again.
+                    </>
+                  ) : (
+                    'Make sure you\'re signed in with Google and have granted calendar access permissions.'
+                  )}
+                </p>
+              </div>
+            ) : calendarPageData ? (
+              <div>
+                <div class="mb-4 flex justify-between items-center">
+                  <div>
+                    <h3 class="text-lg font-semibold mb-2">Calendar Information</h3>
+                    <div class="text-sm text-gray-600 space-y-1">
+                      <p><strong>Time Zone:</strong> {calendarPageData.calendarData?.timeZone}</p>
+                      <p><strong>Events Found:</strong> {calendarPageData.calendarData?.events.length}</p>
+                    </div>
+                  </div>
+                  <Button 
+                    id="refreshBtn"
+                  >
+                    Refresh Calendar
+                  </Button>
+                </div>
+                
+                <div class="mb-4">
+                  <FullCalendarComponent 
+                    events={calendarPageData.fullCalendarEvents}
+                    showEventModal={true}
+                    onDateRangeChange={(startDate, endDate) => (window as unknown as { handleDateRangeChange?: (startDate: Date, endDate: Date) => void }).handleDateRangeChange?.(startDate, endDate)}
+                    client:load
+                  />
+                </div>
+                
+                {/* Legend for availability background events */}
+                {calendarPageData.scheduleBlocks.length > 0 && (
+                  <div class="mt-4 border rounded-lg p-4 bg-gray-50">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-2">Availability Legend</h4>
+                    <div class="flex flex-wrap gap-4 text-sm">
+                      <div class="flex items-center">
+                        <div class="w-4 h-4 bg-green-500 rounded mr-2"></div>
+                        <span>Available Time</span>
+                      </div>
+                      <div class="flex items-center">
+                        <div class="w-4 h-4 bg-red-500 rounded mr-2"></div>
+                        <span>Busy (Google Calendar)</span>
+                      </div>
+                      <div class="flex items-center">
+                        <div class="w-4 h-4 bg-blue-500 rounded mr-2"></div>
+                        <span>Schedule Block</span>
+                      </div>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-2">
+                      Background colors show your availability. Regular events appear on top.
+                    </p>
+                  </div>
                 )}
-              </p>
-            </div>
-          ) : calendarPageData ? (
-            <div>
-              <div class="mb-4 flex justify-between items-center">
-                <div>
-                  <h3 class="text-lg font-semibold mb-2">Calendar Information</h3>
-                  <div class="text-sm text-gray-600 space-y-1">
-                    <p><strong>Time Zone:</strong> {calendarPageData.calendarData?.timeZone}</p>
-                    <p><strong>Events Found:</strong> {calendarPageData.calendarData?.events.length}</p>
-                  </div>
-                </div>
-                <Button 
-                  id="refreshBtn"
-                >
-                  Refresh Calendar
-                </Button>
-              </div>
-              
-              <div class="mb-4">
-                <FullCalendarComponent 
-                  events={calendarPageData.fullCalendarEvents}
-                  showEventModal={true}
-                  onDateRangeChange={(startDate, endDate) => (window as unknown as { handleDateRangeChange?: (startDate: Date, endDate: Date) => void }).handleDateRangeChange?.(startDate, endDate)}
-                  client:load
-                />
-              </div>
-              
-              {/* Legend for availability background events */}
-              {calendarPageData.scheduleBlocks.length > 0 && (
+                
                 <div class="mt-4 border rounded-lg p-4 bg-gray-50">
-                  <h4 class="text-sm font-semibold text-gray-700 mb-2">Availability Legend</h4>
-                  <div class="flex flex-wrap gap-4 text-sm">
-                    <div class="flex items-center">
-                      <div class="w-4 h-4 bg-green-500 rounded mr-2"></div>
-                      <span>Available Time</span>
-                    </div>
-                    <div class="flex items-center">
-                      <div class="w-4 h-4 bg-red-500 rounded mr-2"></div>
-                      <span>Busy (Google Calendar)</span>
-                    </div>
-                    <div class="flex items-center">
-                      <div class="w-4 h-4 bg-blue-500 rounded mr-2"></div>
-                      <span>Schedule Block</span>
-                    </div>
-                  </div>
-                  <p class="text-xs text-gray-600 mt-2">
-                    Background colors show your availability. Regular events appear on top.
-                  </p>
+                  <details class="cursor-pointer">
+                    <summary class="text-sm font-semibold text-gray-700 hover:text-gray-900">
+                      View Raw JSON Data (Click to expand)
+                    </summary>
+                    <pre id="jsonOutput" class="text-sm overflow-auto max-h-96 bg-white p-4 rounded border mt-2">{JSON.stringify(calendarPageData.calendarData, null, 2)}</pre>
+                  </details>
                 </div>
-              )}
-              
-              <div class="mt-4 border rounded-lg p-4 bg-gray-50">
-                <details class="cursor-pointer">
-                  <summary class="text-sm font-semibold text-gray-700 hover:text-gray-900">
-                    View Raw JSON Data (Click to expand)
-                  </summary>
-                  <pre id="jsonOutput" class="text-sm overflow-auto max-h-96 bg-white p-4 rounded border mt-2">{JSON.stringify(calendarPageData.calendarData, null, 2)}</pre>
-                </details>
               </div>
+            ) : (
+              <div class="text-center">
+                <p class="text-gray-600">Loading calendar data...</p>
+              </div>
+            )}
+            
+            <div class="mt-6 space-x-4">
+              <ButtonLink href="/schedule">
+                Schedule Management
+              </ButtonLink>
+              <ButtonLink variant="secondary" href="/">
+                Back to Home
+              </ButtonLink>
+              <ButtonLink variant="destructive" href="/logout">
+                Logout
+              </ButtonLink>
             </div>
-          ) : (
-            <div class="text-center">
-              <p class="text-gray-600">Loading calendar data...</p>
-            </div>
-          )}
-          
-          <div class="mt-6 space-x-4">
-            <ButtonLink href="/schedule">
-              Schedule Management
-            </ButtonLink>
-            <ButtonLink variant="secondary" href="/">
-              Back to Home
-            </ButtonLink>
-            <ButtonLink variant="destructive" href="/logout">
-              Logout
-            </ButtonLink>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     ) : (
       <div class="max-w-2xl mx-auto">
@@ -159,20 +162,22 @@ if (user) {
           <p>You must be logged in to view your calendar.</p>
         </div>
         
-        <div class="bg-white rounded-lg shadow-md p-6">
-          <div class="text-center space-y-4">
-            <p class="text-gray-600">Please log in to access your Google Calendar.</p>
-            
-            <div class="flex space-x-4 justify-center">
-              <ButtonLink href="/login">
-                Login
-              </ButtonLink>
-              <ButtonLink variant="secondary" href="/register">
-                Register
-              </ButtonLink>
+        <Card>
+          <CardContent>
+            <div class="text-center space-y-4">
+              <p class="text-gray-600">Please log in to access your Google Calendar.</p>
+              
+              <div class="flex space-x-4 justify-center">
+                <ButtonLink href="/login">
+                  Login
+                </ButtonLink>
+                <ButtonLink variant="secondary" href="/register">
+                  Register
+                </ButtonLink>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     )}
   </div>
