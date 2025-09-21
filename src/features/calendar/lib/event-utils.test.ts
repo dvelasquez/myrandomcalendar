@@ -4,7 +4,11 @@ import { formatEventTime, formatEventDate } from './event-utils';
 describe('event-utils', () => {
   describe('formatEventTime', () => {
     it('should format all-day events', () => {
-      const result = formatEventTime('2024-01-15T10:00:00Z', '2024-01-15T11:00:00Z', true);
+      const result = formatEventTime(
+        '2024-01-15T10:00:00Z',
+        '2024-01-15T11:00:00Z',
+        true
+      );
       expect(result).toBe('All Day Event');
     });
 
@@ -14,12 +18,18 @@ describe('event-utils', () => {
     });
 
     it('should format same-day time ranges', () => {
-      const result = formatEventTime('2024-01-15T10:00:00Z', '2024-01-15T11:30:00Z');
+      const result = formatEventTime(
+        '2024-01-15T10:00:00Z',
+        '2024-01-15T11:30:00Z'
+      );
       expect(result).toMatch(/\d{1,2}:\d{2} [AP]M - \d{1,2}:\d{2} [AP]M/); // Should match time range format
     });
 
     it('should format multi-day time ranges', () => {
-      const result = formatEventTime('2024-01-15T10:00:00Z', '2024-01-16T11:30:00Z');
+      const result = formatEventTime(
+        '2024-01-15T10:00:00Z',
+        '2024-01-16T11:30:00Z'
+      );
       expect(result).toMatch(/\d{1,2}:\d{2} [AP]M - \d{1,2}:\d{2} [AP]M/); // Should match time range format
     });
 
@@ -29,7 +39,10 @@ describe('event-utils', () => {
     });
 
     it('should handle invalid end dates gracefully', () => {
-      const result = formatEventTime('2024-01-15T10:00:00Z', 'invalid-end-date');
+      const result = formatEventTime(
+        '2024-01-15T10:00:00Z',
+        'invalid-end-date'
+      );
       expect(result).toBe('Invalid date'); // Both start and end are invalid in this case
     });
   });

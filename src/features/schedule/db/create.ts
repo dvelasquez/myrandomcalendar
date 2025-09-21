@@ -1,7 +1,12 @@
-import { db, ScheduleBlock, eq } from "astro:db";
-import type { NewScheduleBlock, ScheduleBlock as ScheduleBlockType } from "../models/ScheduleBlocks.types";
+import { db, ScheduleBlock, eq } from 'astro:db';
+import type {
+  NewScheduleBlock,
+  ScheduleBlock as ScheduleBlockType,
+} from '../models/ScheduleBlocks.types';
 
-export const createScheduleBlockDb = async (data: NewScheduleBlock): Promise<ScheduleBlockType> => {
+export const createScheduleBlockDb = async (
+  data: NewScheduleBlock
+): Promise<ScheduleBlockType> => {
   const id = crypto.randomUUID();
 
   const newScheduleBlock = {
@@ -29,6 +34,9 @@ export const createScheduleBlockDb = async (data: NewScheduleBlock): Promise<Sch
   await db.insert(ScheduleBlock).values(newScheduleBlock);
 
   // Return the created record (with auto-generated timestamps)
-  const [created] = await db.select().from(ScheduleBlock).where(eq(ScheduleBlock.id, id));
+  const [created] = await db
+    .select()
+    .from(ScheduleBlock)
+    .where(eq(ScheduleBlock.id, id));
   return created;
 };

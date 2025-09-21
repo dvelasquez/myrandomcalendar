@@ -7,19 +7,20 @@ import type { GoogleCalendarCredentials } from '../models/GoogleCalendar.types';
  * @param userId - The user ID
  * @returns Google Calendar credentials or null if not found
  */
-export async function getGoogleCalendarCredentials(userId: string): Promise<GoogleCalendarCredentials | null> {
+export async function getGoogleCalendarCredentials(
+  userId: string
+): Promise<GoogleCalendarCredentials | null> {
   try {
     const googleAccounts = await db
       .select()
       .from(Accounts)
-      .where(and(
-        eq(Accounts.userId, userId),
-        eq(Accounts.providerId, 'google')
-      ))
+      .where(
+        and(eq(Accounts.userId, userId), eq(Accounts.providerId, 'google'))
+      )
       .limit(1);
 
     const googleAccount = googleAccounts[0];
-    
+
     if (!googleAccount || !googleAccount.accessToken) {
       return null;
     }
@@ -40,9 +41,11 @@ export async function getGoogleCalendarCredentials(userId: string): Promise<Goog
  * @param userId - The user ID
  * @returns True if user has calendar access, false otherwise
  */
-export async function hasGoogleCalendarAccess(userId: string): Promise<boolean> {
+export async function hasGoogleCalendarAccess(
+  userId: string
+): Promise<boolean> {
   const credentials = await getGoogleCalendarCredentials(userId);
-  
+
   if (!credentials) {
     return false;
   }
@@ -61,10 +64,9 @@ export async function getGoogleCalendarAccount(userId: string) {
     const googleAccounts = await db
       .select()
       .from(Accounts)
-      .where(and(
-        eq(Accounts.userId, userId),
-        eq(Accounts.providerId, 'google')
-      ))
+      .where(
+        and(eq(Accounts.userId, userId), eq(Accounts.providerId, 'google'))
+      )
       .limit(1);
 
     return googleAccounts[0] || null;

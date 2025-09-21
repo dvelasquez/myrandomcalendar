@@ -1,9 +1,8 @@
-import { ActionError, defineAction } from "astro:actions";
-import { z } from "astro:schema";
-import { createScheduleBlockDb } from "../db/create";
-import type { NewScheduleBlock } from "../models/ScheduleBlocks.types";
-import { serializeDaysOfWeek } from "../models/ScheduleBlocks.types";
-
+import { ActionError, defineAction } from 'astro:actions';
+import { z } from 'astro:schema';
+import { createScheduleBlockDb } from '../db/create';
+import type { NewScheduleBlock } from '../models/ScheduleBlocks.types';
+import { serializeDaysOfWeek } from '../models/ScheduleBlocks.types';
 
 /**
  * Create default schedule blocks for a new user
@@ -78,19 +77,19 @@ export const createDefaultScheduleBlocks = defineAction({
         const result = await createScheduleBlockDb(blockData);
         results.push(result);
       }
-      
+
       return {
         success: true,
         data: results,
-        message: 'Default schedule blocks created successfully'
+        message: 'Default schedule blocks created successfully',
       };
     } catch (error) {
       console.error('Error in createDefaultScheduleBlocks:', error);
-      
+
       if (error instanceof ActionError) {
         throw error;
       }
-      
+
       throw new ActionError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Failed to create default schedule blocks',

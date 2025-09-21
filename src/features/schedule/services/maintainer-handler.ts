@@ -38,7 +38,7 @@ export async function handleMaintainerPage(
 
     // Fetch schedule blocks
     const scheduleBlocks = await getScheduleBlocksDb(context.locals.user.id);
-    
+
     // Find editing block if editId is provided
     let editingBlock: ScheduleBlock | undefined;
     if (editId) {
@@ -72,10 +72,15 @@ export function getSuccessMessageText(successMessage: string): string {
     updated: 'Schedule block updated successfully!',
     deleted: 'Schedule block deleted successfully!',
   };
-  return messages[successMessage as keyof typeof messages] || 'Operation completed successfully!';
+  return (
+    messages[successMessage as keyof typeof messages] ||
+    'Operation completed successfully!'
+  );
 }
 
-export function getActionErrorText(actionErrors: MaintainerPageData['actionErrors']): string | null {
+export function getActionErrorText(
+  actionErrors: MaintainerPageData['actionErrors']
+): string | null {
   if (actionErrors.createError) return actionErrors.createError;
   if (actionErrors.updateError) return actionErrors.updateError;
   if (actionErrors.deleteError) return actionErrors.deleteError;

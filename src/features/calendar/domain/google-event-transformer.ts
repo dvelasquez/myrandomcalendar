@@ -1,8 +1,8 @@
 import { parseISO, isValid } from 'date-fns';
 import type { CalendarEvent } from '../models/Calendar.types';
-import type { 
-  GoogleCalendarApiEvent, 
-  GoogleCalendarEventFields 
+import type {
+  GoogleCalendarApiEvent,
+  GoogleCalendarEventFields,
 } from '../providers/google-calendar/models/GoogleCalendar.types';
 
 /**
@@ -15,14 +15,14 @@ export function transformGoogleApiEventsToFullCalendar(
   return googleEvents.map((event, index) => {
     // Generate a unique ID if not provided
     const eventId = event.id || `event-${index}-${Date.now()}`;
-    
+
     // Determine if it's an all-day event
     const isAllDay = !event.start?.dateTime && !!event.start?.date;
-    
+
     // Extract and validate start time
     const startTime = event.start?.dateTime || event.start?.date;
     let validStartTime = new Date().toISOString();
-    
+
     if (startTime) {
       try {
         const parsedStart = parseISO(startTime);
@@ -33,11 +33,11 @@ export function transformGoogleApiEventsToFullCalendar(
         console.warn('Invalid start date:', startTime, error);
       }
     }
-    
+
     // Extract and validate end time
     let validEndTime: string | undefined;
     const endTime = event.end?.dateTime || event.end?.date;
-    
+
     if (endTime) {
       try {
         const parsedEnd = parseISO(endTime);
@@ -48,10 +48,10 @@ export function transformGoogleApiEventsToFullCalendar(
         console.warn('Invalid end date:', endTime, error);
       }
     }
-    
+
     // Create color based on event properties
     const backgroundColor = getEventColor(event);
-    
+
     return {
       id: eventId,
       title: event.summary || 'Untitled Event',
@@ -63,7 +63,7 @@ export function transformGoogleApiEventsToFullCalendar(
       url: event.htmlLink || undefined,
       backgroundColor,
       borderColor: darkenColor(backgroundColor),
-      textColor: '#ffffff'
+      textColor: '#ffffff',
     };
   });
 }
@@ -75,42 +75,42 @@ export function transformGoogleApiEventsToFullCalendar(
 export function transformFullCalendarToGoogleApi(
   fullCalendarEvents: CalendarEvent[]
 ): Partial<GoogleCalendarApiEvent>[] {
-  return fullCalendarEvents.map((event) => {
+  return fullCalendarEvents.map(event => {
     const googleEvent: Partial<GoogleCalendarApiEvent> = {
       summary: event.title,
       description: event.description,
       location: event.location,
       htmlLink: event.url,
     };
-    
+
     // Handle start time
     if (event.allDay) {
       googleEvent.start = {
         date: event.start.split('T')[0], // Extract date part
-        timeZone: 'UTC'
+        timeZone: 'UTC',
       };
     } else {
       googleEvent.start = {
         dateTime: event.start,
-        timeZone: 'UTC'
+        timeZone: 'UTC',
       };
     }
-    
+
     // Handle end time
     if (event.end) {
       if (event.allDay) {
         googleEvent.end = {
           date: event.end.split('T')[0],
-          timeZone: 'UTC'
+          timeZone: 'UTC',
         };
       } else {
         googleEvent.end = {
           dateTime: event.end,
-          timeZone: 'UTC'
+          timeZone: 'UTC',
         };
       }
     }
-    
+
     return googleEvent;
   });
 }
@@ -158,15 +158,15 @@ function getEventColor(event: GoogleCalendarApiEvent): string {
     '#8b5cf6', // Purple
     '#06b6d4', // Cyan
     '#f97316', // Orange
-    '#84cc16'  // Lime
+    '#84cc16', // Lime
   ];
-  
+
   // Use event ID or summary to consistently assign colors
   const hash = (event.id || event.summary || '').split('').reduce((a, b) => {
-    a = ((a << 5) - a) + b.charCodeAt(0);
+    a = (a << 5) - a + b.charCodeAt(0);
     return a & a;
   }, 0);
-  
+
   return colors[Math.abs(hash) % colors.length];
 }
 
@@ -178,24 +178,37 @@ function darkenColor(color: string): string {
   const r = parseInt(hex.substring(0, 2), 16);
   const g = parseInt(hex.substring(2, 4), 16);
   const b = parseInt(hex.substring(4, 6), 16);
-  
+
   const darkenedR = Math.max(0, r - 30);
   const darkenedG = Math.max(0, g - 30);
   const darkenedB = Math.max(0, b - 30);
-  
+
   return `#${darkenedR.toString(16).padStart(2, '0')}${darkenedG.toString(16).padStart(2, '0')}${darkenedB.toString(16).padStart(2, '0')}`;
 }
 
 /**
  * Type guard to check if an event is a Google Calendar API event
  */
-export function isGoogleCalendarApiEvent(event: unknown): event is GoogleCalendarApiEvent {
-  return event !== null && typeof event === 'object' && event !== null && 'summary' in event;
+export function isGoogleCalendarApiEvent(
+  event: unknown
+): event is GoogleCalendarApiEvent {
+  return (
+    event !== null &&
+    typeof event === 'object' &&
+    event !== null &&
+    'summary' in event
+  );
 }
 
 /**
  * Type guard to check if an event is a FullCalendar event
  */
 export function isFullCalendarEvent(event: unknown): event is CalendarEvent {
-  return event !== null && typeof event === 'object' && event !== null && 'title' in event && 'start' in event;
+  return (
+    event !== null &&
+    typeof event === 'object' &&
+    event !== null &&
+    'title' in event &&
+    'start' in event
+  );
 }

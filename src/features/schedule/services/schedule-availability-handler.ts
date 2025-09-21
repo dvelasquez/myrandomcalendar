@@ -1,9 +1,15 @@
 import type { ActionAPIContext } from 'astro:actions';
-import { getScheduleBlocksDb } from '../db/get';
-import type { CalendarEvent, TimeSlot } from '../../calendar/models/Calendar.types';
-import { handleFetchCalendar } from '../../calendar/providers/google-calendar/actions/fetchCalendar';
-import { calculateAvailabilityForDateRange, DEFAULT_AVAILABILITY_CONFIG } from '../domain/availability-calculator';
 import { startOfDay, endOfDay } from 'date-fns';
+import type {
+  CalendarEvent,
+  TimeSlot,
+} from '../../calendar/models/Calendar.types';
+import { handleFetchCalendar } from '../../calendar/providers/google-calendar/actions/fetchCalendar';
+import { getScheduleBlocksDb } from '../db/get';
+import {
+  calculateAvailabilityForDateRange,
+  DEFAULT_AVAILABILITY_CONFIG,
+} from '../domain/availability-calculator';
 
 export interface ScheduleAvailabilityPageData {
   googleCalendarEvents: CalendarEvent[];
@@ -33,32 +39,44 @@ export async function handleScheduleAvailabilityPage(
     let calendarError: string | null = null;
 
     try {
-      const calendarResponse = await handleFetchCalendar({ startDate: start, endDate: end }, context);
-      googleCalendarEvents = calendarResponse.events.map(event => ({
-        id: event.id || `google-${Date.now()}`,
-        title: event.summary || 'Untitled Event',
-        start: event.start?.dateTime || event.start?.date || new Date().toISOString(),
-        end: event.end?.dateTime || event.end?.date || undefined,
-        allDay: !event.start?.dateTime && !!event.start?.date,
-        description: event.description || undefined,
-        location: event.location || undefined,
-        url: event.htmlLink || undefined,
-        backgroundColor: '#3b82f6',
-        borderColor: '#1e40af',
-        textColor: '#ffffff',
-        extendedProps: {
-          provider: 'google',
-          providerEventId: event.id,
-        }
-      } as CalendarEvent));
+      const calendarResponse = await handleFetchCalendar(
+        { startDate: start, endDate: end },
+        context
+      );
+      googleCalendarEvents = calendarResponse.events.map(
+        event =>
+          ({
+            id: event.id || `google-${Date.now()}`,
+            title: event.summary || 'Untitled Event',
+            start:
+              event.start?.dateTime ||
+              event.start?.date ||
+              new Date().toISOString(),
+            end: event.end?.dateTime || event.end?.date || undefined,
+            allDay: !event.start?.dateTime && !!event.start?.date,
+            description: event.description || undefined,
+            location: event.location || undefined,
+            url: event.htmlLink || undefined,
+            backgroundColor: '#3b82f6',
+            borderColor: '#1e40af',
+            textColor: '#ffffff',
+            extendedProps: {
+              provider: 'google',
+              providerEventId: event.id,
+            },
+          }) as CalendarEvent
+      );
     } catch (error) {
       console.error('Error fetching Google Calendar events:', error);
-      calendarError = error instanceof Error ? error.message : 'Failed to fetch calendar events';
+      calendarError =
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch calendar events';
     }
 
     // Calculate availability time slots
     let availabilityTimeSlots: TimeSlot[] = [];
-    
+
     if (scheduleBlocks.length > 0) {
       try {
         availabilityTimeSlots = await calculateAvailabilityForDateRange(

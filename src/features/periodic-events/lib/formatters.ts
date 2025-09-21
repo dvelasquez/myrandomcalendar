@@ -47,6 +47,6 @@ export function getCategoryColor(category: string): string {
     hobby: 'bg-yellow-100 text-yellow-800',
     other: 'bg-gray-100 text-gray-800',
   };
-  
+
   return colorMap[category] || colorMap.other;
 }

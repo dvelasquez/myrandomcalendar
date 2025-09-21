@@ -1,6 +1,6 @@
-import { ActionError, defineAction } from "astro:actions";
-import { z } from "astro:schema";
-import { deleteScheduleBlockDb } from "../db/delete";
+import { ActionError, defineAction } from 'astro:actions';
+import { z } from 'astro:schema';
+import { deleteScheduleBlockDb } from '../db/delete';
 
 export const deleteScheduleBlock = defineAction({
   accept: 'form',
@@ -11,9 +11,9 @@ export const deleteScheduleBlock = defineAction({
     try {
       // Authentication check
       if (!context.locals.user) {
-        throw new ActionError({ 
+        throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to delete schedule blocks'
+          message: 'You must be logged in to delete schedule blocks',
         });
       }
 
@@ -21,11 +21,11 @@ export const deleteScheduleBlock = defineAction({
       await deleteScheduleBlockDb(id);
     } catch (error) {
       console.error('Error in deleteScheduleBlock:', error);
-      
+
       if (error instanceof ActionError) {
         throw error;
       }
-      
+
       throw new ActionError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Failed to delete schedule block',

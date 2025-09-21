@@ -4,7 +4,13 @@ import ButtonLink from '@/components/ui/button-link';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { ScheduleBlock } from '@/features/schedule/models/ScheduleBlocks.types';
 import type { MaintainerPageData } from '@/features/schedule/services/maintainer-handler';
@@ -14,11 +20,14 @@ interface ScheduleFormProps {
   formOptions: MaintainerPageData['formOptions'];
 }
 
-export default function ScheduleForm({ initialData, formOptions }: ScheduleFormProps) {
+export default function ScheduleForm({
+  initialData,
+  formOptions,
+}: ScheduleFormProps) {
   // Parse daysOfWeek from JSON string if it's a string
   const parsedDaysOfWeek = React.useMemo(() => {
     if (!initialData?.daysOfWeek) return [1, 2, 3, 4, 5]; // Default to Monday-Friday
-    
+
     if (typeof initialData.daysOfWeek === 'string') {
       try {
         return JSON.parse(initialData.daysOfWeek);
@@ -26,16 +35,20 @@ export default function ScheduleForm({ initialData, formOptions }: ScheduleFormP
         return [1, 2, 3, 4, 5];
       }
     }
-    
+
     return initialData.daysOfWeek;
   }, [initialData?.daysOfWeek]);
 
   // Update days of week hidden input when checkboxes change
   useEffect(() => {
     const updateDaysOfWeek = () => {
-      const checkboxes = document.querySelectorAll('.daysOfWeekCheckbox:checked') as NodeListOf<HTMLInputElement>;
+      const checkboxes = document.querySelectorAll(
+        '.daysOfWeekCheckbox:checked'
+      ) as NodeListOf<HTMLInputElement>;
       const selectedDays = Array.from(checkboxes).map(cb => parseInt(cb.value));
-      const hiddenInput = document.getElementById('daysOfWeekJson') as HTMLInputElement;
+      const hiddenInput = document.getElementById(
+        'daysOfWeekJson'
+      ) as HTMLInputElement;
       if (hiddenInput) {
         hiddenInput.value = JSON.stringify(selectedDays);
       }
@@ -60,23 +73,25 @@ export default function ScheduleForm({ initialData, formOptions }: ScheduleFormP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const formData = new FormData(e.currentTarget as HTMLFormElement);
-    
+
     try {
       // Import actions dynamically to avoid server-side issues
       const { actions } = await import('astro:actions');
-      
+
       let result;
       if (initialData?.id) {
         result = await actions.schedule.updateScheduleBlock(formData);
       } else {
         result = await actions.schedule.createScheduleBlock(formData);
       }
-      
+
       if (!result.error) {
         // Redirect on success
-        window.location.href = initialData?.id ? '/schedule/maintainer?success=updated' : '/schedule?success=created';
+        window.location.href = initialData?.id
+          ? '/schedule/maintainer?success=updated'
+          : '/schedule?success=created';
       } else {
         // Handle error - could show error message
         console.error('Form submission error:', result.error);
@@ -91,7 +106,9 @@ export default function ScheduleForm({ initialData, formOptions }: ScheduleFormP
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Hidden fields */}
-      {initialData?.id && <input type="hidden" name="id" value={initialData.id} />}
+      {initialData?.id && (
+        <input type="hidden" name="id" value={initialData.id} />
+      )}
       <input type="hidden" name="timezone" value="UTC" />
 
       {/* Basic Information */}
@@ -115,12 +132,16 @@ export default function ScheduleForm({ initialData, formOptions }: ScheduleFormP
           <Label htmlFor="type" className="text-gray-700 mb-2">
             Type *
           </Label>
-          <Select name="type" defaultValue={initialData?.type || 'work'} required>
+          <Select
+            name="type"
+            defaultValue={initialData?.type || 'work'}
+            required
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
-              {formOptions.scheduleTypes.map((type) => (
+              {formOptions.scheduleTypes.map(type => (
                 <SelectItem key={type.value} value={type.value}>
                   {type.label}
                 </SelectItem>
@@ -163,12 +184,13 @@ export default function ScheduleForm({ initialData, formOptions }: ScheduleFormP
 
       {/* Days of Week */}
       <div>
-        <Label className="text-gray-700 mb-2">
-          Days of Week *
-        </Label>
+        <Label className="text-gray-700 mb-2">Days of Week *</Label>
         <div className="grid grid-cols-7 gap-2">
-          {formOptions.daysOfWeek.map((day) => (
-            <label key={day.value} className="flex flex-col items-center p-2 text-sm rounded-md border cursor-pointer hover:bg-gray-50">
+          {formOptions.daysOfWeek.map(day => (
+            <label
+              key={day.value}
+              className="flex flex-col items-center p-2 text-sm rounded-md border cursor-pointer hover:bg-gray-50"
+            >
               <Checkbox
                 name="daysOfWeekCheckbox"
                 value={day.value}
@@ -180,7 +202,12 @@ export default function ScheduleForm({ initialData, formOptions }: ScheduleFormP
           ))}
         </div>
         {/* Hidden input to send daysOfWeek as JSON */}
-        <input type="hidden" name="daysOfWeek" value={JSON.stringify(parsedDaysOfWeek)} id="daysOfWeekJson" />
+        <input
+          type="hidden"
+          name="daysOfWeek"
+          value={JSON.stringify(parsedDaysOfWeek)}
+          id="daysOfWeekJson"
+        />
       </div>
 
       {/* Priority and Color */}
@@ -189,12 +216,15 @@ export default function ScheduleForm({ initialData, formOptions }: ScheduleFormP
           <Label htmlFor="priority" className="text-gray-700 mb-2">
             Priority
           </Label>
-          <Select name="priority" defaultValue={initialData?.priority || 'medium'}>
+          <Select
+            name="priority"
+            defaultValue={initialData?.priority || 'medium'}
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select priority" />
             </SelectTrigger>
             <SelectContent>
-              {formOptions.priorities.map((priority) => (
+              {formOptions.priorities.map(priority => (
                 <SelectItem key={priority.value} value={priority.value}>
                   {priority.label}
                 </SelectItem>

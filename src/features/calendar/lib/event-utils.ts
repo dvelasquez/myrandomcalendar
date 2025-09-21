@@ -7,7 +7,11 @@ import { format, isToday, isTomorrow, isYesterday, parseISO } from 'date-fns';
  * @param allDay - Whether the event is all day
  * @returns Formatted time string
  */
-export const formatEventTime = (startDate: string, endDate?: string, allDay?: boolean): string => {
+export const formatEventTime = (
+  startDate: string,
+  endDate?: string,
+  allDay?: boolean
+): string => {
   if (allDay) {
     return 'All Day Event';
   }
@@ -18,14 +22,14 @@ export const formatEventTime = (startDate: string, endDate?: string, allDay?: bo
 
     // Format start time
     const startTime = format(start, 'h:mm a');
-    
+
     if (!end) {
       return startTime;
     }
 
     // Check if it's the same day
     const isSameDay = format(start, 'yyyy-MM-dd') === format(end, 'yyyy-MM-dd');
-    
+
     if (isSameDay) {
       const endTime = format(end, 'h:mm a');
       return `${startTime} - ${endTime}`;
@@ -47,7 +51,7 @@ export const formatEventTime = (startDate: string, endDate?: string, allDay?: bo
 export const formatEventDate = (startDate: string): string => {
   try {
     const date = parseISO(startDate);
-    
+
     if (isToday(date)) {
       return 'Today';
     } else if (isTomorrow(date)) {

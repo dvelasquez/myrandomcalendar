@@ -5,6 +5,7 @@ This folder contains all the documentation for the MyRandomCalendar project.
 ## 📖 Available Documentation
 
 ### **Authentication & OAuth**
+
 - **[`GOOGLE_OAUTH_SETUP.md`](./GOOGLE_OAUTH_SETUP.md)** - Overview of BetterAuth + Google OAuth implementation
 - **[`BETTERAUTH_DOCUMENTATION.md`](./BETTERAUTH_DOCUMENTATION.md)** - Detailed technical documentation with troubleshooting
 
@@ -24,4 +25,5 @@ This folder contains all the documentation for the MyRandomCalendar project.
 - **TypeScript** - Type safety
 
 ---
-*Last Updated: September 13, 2025*
+
+_Last Updated: September 13, 2025_

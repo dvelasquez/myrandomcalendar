@@ -1,8 +1,11 @@
-import { ActionError, defineAction } from "astro:actions";
-import { z } from "astro:schema";
-import { updateScheduleBlockDb } from "../db/update";
-import { ScheduleBlockFormSchema } from "../models/ScheduleBlock.schema";
-import type { ScheduleBlockUpdate, ScheduleBlock } from "../models/ScheduleBlocks.types";
+import { ActionError, defineAction } from 'astro:actions';
+import { z } from 'astro:schema';
+import { updateScheduleBlockDb } from '../db/update';
+import { ScheduleBlockFormSchema } from '../models/ScheduleBlock.schema';
+import type {
+  ScheduleBlockUpdate,
+  ScheduleBlock,
+} from '../models/ScheduleBlocks.types';
 
 export const updateScheduleBlock = defineAction({
   accept: 'form',
@@ -14,9 +17,9 @@ export const updateScheduleBlock = defineAction({
     try {
       // Authentication check
       if (!context.locals.user) {
-        throw new ActionError({ 
+        throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to update schedule blocks'
+          message: 'You must be logged in to update schedule blocks',
         });
       }
 
@@ -28,16 +31,16 @@ export const updateScheduleBlock = defineAction({
 
       // Call DB function
       const result = await updateScheduleBlockDb(id, updateData);
-      
+
       // Return result directly
       return result;
     } catch (error) {
       console.error('Error in updateScheduleBlock:', error);
-      
+
       if (error instanceof ActionError) {
         throw error;
       }
-      
+
       throw new ActionError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Failed to update schedule block',

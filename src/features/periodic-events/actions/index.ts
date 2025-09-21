@@ -1,5 +1,5 @@
-import { createPeriodicEvent } from "./createPeriodicEvent";
-import { getPeriodicEvents } from "./getPeriodicEvent";
+import { createPeriodicEvent } from './createPeriodicEvent';
+import { getPeriodicEvents } from './getPeriodicEvent';
 
 const periodicEvents = {
   create: createPeriodicEvent,

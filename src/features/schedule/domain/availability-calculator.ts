@@ -1,5 +1,9 @@
 import { endOfDay, isAfter, isBefore, startOfDay, subDays } from 'date-fns';
-import type { CalendarEvent, TimeSlot, AvailabilityConfig } from '../../calendar/models/Calendar.types';
+import type {
+  CalendarEvent,
+  TimeSlot,
+  AvailabilityConfig,
+} from '../../calendar/models/Calendar.types';
 import type { ScheduleBlock } from '../models/ScheduleBlocks.types';
 
 // Re-export TimeSlot for external use
@@ -19,7 +23,7 @@ export const DEFAULT_AVAILABILITY_CONFIG: AvailabilityConfig = {
 
 /**
  * Pure function to calculate availability for a given date
- * 
+ *
  * @param date - The date to calculate availability for
  * @param scheduleBlocks - User's schedule blocks
  * @param calendarEvents - Google Calendar events
@@ -34,7 +38,7 @@ export async function calculateAvailability(
 ): Promise<TimeSlot[]> {
   const startOfDay = getStartOfDay(date);
   const endOfDay = getEndOfDay(date);
-  
+
   // Get all events for the day (including overnight events if configured)
   const allEvents = await getAllEventsForDate(
     date,
@@ -42,14 +46,14 @@ export async function calculateAvailability(
     calendarEvents,
     config.includeOvernightEvents
   );
-  
+
   // Generate time slots
   return generateTimeSlots(startOfDay, endOfDay, allEvents);
 }
 
 /**
  * Pure function to calculate availability for multiple days
- * 
+ *
  * @param startDate - The start date for calculation
  * @param endDate - The end date for calculation
  * @param scheduleBlocks - User's schedule blocks
@@ -66,7 +70,7 @@ export async function calculateAvailabilityForDateRange(
 ): Promise<TimeSlot[]> {
   const allTimeSlots: TimeSlot[] = [];
   const currentDate = new Date(startDate);
-  
+
   // Calculate availability for each day in the range
   while (currentDate <= endDate) {
     const daySlots = await calculateAvailability(
@@ -75,13 +79,13 @@ export async function calculateAvailabilityForDateRange(
       calendarEvents,
       config
     );
-    
+
     allTimeSlots.push(...daySlots);
-    
+
     // Move to next day
     currentDate.setDate(currentDate.getDate() + 1);
   }
-  
+
   return allTimeSlots;
 }
 
@@ -103,7 +107,7 @@ export function getEndOfDay(date: Date): Date {
 
 /**
  * Pure function to get all events for a specific date
- * 
+ *
  * @param date - The date to get events for
  * @param scheduleBlocks - User's schedule blocks
  * @param calendarEvents - Google Calendar events
@@ -118,7 +122,7 @@ export async function getAllEventsForDate(
 ): Promise<CalendarEvent[]> {
   const startOfDay = getStartOfDay(date);
   const endOfDay = getEndOfDay(date);
-  
+
   // Get schedule block events for the day
   const scheduleBlockEvents = await getScheduleBlockEventsForDate(
     scheduleBlocks,
@@ -126,7 +130,7 @@ export async function getAllEventsForDate(
     endOfDay,
     includeOvernight
   );
-  
+
   // Get Google Calendar events for the day
   const googleEvents = getGoogleCalendarEventsForDate(
     calendarEvents,
@@ -134,7 +138,7 @@ export async function getAllEventsForDate(
     endOfDay,
     includeOvernight
   );
-  
+
   // Combine and sort events
   return combineAndSortEvents(scheduleBlockEvents, googleEvents);
 }
@@ -149,14 +153,16 @@ export async function getScheduleBlockEventsForDate(
   includeOvernight: boolean
 ): Promise<CalendarEvent[]> {
   // Import the transformer function dynamically to avoid circular dependencies
-  const { scheduleBlocksToCalendarEvents } = await import('../../calendar/domain/schedule-event-transformer');
-  
+  const { scheduleBlocksToCalendarEvents } = await import(
+    '../../calendar/domain/schedule-event-transformer'
+  );
+
   let startDate = startOfDay;
   if (includeOvernight) {
     // Include previous day for overnight events using date-fns
     startDate = subDays(startOfDay, 1);
   }
-  
+
   return scheduleBlocksToCalendarEvents(
     scheduleBlocks.filter(block => block.isActive),
     startDate,
@@ -178,11 +184,11 @@ export function getGoogleCalendarEventsForDate(
     // Include previous day for overnight events using date-fns
     searchStart = subDays(startOfDay, 1);
   }
-  
+
   return calendarEvents.filter(event => {
     const eventStart = new Date(event.start);
     const eventEnd = new Date(event.end || event.start);
-    
+
     // Include events that overlap with the search range
     return eventStart < endOfDay && eventEnd > searchStart;
   });
@@ -196,7 +202,7 @@ export function combineAndSortEvents(
   googleEvents: CalendarEvent[]
 ): CalendarEvent[] {
   const allEvents = [...scheduleBlockEvents, ...googleEvents];
-  
+
   return allEvents.sort((a, b) => {
     const aStart = new Date(a.start);
     const bStart = new Date(b.start);
@@ -215,7 +221,7 @@ export function generateTimeSlots(
 ): TimeSlot[] {
   // Create a timeline of events and gaps
   const timeline = createEventTimeline(startOfDay, endOfDay, events);
-  
+
   // Merge contiguous slots of the same type
   return mergeContiguousSlots(timeline);
 }
@@ -229,27 +235,27 @@ function createEventTimeline(
   events: CalendarEvent[]
 ): TimeSlot[] {
   const timeline: TimeSlot[] = [];
-  
+
   // Sort events by start time
-  const sortedEvents = [...events].sort((a, b) => 
-    new Date(a.start).getTime() - new Date(b.start).getTime()
+  const sortedEvents = [...events].sort(
+    (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
   );
-  
+
   let currentTime = new Date(startOfDay);
-  
+
   for (const event of sortedEvents) {
     const eventStart = new Date(event.start);
     const eventEnd = new Date(event.end || event.start);
-    
+
     // Add available slot before this event (if there's a gap)
     if (eventStart > currentTime) {
       timeline.push({
         start: currentTime.toISOString(),
         end: eventStart.toISOString(),
-        type: 'available'
+        type: 'available',
       });
     }
-    
+
     // Add the event as a busy/schedule-block slot
     const isScheduleBlock = event.extendedProps?.isScheduleBlock;
     timeline.push({
@@ -258,22 +264,22 @@ function createEventTimeline(
       type: isScheduleBlock ? 'schedule-block' : 'busy',
       title: event.title,
       priority: event.extendedProps?.priority,
-      color: event.backgroundColor
+      color: event.backgroundColor,
     });
-    
+
     // Update current time to after this event
     currentTime = new Date(Math.max(currentTime.getTime(), eventEnd.getTime()));
   }
-  
+
   // Add final available slot if there's time remaining
   if (currentTime < endOfDay) {
     timeline.push({
       start: currentTime.toISOString(),
       end: endOfDay.toISOString(),
-      type: 'available'
+      type: 'available',
     });
   }
-  
+
   return timeline;
 }
 
@@ -282,21 +288,24 @@ function createEventTimeline(
  */
 function mergeContiguousSlots(slots: TimeSlot[]): TimeSlot[] {
   if (slots.length === 0) return [];
-  
+
   const merged: TimeSlot[] = [];
   let currentSlot = { ...slots[0] };
-  
+
   for (let i = 1; i < slots.length; i++) {
     const nextSlot = slots[i];
-    
+
     // Check if we can merge with the next slot
     if (canMergeSlots(currentSlot, nextSlot)) {
       // Merge: extend the end time
       currentSlot.end = nextSlot.end;
-      
+
       // For schedule blocks, combine titles if they're different
-      if (currentSlot.type === 'schedule-block' && nextSlot.title && 
-          currentSlot.title !== nextSlot.title) {
+      if (
+        currentSlot.type === 'schedule-block' &&
+        nextSlot.title &&
+        currentSlot.title !== nextSlot.title
+      ) {
         currentSlot.title = `${currentSlot.title} + ${nextSlot.title}`;
       }
     } else {
@@ -305,10 +314,10 @@ function mergeContiguousSlots(slots: TimeSlot[]): TimeSlot[] {
       currentSlot = { ...nextSlot };
     }
   }
-  
+
   // Add the last slot
   merged.push(currentSlot);
-  
+
   return merged;
 }
 
@@ -318,7 +327,7 @@ function mergeContiguousSlots(slots: TimeSlot[]): TimeSlot[] {
 function canMergeSlots(slot1: TimeSlot, slot2: TimeSlot): boolean {
   // Can only merge slots of the same type
   if (slot1.type !== slot2.type) return false;
-  
+
   // For schedule blocks, only merge if they have the same title or compatible titles
   if (slot1.type === 'schedule-block') {
     // Allow merging if titles are the same or one is undefined
@@ -327,11 +336,11 @@ function canMergeSlots(slot1: TimeSlot, slot2: TimeSlot): boolean {
       return slot1.title === slot2.title;
     }
   }
-  
+
   // Check if slots are contiguous (end of slot1 equals start of slot2)
   const slot1End = new Date(slot1.end);
   const slot2Start = new Date(slot2.start);
-  
+
   // Allow small gaps (up to 1 minute) for floating point precision issues
   const timeDiff = Math.abs(slot2Start.getTime() - slot1End.getTime());
   return timeDiff <= 60000; // 1 minute tolerance
@@ -349,7 +358,7 @@ export function findConflictingEvent(
   return events.find(event => {
     const eventStart = new Date(event.start);
     const eventEnd = new Date(event.end || event.start);
-    
+
     // Check if the event overlaps with this time slot
     // An event conflicts if:
     // 1. Event starts before slot ends AND event ends after slot starts
@@ -369,17 +378,22 @@ export function calculateAvailabilityStats(timeSlots: TimeSlot[]): {
   availabilityPercentage: number;
 } {
   const totalSlots = timeSlots.length;
-  const availableSlots = timeSlots.filter(slot => slot.type === 'available').length;
+  const availableSlots = timeSlots.filter(
+    slot => slot.type === 'available'
+  ).length;
   const busySlots = timeSlots.filter(slot => slot.type === 'busy').length;
-  const scheduleBlockSlots = timeSlots.filter(slot => slot.type === 'schedule-block').length;
-  const availabilityPercentage = totalSlots > 0 ? (availableSlots / totalSlots) * 100 : 0;
-  
+  const scheduleBlockSlots = timeSlots.filter(
+    slot => slot.type === 'schedule-block'
+  ).length;
+  const availabilityPercentage =
+    totalSlots > 0 ? (availableSlots / totalSlots) * 100 : 0;
+
   return {
     totalSlots,
     availableSlots,
     busySlots,
     scheduleBlockSlots,
-    availabilityPercentage: Math.round(availabilityPercentage * 100) / 100
+    availabilityPercentage: Math.round(availabilityPercentage * 100) / 100,
   };
 }
 

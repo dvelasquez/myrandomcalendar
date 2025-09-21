@@ -12,6 +12,7 @@
 ## Database Schema
 
 The database now includes these BetterAuth-compatible tables:
+
 - **Users**: User account information
 - **Sessions**: Active user sessions with IP and user agent tracking
 - **Accounts**: OAuth provider accounts (Google, etc.)
@@ -26,11 +27,13 @@ The database now includes these BetterAuth-compatible tables:
 ## ✅ **Google OAuth Configuration (WORKING)**
 
 **Google Cloud Console Setup:**
+
 - **Client ID**: `your-client-id-here`
 - **Authorized redirect URIs**: `http://localhost:4321/api/auth/callback/google`
 - **Authorized JavaScript origins**: `http://localhost:4321`
 
 **Environment Variables (System Environment):**
+
 ```bash
 GOOGLE_CLIENT_ID=your-client-id-here
 GOOGLE_CLIENT_SECRET=your-client-secret-here
@@ -48,9 +51,11 @@ GOOGLE_CLIENT_SECRET=your-client-secret-here
 ## Files Modified/Created
 
 ### Removed Files:
+
 - `src/lib/auth.ts` - Custom authentication system (replaced by BetterAuth)
 
 ### Updated Files:
+
 - `db/config.ts` - BetterAuth-compatible database schema
 - `src/lib/types.ts` - Updated types for new schema
 - `src/lib/better-auth.ts` - BetterAuth configuration
@@ -62,6 +67,7 @@ GOOGLE_CLIENT_SECRET=your-client-secret-here
 - `src/env.d.ts` - Updated type definitions
 
 ### Created Files:
+
 - `src/lib/auth-client.ts` - Frontend auth client
 - `src/pages/api/auth/[...all].ts` - BetterAuth API handler
 - `docs/GOOGLE_OAUTH_SETUP.md` - This documentation

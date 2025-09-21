@@ -1,28 +1,31 @@
-import { fileURLToPath } from "node:url";
-import { includeIgnoreFile } from "@eslint/compat";
+import { fileURLToPath } from 'node:url';
+import { includeIgnoreFile } from '@eslint/compat';
 import eslint from '@eslint/js';
 import { defineConfig } from 'eslint/config';
+import prettierConfig from 'eslint-config-prettier';
 import eslintPluginAstro from 'eslint-plugin-astro';
 import eslintPluginImport from 'eslint-plugin-import';
-import globals from "globals";
+import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-const gitignorePath = fileURLToPath(new URL(".gitignore", import.meta.url));
+const gitignorePath = fileURLToPath(new URL('.gitignore', import.meta.url));
 
 export default defineConfig([
   {
-		languageOptions: {
-			globals: {
-				...globals.browser,
+    languageOptions: {
+      globals: {
+        ...globals.browser,
         ...globals.node,
-			},
-		},
-	},
-  includeIgnoreFile(gitignorePath, "Imported .gitignore patterns"),
+      },
+    },
+  },
+  includeIgnoreFile(gitignorePath, 'Imported .gitignore patterns'),
   // Add more generic rule sets here, such as:
   eslint.configs.recommended,
   tseslint.configs.recommended,
   ...eslintPluginAstro.configs.recommended,
+  // IMPORTANT: This must be last to override formatting rules
+  prettierConfig,
   {
     plugins: {
       import: eslintPluginImport,
@@ -30,14 +33,14 @@ export default defineConfig([
     rules: {
       // Override/add rules settings here, such as:
       // "astro/no-set-html-directive": "error"
-      
+
       // Use the more powerful import/order rule (auto-fixable)
       'import/order': [
         'error',
         {
           alphabetize: {
             caseInsensitive: true,
-            order: 'asc'
+            order: 'asc',
           },
           groups: [
             'builtin',
@@ -45,15 +48,15 @@ export default defineConfig([
             'internal',
             'parent',
             'sibling',
-            'index'
+            'index',
           ],
-          'newlines-between': 'never'
-        }
+          'newlines-between': 'never',
+        },
       ],
-      
+
       // Disable the built-in sort-imports rule (not auto-fixable)
-      'sort-imports': 'off'
-    }
+      'sort-imports': 'off',
+    },
   },
   // Configuration for test files - disable type checking rules
   {
@@ -88,7 +91,7 @@ export default defineConfig([
       // Allow any imports in tests
       '@typescript-eslint/consistent-type-imports': 'off',
       // Allow any exports in tests
-      '@typescript-eslint/consistent-type-exports': 'off'
-    }
-  }]
-);
+      '@typescript-eslint/consistent-type-exports': 'off',
+    },
+  },
+]);

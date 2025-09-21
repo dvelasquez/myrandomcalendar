@@ -1,7 +1,7 @@
-import { ActionError, defineAction } from "astro:actions";
-import { z } from "astro:schema";
-import { handleCalendarPage } from "../services/page-handler";
-import type { CalendarPageData } from "../services/page-handler";
+import { ActionError, defineAction } from 'astro:actions';
+import { z } from 'astro:schema';
+import { handleCalendarPage } from '../services/page-handler';
+import type { CalendarPageData } from '../services/page-handler';
 
 /**
  * Get calendar page data action
@@ -13,12 +13,15 @@ export const getCalendarPageDataAction = defineAction({
     startDate: z.string().optional(),
     endDate: z.string().optional(),
   }),
-  handler: async ({ startDate, endDate }, context): Promise<CalendarPageData> => {
+  handler: async (
+    { startDate, endDate },
+    context
+  ): Promise<CalendarPageData> => {
     try {
       if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to fetch calendar data'
+          message: 'You must be logged in to fetch calendar data',
         });
       }
 
@@ -26,11 +29,11 @@ export const getCalendarPageDataAction = defineAction({
       const end = endDate ? new Date(endDate) : undefined;
 
       const data = await handleCalendarPage(context, start, end);
-      
+
       if (!data) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to fetch calendar data'
+          message: 'You must be logged in to fetch calendar data',
         });
       }
 

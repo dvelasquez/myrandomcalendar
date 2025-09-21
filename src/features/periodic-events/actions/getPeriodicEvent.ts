@@ -1,6 +1,6 @@
-import { ActionError, defineAction } from "astro:actions";
-import { getPeriodicEventsDb } from "../db/get";
-import type { PeriodicEvent as PeriodicEventType } from "../models/PeriodicEvents.types";
+import { ActionError, defineAction } from 'astro:actions';
+import { getPeriodicEventsDb } from '../db/get';
+import type { PeriodicEvent as PeriodicEventType } from '../models/PeriodicEvents.types';
 
 /**
  * Get all periodic events for the current user
@@ -21,11 +21,11 @@ export const getPeriodicEvents = defineAction({
       return events;
     } catch (error) {
       console.error('Error in getPeriodicEventsAction:', error);
-      
+
       if (error instanceof ActionError) {
         throw error;
       }
-      
+
       throw new ActionError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Failed to load periodic events',

@@ -1,11 +1,14 @@
 import { parseISO, isValid } from 'date-fns';
 import type { ScheduleBlock } from '../../schedule/models/ScheduleBlocks.types';
-import type { CalendarEvent, EventAggregationResult } from '../models/Calendar.types';
+import type {
+  CalendarEvent,
+  EventAggregationResult,
+} from '../models/Calendar.types';
 import { scheduleBlocksToCalendarEvents } from './schedule-event-transformer';
 
 /**
  * Aggregates events from multiple sources into a unified calendar view
- * 
+ *
  * @param startDate - Start date for event aggregation
  * @param endDate - End date for event aggregation
  * @param scheduleBlocks - User's schedule blocks
@@ -30,7 +33,7 @@ export async function aggregateCalendarEvents(
       startDate,
       endDate
     );
-    
+
     // Mark schedule events with provider info
     const markedScheduleEvents = scheduleEvents.map(event => ({
       ...event,
@@ -38,9 +41,9 @@ export async function aggregateCalendarEvents(
         ...event.extendedProps,
         provider: 'schedule',
         providerEventId: event.extendedProps?.scheduleBlockId || event.id,
-      }
+      },
     }));
-    
+
     allEvents.push(...markedScheduleEvents);
     providers.push('schedule');
   }
@@ -53,9 +56,9 @@ export async function aggregateCalendarEvents(
         ...event.extendedProps,
         provider: 'google',
         providerEventId: event.id,
-      }
+      },
     }));
-    
+
     allEvents.push(...markedGoogleEvents);
     providers.push('google');
   }
@@ -86,7 +89,7 @@ export async function aggregateCalendarEvents(
 
 /**
  * Filters events by provider
- * 
+ *
  * @param events - Array of calendar events
  * @param provider - Provider name to filter by
  * @returns Filtered events from the specified provider
@@ -95,14 +98,12 @@ export function filterEventsByProvider(
   events: CalendarEvent[],
   provider: string
 ): CalendarEvent[] {
-  return events.filter(event => 
-    event.extendedProps?.provider === provider
-  );
+  return events.filter(event => event.extendedProps?.provider === provider);
 }
 
 /**
  * Gets events from a specific date range
- * 
+ *
  * @param events - Array of calendar events
  * @param startDate - Start date
  * @param endDate - End date
@@ -125,7 +126,7 @@ export function getEventsInDateRange(
   return events.filter(event => {
     const eventStart = new Date(event.start);
     const eventEnd = new Date(event.end || event.start);
-    
+
     // Include events that overlap with the search range
     return eventStart < endDate && eventEnd > searchStart;
   });
@@ -133,13 +134,15 @@ export function getEventsInDateRange(
 
 /**
  * Combines and sorts events from multiple sources
- * 
+ *
  * @param eventArrays - Arrays of events from different sources
  * @returns Combined and sorted array of events
  */
-export function combineAndSortEvents(...eventArrays: CalendarEvent[][]): CalendarEvent[] {
+export function combineAndSortEvents(
+  ...eventArrays: CalendarEvent[][]
+): CalendarEvent[] {
   const allEvents = eventArrays.flat();
-  
+
   return allEvents.sort((a, b) => {
     const aStart = new Date(a.start);
     const bStart = new Date(b.start);
@@ -149,7 +152,7 @@ export function combineAndSortEvents(...eventArrays: CalendarEvent[][]): Calenda
 
 /**
  * Validates calendar event data
- * 
+ *
  * @param event - Calendar event to validate
  * @returns True if event is valid, false otherwise
  */
@@ -182,7 +185,7 @@ export function validateCalendarEvent(event: CalendarEvent): boolean {
 
 /**
  * Gets statistics about aggregated events
- * 
+ *
  * @param events - Array of calendar events
  * @returns Event statistics
  */
@@ -194,20 +197,21 @@ export function getEventStatistics(events: CalendarEvent[]): {
   allDayEvents: number;
   timedEvents: number;
 } {
-  const scheduleEvents = events.filter(event => 
-    event.extendedProps?.provider === 'schedule'
+  const scheduleEvents = events.filter(
+    event => event.extendedProps?.provider === 'schedule'
   ).length;
-  
-  const googleEvents = events.filter(event => 
-    event.extendedProps?.provider === 'google'
+
+  const googleEvents = events.filter(
+    event => event.extendedProps?.provider === 'google'
   ).length;
-  
-  const otherProviderEvents = events.filter(event => 
-    event.extendedProps?.provider && 
-    event.extendedProps.provider !== 'schedule' && 
-    event.extendedProps.provider !== 'google'
+
+  const otherProviderEvents = events.filter(
+    event =>
+      event.extendedProps?.provider &&
+      event.extendedProps.provider !== 'schedule' &&
+      event.extendedProps.provider !== 'google'
   ).length;
-  
+
   const allDayEvents = events.filter(event => event.allDay).length;
   const timedEvents = events.filter(event => !event.allDay).length;
 

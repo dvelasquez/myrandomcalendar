@@ -1,5 +1,5 @@
-import { column, defineTable, NOW } from "astro:db";
-import { Users } from "../../../../db/config";
+import { column, defineTable, NOW } from 'astro:db';
+import { Users } from '../../../../db/config';
 
 // Periodic Event table for recurring activities without fixed times
 export const PeriodicEvent = defineTable({

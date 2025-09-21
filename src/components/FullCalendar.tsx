@@ -15,21 +15,23 @@ interface FullCalendarProps {
   showEventModal?: boolean;
 }
 
-export default function FullCalendarComponent({ 
-  events, 
-  onEventClick, 
+export default function FullCalendarComponent({
+  events,
+  onEventClick,
   onDateClick,
   onDateRangeChange,
-  showEventModal = true
+  showEventModal = true,
 }: FullCalendarProps) {
   const calendarRef = useRef<FullCalendar>(null);
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
+    null
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleEventClick = (info: EventClickArg) => {
     // Prevent default link behavior
     info.jsEvent.preventDefault();
-    
+
     const eventData = {
       id: info.event.id,
       title: info.event.title,
@@ -38,7 +40,7 @@ export default function FullCalendarComponent({
       allDay: info.event.allDay,
       description: info.event.extendedProps.description,
       location: info.event.extendedProps.location,
-      url: info.event.url
+      url: info.event.url,
     };
 
     if (showEventModal) {
@@ -80,7 +82,7 @@ export default function FullCalendarComponent({
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+          right: 'dayGridMonth,timeGridWeek,timeGridDay',
         }}
         events={events}
         eventClick={handleEventClick}
@@ -106,11 +108,11 @@ export default function FullCalendarComponent({
           today: 'Today',
           month: 'Month',
           week: 'Week',
-          day: 'Day'
+          day: 'Day',
         }}
       />
-      
-      <EventModal 
+
+      <EventModal
         event={selectedEvent}
         open={isModalOpen}
         onOpenChange={setIsModalOpen}

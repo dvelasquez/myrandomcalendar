@@ -1,7 +1,12 @@
 import type { AstroGlobal } from 'astro';
 import { actions } from 'astro:actions';
 import { auth } from '../../auth/lib/better-auth';
-import { FREQUENCY_OPTIONS, CATEGORY_OPTIONS, PRIORITY_OPTIONS, COLOR_OPTIONS } from '../lib/constants'; 
+import {
+  FREQUENCY_OPTIONS,
+  CATEGORY_OPTIONS,
+  PRIORITY_OPTIONS,
+  COLOR_OPTIONS,
+} from '../lib/constants';
 import type { PeriodicEvent as PeriodicEventType } from '../models/PeriodicEvents.types';
 
 /**
@@ -66,10 +71,11 @@ export async function handlePeriodicEventsIndexPage(
  * Orchestrates form options and action results
  * Note: actionResult uses any due to Astro's complex SafeResult form schema inference
  */
-export function handlePeriodicEventsCreatePage(Astro: AstroGlobal): PeriodicEventsCreatePageData {
-
+export function handlePeriodicEventsCreatePage(
+  Astro: AstroGlobal
+): PeriodicEventsCreatePageData {
   const actionResult = Astro.getActionResult(actions.periodicEvents.create);
-  
+
   // 1. Prepare form options (domain concern)
   const formOptions = {
     frequencyOptions: FREQUENCY_OPTIONS,

@@ -1,4 +1,7 @@
-import type { ScheduleBlockType, SchedulePriority } from '../../schedule/models/ScheduleBlocks.types';
+import type {
+  ScheduleBlockType,
+  SchedulePriority,
+} from '../../schedule/models/ScheduleBlocks.types';
 
 // Core calendar event interface (provider-agnostic)
 export interface CalendarEvent {
@@ -27,39 +30,42 @@ export interface CalendarEvent {
 }
 
 // Re-export Google Calendar types from provider-specific models
-export type { 
-  GoogleCalendarApiEvent, 
-  GoogleCalendarEventFields 
+export type {
+  GoogleCalendarApiEvent,
+  GoogleCalendarEventFields,
 } from '../providers/google-calendar/models/GoogleCalendar.types';
 
 // Type mapping utilities
 export type GoogleToFullCalendarMapper = {
-  [K in keyof CalendarEvent]: K extends 'title' 
-    ? 'summary' 
-    : K extends 'url' 
-    ? 'htmlLink' 
-    : K extends 'start' | 'end'
-    ? 'start' | 'end'
-    : K;
+  [K in keyof CalendarEvent]: K extends 'title'
+    ? 'summary'
+    : K extends 'url'
+      ? 'htmlLink'
+      : K extends 'start' | 'end'
+        ? 'start' | 'end'
+        : K;
 };
 
 // Reverse mapping (FullCalendar to Google)
 export type FullCalendarToGoogleMapper = {
-  [K in keyof import('googleapis').calendar_v3.Schema$Event]: K extends 'summary' 
-    ? 'title' 
-    : K extends 'htmlLink' 
-    ? 'url' 
-    : K;
+  [K in keyof import('googleapis').calendar_v3.Schema$Event]: K extends 'summary'
+    ? 'title'
+    : K extends 'htmlLink'
+      ? 'url'
+      : K;
 };
 
 // Typesafe form data interfaces for calendar actions
 export interface FetchCalendarFormData {
-  startDate: string;  // ISO string
-  endDate: string;    // ISO string
+  startDate: string; // ISO string
+  endDate: string; // ISO string
 }
 
 // Helper function to create typesafe FormData for calendar
-export function createFetchCalendarFormData(startDate: Date, endDate: Date): FormData {
+export function createFetchCalendarFormData(
+  startDate: Date,
+  endDate: Date
+): FormData {
   const formData = new FormData();
   formData.append('startDate', startDate.toISOString());
   formData.append('endDate', endDate.toISOString());
@@ -81,7 +87,7 @@ export interface AvailabilityConfig {
   includeOvernightEvents: boolean;
   defaultWorkingHours: {
     start: string; // "09:00"
-    end: string;   // "17:00"
+    end: string; // "17:00"
   };
   timezone: string;
 }

@@ -1,4 +1,7 @@
-import type { ScheduleBlockType, SchedulePriority } from '../models/ScheduleBlocks.types';
+import type {
+  ScheduleBlockType,
+  SchedulePriority,
+} from '../models/ScheduleBlocks.types';
 
 // Schedule types for forms and display
 export const SCHEDULE_TYPES: { value: ScheduleBlockType; label: string }[] = [
@@ -10,14 +13,14 @@ export const SCHEDULE_TYPES: { value: ScheduleBlockType; label: string }[] = [
   { value: 'exercise', label: 'Exercise' },
   { value: 'family', label: 'Family' },
   { value: 'study', label: 'Study' },
-  { value: 'other', label: 'Other' }
+  { value: 'other', label: 'Other' },
 ];
 
 // Priority options for forms and display
 export const PRIORITIES: { value: SchedulePriority; label: string }[] = [
   { value: 'high', label: 'High' },
   { value: 'medium', label: 'Medium' },
-  { value: 'low', label: 'Low' }
+  { value: 'low', label: 'Low' },
 ];
 
 // Days of week for forms and display
@@ -28,14 +31,14 @@ export const DAYS_OF_WEEK = [
   { value: 3, label: 'Wednesday', short: 'Wed' },
   { value: 4, label: 'Thursday', short: 'Thu' },
   { value: 5, label: 'Friday', short: 'Fri' },
-  { value: 6, label: 'Saturday', short: 'Sat' }
+  { value: 6, label: 'Saturday', short: 'Sat' },
 ];
 
 // Priority colors for display
 export const PRIORITY_COLORS: Record<string, string> = {
   high: 'bg-red-100 text-red-800 border-red-200',
   medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  low: 'bg-green-100 text-green-800 border-green-200'
+  low: 'bg-green-100 text-green-800 border-green-200',
 };
 
 // Default values
@@ -51,7 +54,7 @@ export const DEFAULT_SCHEDULE_VALUES = {
   isRecurring: true,
   isActive: true,
   timezone: 'UTC',
-  daysOfWeek: [1, 2, 3, 4, 5] // Monday to Friday
+  daysOfWeek: [1, 2, 3, 4, 5], // Monday to Friday
 };
 
 // Day names for display
@@ -68,7 +71,10 @@ export function formatDaysOfWeek(daysOfWeekString: string): string {
 }
 
 // Helper function to check if a day is selected
-export function isDaySelected(daysOfWeekString: string, dayValue: number): boolean {
+export function isDaySelected(
+  daysOfWeekString: string,
+  dayValue: number
+): boolean {
   try {
     const daysArray = JSON.parse(daysOfWeekString);
     return daysArray.includes(dayValue);

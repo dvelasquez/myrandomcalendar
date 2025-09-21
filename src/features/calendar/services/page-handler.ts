@@ -1,9 +1,15 @@
 import type { ActionAPIContext } from 'astro:actions';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { getScheduleBlocksDb } from '../../schedule/db/get';
-import { calculateAvailabilityForDateRange, DEFAULT_AVAILABILITY_CONFIG } from '../../schedule/domain/availability-calculator';
-import type { ScheduleBlock } from '../../schedule/models/ScheduleBlocks.types'; 
-import { transformTimeSlotsToBackgroundEvents, DEFAULT_BACKGROUND_EVENT_CONFIG } from '../domain/background-event-transformer';
+import {
+  calculateAvailabilityForDateRange,
+  DEFAULT_AVAILABILITY_CONFIG,
+} from '../../schedule/domain/availability-calculator';
+import type { ScheduleBlock } from '../../schedule/models/ScheduleBlocks.types';
+import {
+  transformTimeSlotsToBackgroundEvents,
+  DEFAULT_BACKGROUND_EVENT_CONFIG,
+} from '../domain/background-event-transformer';
 import type { BackgroundEvent } from '../domain/background-event-transformer';
 import type { CalendarEvent } from '../models/Calendar.types';
 import { handleFetchCalendar } from '../providers/google-calendar/actions/fetchCalendar';
@@ -53,32 +59,44 @@ export async function handleCalendarPage(
     let calendarError: string | null = null;
 
     try {
-      const calendarResponse = await handleFetchCalendar({ startDate: start, endDate: end }, context);
-      googleCalendarEvents = calendarResponse.events.map(event => ({
-        id: event.id || `google-${Date.now()}`,
-        title: event.summary || 'Untitled Event',
-        start: event.start?.dateTime || event.start?.date || new Date().toISOString(),
-        end: event.end?.dateTime || event.end?.date || undefined,
-        allDay: !event.start?.dateTime && !!event.start?.date,
-        description: event.description || undefined,
-        location: event.location || undefined,
-        url: event.htmlLink || undefined,
-        backgroundColor: '#3b82f6',
-        borderColor: '#1e40af',
-        textColor: '#ffffff',
-        extendedProps: {
-          provider: 'google',
-          providerEventId: event.id,
-        }
-      } as CalendarEvent));
+      const calendarResponse = await handleFetchCalendar(
+        { startDate: start, endDate: end },
+        context
+      );
+      googleCalendarEvents = calendarResponse.events.map(
+        event =>
+          ({
+            id: event.id || `google-${Date.now()}`,
+            title: event.summary || 'Untitled Event',
+            start:
+              event.start?.dateTime ||
+              event.start?.date ||
+              new Date().toISOString(),
+            end: event.end?.dateTime || event.end?.date || undefined,
+            allDay: !event.start?.dateTime && !!event.start?.date,
+            description: event.description || undefined,
+            location: event.location || undefined,
+            url: event.htmlLink || undefined,
+            backgroundColor: '#3b82f6',
+            borderColor: '#1e40af',
+            textColor: '#ffffff',
+            extendedProps: {
+              provider: 'google',
+              providerEventId: event.id,
+            },
+          }) as CalendarEvent
+      );
     } catch (error) {
       console.error('Error fetching Google Calendar events:', error);
-      calendarError = error instanceof Error ? error.message : 'Failed to fetch calendar events';
+      calendarError =
+        error instanceof Error
+          ? error.message
+          : 'Failed to fetch calendar events';
     }
 
     // Calculate availability background events
     let availabilityBackgroundEvents: BackgroundEvent[] = [];
-    
+
     if (scheduleBlocks.length > 0) {
       try {
         const timeSlots = await calculateAvailabilityForDateRange(
@@ -104,11 +122,14 @@ export async function handleCalendarPage(
       success: !calendarError,
       events: googleCalendarEvents,
       calendarId: 'primary',
-      timeZone: 'UTC'
+      timeZone: 'UTC',
     };
 
     // Combine calendar events with background events
-    const fullCalendarEvents = [...googleCalendarEvents, ...availabilityBackgroundEvents];
+    const fullCalendarEvents = [
+      ...googleCalendarEvents,
+      ...availabilityBackgroundEvents,
+    ];
 
     return {
       scheduleBlocks,
@@ -116,9 +137,8 @@ export async function handleCalendarPage(
       availabilityBackgroundEvents,
       calendarError,
       calendarData,
-      fullCalendarEvents
+      fullCalendarEvents,
     };
-
   } catch (error) {
     console.error('Error in handleCalendarPage:', error);
     throw error;

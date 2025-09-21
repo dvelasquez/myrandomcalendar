@@ -2,5 +2,5 @@
 
 // https://astro.build/db/seed
 export default async function seed() {
-	// Add seed user
+  // Add seed user
 }

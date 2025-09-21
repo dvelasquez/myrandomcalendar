@@ -1,7 +1,14 @@
-import { ActionError, defineAction } from "astro:actions";
-import { z } from "astro:schema";
-import { getSchedulePageData, getAvailabilityPageData, getCalendarPageData } from "../services/page-handler";
-import type { SchedulePageData, AvailabilityPageData } from "../services/page-handler";
+import { ActionError, defineAction } from 'astro:actions';
+import { z } from 'astro:schema';
+import {
+  getSchedulePageData,
+  getAvailabilityPageData,
+  getCalendarPageData,
+} from '../services/page-handler';
+import type {
+  SchedulePageData,
+  AvailabilityPageData,
+} from '../services/page-handler';
 
 // Combined data fetching action for schedule pages
 export const getSchedulePageDataAction = defineAction({
@@ -10,12 +17,15 @@ export const getSchedulePageDataAction = defineAction({
     startDate: z.string().optional(),
     endDate: z.string().optional(),
   }),
-  handler: async ({ startDate, endDate }, context): Promise<SchedulePageData> => {
+  handler: async (
+    { startDate, endDate },
+    context
+  ): Promise<SchedulePageData> => {
     try {
       if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to fetch schedule data'
+          message: 'You must be logged in to fetch schedule data',
         });
       }
 
@@ -50,7 +60,7 @@ export const getAvailabilityPageDataAction = defineAction({
       if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to fetch availability data'
+          message: 'You must be logged in to fetch availability data',
         });
       }
 
@@ -84,7 +94,7 @@ export const getCalendarPageDataAction = defineAction({
       if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to fetch calendar data'
+          message: 'You must be logged in to fetch calendar data',
         });
       }
 
@@ -120,7 +130,7 @@ export const refreshCalendarDataAction = defineAction({
       if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to refresh calendar data'
+          message: 'You must be logged in to refresh calendar data',
         });
       }
 
@@ -128,8 +138,12 @@ export const refreshCalendarDataAction = defineAction({
       const end = new Date(endDate);
 
       // Use the same logic as calendar page data but return raw calendar events
-      const { googleCalendarEvents, calendarError } = await getCalendarPageData(context, start, end);
-      
+      const { googleCalendarEvents, calendarError } = await getCalendarPageData(
+        context,
+        start,
+        end
+      );
+
       if (calendarError) {
         throw new ActionError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -140,7 +154,7 @@ export const refreshCalendarDataAction = defineAction({
       return {
         success: true,
         events: googleCalendarEvents,
-        message: 'Calendar data refreshed successfully'
+        message: 'Calendar data refreshed successfully',
       };
     } catch (error) {
       console.error('Error in refreshCalendarDataAction:', error);

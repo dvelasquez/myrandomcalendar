@@ -2,27 +2,38 @@ import { z } from 'astro:schema';
 import { parseISO, isValid, isAfter } from 'date-fns';
 
 // Schema for fetching calendar events
-export const fetchCalendarSchema = z.object({
-  startDate: z.string().refine((date) => {
-    const parsed = parseISO(date);
-    return isValid(parsed);
-  }, {
-    message: 'Invalid startDate format',
-  }),
-  endDate: z.string().refine((date) => {
-    const parsed = parseISO(date);
-    return isValid(parsed);
-  }, {
-    message: 'Invalid endDate format',
-  }),
-}).refine((data) => {
-  const start = parseISO(data.startDate);
-  const end = parseISO(data.endDate);
-  return isAfter(end, start);
-}, {
-  message: 'startDate must be before endDate',
-  path: ['endDate'],
-});
+export const fetchCalendarSchema = z
+  .object({
+    startDate: z.string().refine(
+      date => {
+        const parsed = parseISO(date);
+        return isValid(parsed);
+      },
+      {
+        message: 'Invalid startDate format',
+      }
+    ),
+    endDate: z.string().refine(
+      date => {
+        const parsed = parseISO(date);
+        return isValid(parsed);
+      },
+      {
+        message: 'Invalid endDate format',
+      }
+    ),
+  })
+  .refine(
+    data => {
+      const start = parseISO(data.startDate);
+      const end = parseISO(data.endDate);
+      return isAfter(end, start);
+    },
+    {
+      message: 'startDate must be before endDate',
+      path: ['endDate'],
+    }
+  );
 
 // Schema for Google Calendar credentials validation
 export const googleCalendarCredentialsSchema = z.object({
@@ -40,30 +51,45 @@ export const googleCalendarConfigSchema = z.object({
 });
 
 // Schema for date range validation
-export const dateRangeSchema = z.object({
-  start: z.string().refine((date) => {
-    const parsed = parseISO(date);
-    return isValid(parsed);
-  }, {
-    message: 'Invalid start date format',
-  }),
-  end: z.string().refine((date) => {
-    const parsed = parseISO(date);
-    return isValid(parsed);
-  }, {
-    message: 'Invalid end date format',
-  }),
-}).refine((data) => {
-  const start = parseISO(data.start);
-  const end = parseISO(data.end);
-  return isAfter(end, start);
-}, {
-  message: 'Start date must be before end date',
-  path: ['end'],
-});
+export const dateRangeSchema = z
+  .object({
+    start: z.string().refine(
+      date => {
+        const parsed = parseISO(date);
+        return isValid(parsed);
+      },
+      {
+        message: 'Invalid start date format',
+      }
+    ),
+    end: z.string().refine(
+      date => {
+        const parsed = parseISO(date);
+        return isValid(parsed);
+      },
+      {
+        message: 'Invalid end date format',
+      }
+    ),
+  })
+  .refine(
+    data => {
+      const start = parseISO(data.start);
+      const end = parseISO(data.end);
+      return isAfter(end, start);
+    },
+    {
+      message: 'Start date must be before end date',
+      path: ['end'],
+    }
+  );
 
 // Type inference from schemas
 export type FetchCalendarInput = z.infer<typeof fetchCalendarSchema>;
-export type GoogleCalendarCredentialsInput = z.infer<typeof googleCalendarCredentialsSchema>;
-export type GoogleCalendarConfigInput = z.infer<typeof googleCalendarConfigSchema>;
+export type GoogleCalendarCredentialsInput = z.infer<
+  typeof googleCalendarCredentialsSchema
+>;
+export type GoogleCalendarConfigInput = z.infer<
+  typeof googleCalendarConfigSchema
+>;
 export type DateRangeInput = z.infer<typeof dateRangeSchema>;

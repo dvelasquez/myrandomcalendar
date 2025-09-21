@@ -25,8 +25,11 @@ if (user) {
     const formData = new FormData();
     if (successMessage) formData.append('successMessage', successMessage);
     if (errorMessage) formData.append('errorMessage', errorMessage);
-    
-    const result = await Astro.callAction(actions.schedule.getScheduleIndexPageData, formData);
+
+    const result = await Astro.callAction(
+      actions.schedule.getScheduleIndexPageData,
+      formData
+    );
     if (result.data) {
       scheduleIndexData = result.data;
     }
@@ -38,251 +41,343 @@ if (user) {
 
 <Layout>
   <div class="container mx-auto px-4 py-8">
-    {user && scheduleIndexData ? (
-      <div class="max-w-6xl mx-auto">
-        <!-- Header -->
-        <div class="mb-8">
-          <div class="flex justify-between items-start">
-            <div>
-              <h1 class="text-3xl font-bold text-gray-900 mb-2">Schedule Management</h1>
-              <p class="text-gray-600">
-                View and manage your schedule blocks and availability for optimal event planning.
-              </p>
-              {!scheduleIndexData.calendarError && (
-                <p class="text-sm mt-2">
-                  <span class="text-green-600">✓</span> Google Calendar connected
-                  {scheduleIndexData.googleCalendarEvents.length > 0 && (
-                    <span class="ml-2 text-blue-600">
-                      ({scheduleIndexData.googleCalendarEvents.length} events loaded)
-                    </span>
-                  )}
+    {
+      user && scheduleIndexData ? (
+        <div class="max-w-6xl mx-auto">
+          <div class="mb-8">
+            <div class="flex justify-between items-start">
+              <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                  Schedule Management
+                </h1>
+                <p class="text-gray-600">
+                  View and manage your schedule blocks and availability for
+                  optimal event planning.
                 </p>
-              )}
-              {scheduleIndexData.calendarError && (
-                <p class="text-sm mt-2 text-red-600">
-                  <span class="text-red-600">⚠</span> Calendar error: {scheduleIndexData.calendarError}
-                </p>
-              )}
-            </div>
-            <ButtonLink href="/schedule/maintainer">
-              Add Schedule Block
-            </ButtonLink>
-          </div>
-        </div>
-
-        <!-- Success/Error Messages -->
-        {scheduleIndexData.successMessage && (
-          <Alert className="mb-6 border-green-400 bg-green-50 text-green-800">
-            <AlertTitle>Success!</AlertTitle>
-            <AlertDescription>
-              {scheduleIndexData.successMessage === 'created' && 'Schedule block created successfully!'}
-              {scheduleIndexData.successMessage === 'updated' && 'Schedule block updated successfully!'}
-              {scheduleIndexData.successMessage === 'deleted' && 'Schedule block deleted successfully!'}
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        {scheduleIndexData.errorMessage && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertTitle>Error:</AlertTitle>
-            <AlertDescription>
-              {scheduleIndexData.errorMessage}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <!-- Schedule Blocks Overview -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <!-- Schedule Blocks -->
-          <Card>
-            <CardHeader>
-              <div class="flex justify-between items-center">
-                <CardTitle className="text-xl">Your Schedule Blocks</CardTitle>
-                <span class="text-sm text-gray-500">{scheduleIndexData.scheduleBlocks.length} blocks</span>
+                {!scheduleIndexData.calendarError && (
+                  <p class="text-sm mt-2">
+                    <span class="text-green-600">✓</span> Google Calendar
+                    connected
+                    {scheduleIndexData.googleCalendarEvents.length > 0 && (
+                      <span class="ml-2 text-blue-600">
+                        ({scheduleIndexData.googleCalendarEvents.length} events
+                        loaded)
+                      </span>
+                    )}
+                  </p>
+                )}
+                {scheduleIndexData.calendarError && (
+                  <p class="text-sm mt-2 text-red-600">
+                    <span class="text-red-600">⚠</span> Calendar error:{' '}
+                    {scheduleIndexData.calendarError}
+                  </p>
+                )}
               </div>
-            </CardHeader>
-            
-            <CardContent>
-              {scheduleIndexData.scheduleBlocks.length > 0 ? (
-                <div class="space-y-3">
-                  {scheduleIndexData.scheduleBlocks.map(block => (
-                    <div class="border rounded-lg p-4 flex justify-between items-center">
-                      <div class="flex items-center space-x-3">
-                        <div 
-                          class="w-4 h-4 rounded-full" 
-                          style={{ backgroundColor: block.color }}
-                        ></div>
-                        <div>
-                          <h3 class="font-medium text-gray-900">{block.title}</h3>
-                          <p class="text-sm text-gray-600">
-                            {block.startTime} - {block.endTime} | {formatDaysOfWeek(block.daysOfWeek)}
-                          </p>
+              <ButtonLink href="/schedule/maintainer">
+                Add Schedule Block
+              </ButtonLink>
+            </div>
+          </div>
+
+          {scheduleIndexData.successMessage && (
+            <Alert className="mb-6 border-green-400 bg-green-50 text-green-800">
+              <AlertTitle>Success!</AlertTitle>
+              <AlertDescription>
+                {scheduleIndexData.successMessage === 'created' &&
+                  'Schedule block created successfully!'}
+                {scheduleIndexData.successMessage === 'updated' &&
+                  'Schedule block updated successfully!'}
+                {scheduleIndexData.successMessage === 'deleted' &&
+                  'Schedule block deleted successfully!'}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {scheduleIndexData.errorMessage && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertTitle>Error:</AlertTitle>
+              <AlertDescription>
+                {scheduleIndexData.errorMessage}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card>
+              <CardHeader>
+                <div class="flex justify-between items-center">
+                  <CardTitle className="text-xl">
+                    Your Schedule Blocks
+                  </CardTitle>
+                  <span class="text-sm text-gray-500">
+                    {scheduleIndexData.scheduleBlocks.length} blocks
+                  </span>
+                </div>
+              </CardHeader>
+
+              <CardContent>
+                {scheduleIndexData.scheduleBlocks.length > 0 ? (
+                  <div class="space-y-3">
+                    {scheduleIndexData.scheduleBlocks.map(block => (
+                      <div class="border rounded-lg p-4 flex justify-between items-center">
+                        <div class="flex items-center space-x-3">
+                          <div
+                            class="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: block.color }}
+                          />
+                          <div>
+                            <h3 class="font-medium text-gray-900">
+                              {block.title}
+                            </h3>
+                            <p class="text-sm text-gray-600">
+                              {block.startTime} - {block.endTime} |{' '}
+                              {formatDaysOfWeek(block.daysOfWeek)}
+                            </p>
+                          </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <Badge
+                            variant={
+                              block.priority === 'high'
+                                ? 'destructive'
+                                : block.priority === 'medium'
+                                  ? 'secondary'
+                                  : 'default'
+                            }
+                            className="text-xs"
+                          >
+                            {block.priority}
+                          </Badge>
+                          <ButtonLink
+                            href={`/schedule/maintainer?edit=${block.id}`}
+                            variant="outline"
+                            size="sm"
+                          >
+                            Edit
+                          </ButtonLink>
                         </div>
                       </div>
-                      <div class="flex items-center space-x-2">
-                        <Badge 
-                          variant={block.priority === 'high' ? 'destructive' : block.priority === 'medium' ? 'secondary' : 'default'}
-                          className="text-xs"
-                        >
-                          {block.priority}
-                        </Badge>
-                        <ButtonLink
-                          href={`/schedule/maintainer?edit=${block.id}`}
-                          variant="outline"
-                          size="sm"
-                        >
-                          Edit
-                        </ButtonLink>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div class="text-center py-8">
-                  <div class="text-gray-400 mb-4">
-                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+                    ))}
                   </div>
-                  <h3 class="text-lg font-medium text-gray-900 mb-2">No Schedule Blocks</h3>
-                  <p class="text-gray-600 mb-4">Create your first schedule block to start managing your time effectively.</p>
-                  <ButtonLink href="/schedule/maintainer">
-                    Create Schedule Block
-                  </ButtonLink>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <!-- Google Calendar Events -->
-          <Card>
-            <CardHeader>
-              <div class="flex justify-between items-center">
-                <CardTitle className="text-xl">Recent Calendar Events</CardTitle>
-                <span class="text-sm text-gray-500">{scheduleIndexData.googleCalendarEvents.length} events</span>
-              </div>
-            </CardHeader>
-            
-            <CardContent>
-              {scheduleIndexData.googleCalendarEvents.length > 0 ? (
-                <div class="space-y-3">
-                  {scheduleIndexData.googleCalendarEvents.slice(0, 5).map(event => (
-                    <div class="border rounded-lg p-4">
-                      <h3 class="font-medium text-gray-900">{event.title}</h3>
-                      <p class="text-sm text-gray-600">
-                        {new Date(event.start).toLocaleDateString()} at {new Date(event.start).toLocaleTimeString()}
-                      </p>
-                      {event.description && (
-                        <p class="text-sm text-gray-500 mt-1">{event.description}</p>
-                      )}
+                ) : (
+                  <div class="text-center py-8">
+                    <div class="text-gray-400 mb-4">
+                      <svg
+                        class="w-12 h-12 mx-auto"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
                     </div>
-                  ))}
-                  {scheduleIndexData.googleCalendarEvents.length > 5 && (
-                    <p class="text-sm text-gray-500 text-center">
-                      ... and {scheduleIndexData.googleCalendarEvents.length - 5} more events
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">
+                      No Schedule Blocks
+                    </h3>
+                    <p class="text-gray-600 mb-4">
+                      Create your first schedule block to start managing your
+                      time effectively.
                     </p>
-                  )}
+                    <ButtonLink href="/schedule/maintainer">
+                      Create Schedule Block
+                    </ButtonLink>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div class="flex justify-between items-center">
+                  <CardTitle className="text-xl">
+                    Recent Calendar Events
+                  </CardTitle>
+                  <span class="text-sm text-gray-500">
+                    {scheduleIndexData.googleCalendarEvents.length} events
+                  </span>
                 </div>
-              ) : (
-                <div class="text-center py-8">
-                  <div class="text-gray-400 mb-4">
-                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </CardHeader>
+
+              <CardContent>
+                {scheduleIndexData.googleCalendarEvents.length > 0 ? (
+                  <div class="space-y-3">
+                    {scheduleIndexData.googleCalendarEvents
+                      .slice(0, 5)
+                      .map(event => (
+                        <div class="border rounded-lg p-4">
+                          <h3 class="font-medium text-gray-900">
+                            {event.title}
+                          </h3>
+                          <p class="text-sm text-gray-600">
+                            {new Date(event.start).toLocaleDateString()} at{' '}
+                            {new Date(event.start).toLocaleTimeString()}
+                          </p>
+                          {event.description && (
+                            <p class="text-sm text-gray-500 mt-1">
+                              {event.description}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    {scheduleIndexData.googleCalendarEvents.length > 5 && (
+                      <p class="text-sm text-gray-500 text-center">
+                        ... and{' '}
+                        {scheduleIndexData.googleCalendarEvents.length - 5} more
+                        events
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div class="text-center py-8">
+                    <div class="text-gray-400 mb-4">
+                      <svg
+                        class="w-12 h-12 mx-auto"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">
+                      No Calendar Events
+                    </h3>
+                    <p class="text-gray-600">
+                      No events found for the current month.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="mt-8">
+            <CardHeader>
+              <CardTitle className="text-xl">Quick Actions</CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <ButtonLink
+                  href="/schedule/maintainer"
+                  variant="outline"
+                  className="flex items-center p-4 h-auto justify-start"
+                >
+                  <div class="text-blue-600 mr-3">
+                    <svg
+                      class="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
                     </svg>
                   </div>
-                  <h3 class="text-lg font-medium text-gray-900 mb-2">No Calendar Events</h3>
-                  <p class="text-gray-600">No events found for the current month.</p>
-                </div>
-              )}
+                  <div class="text-left">
+                    <h3 class="font-medium text-gray-900">
+                      Add Schedule Block
+                    </h3>
+                    <p class="text-sm text-gray-600">Create a new time block</p>
+                  </div>
+                </ButtonLink>
+
+                <ButtonLink
+                  href="/schedule/availability"
+                  variant="outline"
+                  className="flex items-center p-4 h-auto justify-start"
+                >
+                  <div class="text-green-600 mr-3">
+                    <svg
+                      class="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="text-left">
+                    <h3 class="font-medium text-gray-900">View Availability</h3>
+                    <p class="text-sm text-gray-600">Check your free time</p>
+                  </div>
+                </ButtonLink>
+
+                <ButtonLink
+                  href="/calendar"
+                  variant="outline"
+                  className="flex items-center p-4 h-auto justify-start"
+                >
+                  <div class="text-purple-600 mr-3">
+                    <svg
+                      class="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="text-left">
+                    <h3 class="font-medium text-gray-900">Full Calendar</h3>
+                    <p class="text-sm text-gray-600">View complete calendar</p>
+                  </div>
+                </ButtonLink>
+              </div>
             </CardContent>
           </Card>
         </div>
+      ) : (
+        <div class="max-w-2xl mx-auto">
+          <Alert className="mb-6 border-yellow-400 bg-yellow-50 text-yellow-800">
+            <AlertTitle>Access Denied</AlertTitle>
+            <AlertDescription>
+              You must be logged in to manage your schedule blocks.
+            </AlertDescription>
+          </Alert>
 
-        <!-- Quick Actions -->
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="text-xl">Quick Actions</CardTitle>
-          </CardHeader>
-          
-          <CardContent>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <ButtonLink 
-                href="/schedule/maintainer" 
-                variant="outline"
-                className="flex items-center p-4 h-auto justify-start"
-              >
-                <div class="text-blue-600 mr-3">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                  </svg>
+          <Card>
+            <CardContent>
+              <div class="text-center space-y-4">
+                <p class="text-gray-600">
+                  Please log in to access your schedule management.
+                </p>
+
+                <div class="flex space-x-4 justify-center">
+                  <ButtonLink href="/login">Login</ButtonLink>
+                  <ButtonLink variant="secondary" href="/register">
+                    Register
+                  </ButtonLink>
                 </div>
-                <div class="text-left">
-                  <h3 class="font-medium text-gray-900">Add Schedule Block</h3>
-                  <p class="text-sm text-gray-600">Create a new time block</p>
-                </div>
-              </ButtonLink>
-              
-              <ButtonLink 
-                href="/schedule/availability" 
-                variant="outline"
-                className="flex items-center p-4 h-auto justify-start"
-              >
-                <div class="text-green-600 mr-3">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                </div>
-                <div class="text-left">
-                  <h3 class="font-medium text-gray-900">View Availability</h3>
-                  <p class="text-sm text-gray-600">Check your free time</p>
-                </div>
-              </ButtonLink>
-              
-              <ButtonLink 
-                href="/calendar" 
-                variant="outline"
-                className="flex items-center p-4 h-auto justify-start"
-              >
-                <div class="text-purple-600 mr-3">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                  </svg>
-                </div>
-                <div class="text-left">
-                  <h3 class="font-medium text-gray-900">Full Calendar</h3>
-                  <p class="text-sm text-gray-600">View complete calendar</p>
-                </div>
-              </ButtonLink>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    ) : (
-      <div class="max-w-2xl mx-auto">
-        <Alert className="mb-6 border-yellow-400 bg-yellow-50 text-yellow-800">
-          <AlertTitle>Access Denied</AlertTitle>
-          <AlertDescription>
-            You must be logged in to manage your schedule blocks.
-          </AlertDescription>
-        </Alert>
-        
-        <Card>
-          <CardContent>
-            <div class="text-center space-y-4">
-              <p class="text-gray-600">Please log in to access your schedule management.</p>
-              
-              <div class="flex space-x-4 justify-center">
-                <ButtonLink href="/login">
-                  Login
-                </ButtonLink>
-                <ButtonLink variant="secondary" href="/register">
-                  Register
-                </ButtonLink>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )}
+            </CardContent>
+          </Card>
+        </div>
+      )
+    }
   </div>
 </Layout>

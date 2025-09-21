@@ -1,15 +1,15 @@
-import { db, Users, Sessions, Accounts, Verifications } from "astro:db"; 
-import { betterAuth } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { db, Users, Sessions, Accounts, Verifications } from 'astro:db';
+import { betterAuth } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET as string,
   trustedOrigins: [
-    "http://localhost:4321",
-    "https://randomcalendar-dev.d13z.dev"
+    'http://localhost:4321',
+    'https://randomcalendar-dev.d13z.dev',
   ],
   database: drizzleAdapter(db, {
-    provider: "sqlite",
+    provider: 'sqlite',
     schema: {
       user: Users,
       session: Sessions,
@@ -26,10 +26,10 @@ export const auth = betterAuth({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       scope: [
-        "openid",
-        "email",
-        "profile",
-        "https://www.googleapis.com/auth/calendar.readonly"
+        'openid',
+        'email',
+        'profile',
+        'https://www.googleapis.com/auth/calendar.readonly',
       ],
     },
   },
@@ -40,7 +40,7 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       image: {
-        type: "string",
+        type: 'string',
         required: false,
       },
     },

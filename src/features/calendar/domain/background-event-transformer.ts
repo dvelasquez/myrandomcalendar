@@ -1,6 +1,9 @@
 import type { SchedulePriority } from '../../schedule/models/ScheduleBlocks.types';
 import type { TimeSlot } from '../models/Calendar.types';
-import type { CalendarEvent, BackgroundEventConfig } from '../models/Calendar.types';
+import type {
+  CalendarEvent,
+  BackgroundEventConfig,
+} from '../models/Calendar.types';
 
 /**
  * Default configuration for background events
@@ -11,7 +14,7 @@ export const DEFAULT_BACKGROUND_EVENT_CONFIG: BackgroundEventConfig = {
   scheduleBlockColor: '#3b82f6', // Blue for schedule blocks
   opacity: 0.3,
   borderColor: '#ffffff',
-  borderWidth: 1
+  borderWidth: 1,
 };
 
 /**
@@ -25,7 +28,7 @@ export interface BackgroundEvent extends CalendarEvent {
 
 /**
  * Pure function to transform time slots to FullCalendar background events
- * 
+ *
  * @param timeSlots - Array of time slots with availability status
  * @param config - Configuration for styling
  * @returns Array of FullCalendar background events
@@ -49,8 +52,8 @@ export function transformTimeSlotsToBackgroundEvents(
       availabilityType: slot.type,
       priority: slot.priority as SchedulePriority | undefined,
       isAvailabilityEvent: true,
-      originalTitle: slot.title
-    }
+      originalTitle: slot.title,
+    },
   }));
 }
 
@@ -103,8 +106,8 @@ export function filterBackgroundEventsByType(
   backgroundEvents: BackgroundEvent[],
   type: 'available' | 'busy' | 'schedule-block'
 ): BackgroundEvent[] {
-  return backgroundEvents.filter(event => 
-    event.extendedProps?.availabilityType === type
+  return backgroundEvents.filter(
+    event => event.extendedProps?.availabilityType === type
   );
 }
 
@@ -137,7 +140,7 @@ export function getScheduleBlockBackgroundEvents(
 
 /**
  * Pure function to combine calendar events with background events
- * 
+ *
  * @param calendarEvents - Regular calendar events
  * @param backgroundEvents - Background availability events
  * @returns Combined array of events
@@ -157,7 +160,7 @@ export function createBackgroundEventConfig(
 ): BackgroundEventConfig {
   return {
     ...DEFAULT_BACKGROUND_EVENT_CONFIG,
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -168,27 +171,27 @@ export function validateBackgroundEventConfig(
   config: BackgroundEventConfig
 ): string[] {
   const errors: string[] = [];
-  
+
   if (!config.availableColor || !isValidColor(config.availableColor)) {
     errors.push('Invalid available color');
   }
-  
+
   if (!config.busyColor || !isValidColor(config.busyColor)) {
     errors.push('Invalid busy color');
   }
-  
+
   if (!config.scheduleBlockColor || !isValidColor(config.scheduleBlockColor)) {
     errors.push('Invalid schedule block color');
   }
-  
+
   if (config.opacity < 0 || config.opacity > 1) {
     errors.push('Opacity must be between 0 and 1');
   }
-  
+
   if (config.borderWidth !== undefined && config.borderWidth < 0) {
     errors.push('Border width must be non-negative');
   }
-  
+
   return errors;
 }
 
@@ -204,9 +207,7 @@ export function isValidColor(color: string): boolean {
 /**
  * Pure function to get background event statistics
  */
-export function getBackgroundEventStats(
-  backgroundEvents: BackgroundEvent[]
-): {
+export function getBackgroundEventStats(backgroundEvents: BackgroundEvent[]): {
   totalEvents: number;
   availableEvents: number;
   busyEvents: number;
@@ -216,6 +217,7 @@ export function getBackgroundEventStats(
     totalEvents: backgroundEvents.length,
     availableEvents: getAvailableBackgroundEvents(backgroundEvents).length,
     busyEvents: getBusyBackgroundEvents(backgroundEvents).length,
-    scheduleBlockEvents: getScheduleBlockBackgroundEvents(backgroundEvents).length
+    scheduleBlockEvents:
+      getScheduleBlockBackgroundEvents(backgroundEvents).length,
   };
 }

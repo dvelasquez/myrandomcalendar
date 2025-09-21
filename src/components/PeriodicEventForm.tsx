@@ -4,7 +4,13 @@ import ButtonLink from '@/components/ui/button-link';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { PeriodicEvent } from '@/features/periodic-events/models/PeriodicEvents.types';
 import type { PeriodicEventsCreatePageData } from '@/features/periodic-events/services/page-handler';
@@ -14,18 +20,21 @@ interface PeriodicEventFormProps {
   formOptions: PeriodicEventsCreatePageData['formOptions'];
 }
 
-export default function PeriodicEventForm({ initialData, formOptions }: PeriodicEventFormProps) {
+export default function PeriodicEventForm({
+  initialData,
+  formOptions,
+}: PeriodicEventFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const formData = new FormData(e.currentTarget as HTMLFormElement);
-    
+
     try {
       // Import actions dynamically to avoid server-side issues
       const { actions } = await import('astro:actions');
-      
+
       const result = await actions.periodicEvents.create(formData);
-      
+
       if (!result.error) {
         // Redirect on success
         window.location.href = '/periodic-events?success=created';
@@ -79,12 +88,16 @@ export default function PeriodicEventForm({ initialData, formOptions }: Periodic
           <Label htmlFor="frequency" className="text-gray-700 mb-2">
             Frequency *
           </Label>
-          <Select name="frequency" defaultValue={initialData?.frequency || 'weekly'} required>
+          <Select
+            name="frequency"
+            defaultValue={initialData?.frequency || 'weekly'}
+            required
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select frequency" />
             </SelectTrigger>
             <SelectContent>
-              {formOptions.frequencyOptions.map((option) => (
+              {formOptions.frequencyOptions.map(option => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -137,12 +150,16 @@ export default function PeriodicEventForm({ initialData, formOptions }: Periodic
           <Label htmlFor="category" className="text-gray-700 mb-2">
             Category *
           </Label>
-          <Select name="category" defaultValue={initialData?.category || 'exercise'} required>
+          <Select
+            name="category"
+            defaultValue={initialData?.category || 'exercise'}
+            required
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
-              {formOptions.categoryOptions.map((option) => (
+              {formOptions.categoryOptions.map(option => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -155,12 +172,16 @@ export default function PeriodicEventForm({ initialData, formOptions }: Periodic
           <Label htmlFor="priority" className="text-gray-700 mb-2">
             Priority *
           </Label>
-          <Select name="priority" defaultValue={initialData?.priority || 'medium'} required>
+          <Select
+            name="priority"
+            defaultValue={initialData?.priority || 'medium'}
+            required
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select priority" />
             </SelectTrigger>
             <SelectContent>
-              {formOptions.priorityOptions.map((option) => (
+              {formOptions.priorityOptions.map(option => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -172,26 +193,29 @@ export default function PeriodicEventForm({ initialData, formOptions }: Periodic
 
       {/* Color */}
       <div>
-        <Label className="text-gray-700 mb-2">
-          Color *
-        </Label>
-        <RadioGroup 
-          name="color" 
+        <Label className="text-gray-700 mb-2">Color *</Label>
+        <RadioGroup
+          name="color"
           defaultValue={initialData?.color || '#10b981'}
           className="grid grid-cols-6 gap-2"
         >
-          {formOptions.colorOptions.map((color) => (
-            <div key={color.value} className="flex flex-col items-center space-y-1">
-              <RadioGroupItem 
-                value={color.value} 
+          {formOptions.colorOptions.map(color => (
+            <div
+              key={color.value}
+              className="flex flex-col items-center space-y-1"
+            >
+              <RadioGroupItem
+                value={color.value}
                 id={`color-${color.value}`}
                 className="sr-only"
               />
-              <label 
+              <label
                 htmlFor={`color-${color.value}`}
                 className="flex flex-col items-center space-y-1 cursor-pointer"
               >
-                <div className={`w-8 h-8 rounded-full ${color.class} border-2 border-gray-300 hover:border-gray-400`}></div>
+                <div
+                  className={`w-8 h-8 rounded-full ${color.class} border-2 border-gray-300 hover:border-gray-400`}
+                ></div>
                 <span className="text-xs text-gray-600">{color.label}</span>
               </label>
             </div>

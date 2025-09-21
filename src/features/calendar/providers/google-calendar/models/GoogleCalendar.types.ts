@@ -6,7 +6,16 @@ export type GoogleCalendarApiEvent = calendar_v3.Schema$Event;
 // Utility type to extract only the fields we need from Google Calendar
 export type GoogleCalendarEventFields = Pick<
   GoogleCalendarApiEvent,
-  'id' | 'summary' | 'description' | 'location' | 'start' | 'end' | 'htmlLink' | 'status' | 'created' | 'updated'
+  | 'id'
+  | 'summary'
+  | 'description'
+  | 'location'
+  | 'start'
+  | 'end'
+  | 'htmlLink'
+  | 'status'
+  | 'created'
+  | 'updated'
 >;
 
 // Google Calendar API response types
@@ -60,5 +69,11 @@ export interface GoogleCalendarApiClient {
     maxResults?: number;
     singleEvents?: boolean;
     orderBy?: string;
-  }) => Promise<{ data: { items?: GoogleCalendarApiEvent[]; kind?: string; timeZone?: string } }>;
+  }) => Promise<{
+    data: {
+      items?: GoogleCalendarApiEvent[];
+      kind?: string;
+      timeZone?: string;
+    };
+  }>;
 }

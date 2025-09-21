@@ -1,7 +1,7 @@
-import { ActionError, defineAction } from "astro:actions";
-import { z } from "astro:schema";
-import { handleMaintainerPage } from "../services/maintainer-handler";
-import type { MaintainerPageData } from "../services/maintainer-handler";
+import { ActionError, defineAction } from 'astro:actions';
+import { z } from 'astro:schema';
+import { handleMaintainerPage } from '../services/maintainer-handler';
+import type { MaintainerPageData } from '../services/maintainer-handler';
 
 export const getMaintainerPageDataAction = defineAction({
   accept: 'form',
@@ -13,12 +13,22 @@ export const getMaintainerPageDataAction = defineAction({
     updateError: z.string().optional(),
     deleteError: z.string().optional(),
   }),
-  handler: async ({ editId, successMessage, errorMessage, createError, updateError, deleteError }, context): Promise<MaintainerPageData> => {
+  handler: async (
+    {
+      editId,
+      successMessage,
+      errorMessage,
+      createError,
+      updateError,
+      deleteError,
+    },
+    context
+  ): Promise<MaintainerPageData> => {
     try {
       if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to access schedule maintainer'
+          message: 'You must be logged in to access schedule maintainer',
         });
       }
 
@@ -39,7 +49,7 @@ export const getMaintainerPageDataAction = defineAction({
       if (!data) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to access schedule maintainer'
+          message: 'You must be logged in to access schedule maintainer',
         });
       }
 

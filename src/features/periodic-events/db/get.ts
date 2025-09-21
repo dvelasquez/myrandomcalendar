@@ -1,7 +1,9 @@
-import { db, PeriodicEvent, eq } from "astro:db";
-import type { PeriodicEvent as PeriodicEventType } from "../models/PeriodicEvents.types";
+import { db, PeriodicEvent, eq } from 'astro:db';
+import type { PeriodicEvent as PeriodicEventType } from '../models/PeriodicEvents.types';
 
-export const getPeriodicEventsDb = async (userId: string): Promise<PeriodicEventType[]> => {
+export const getPeriodicEventsDb = async (
+  userId: string
+): Promise<PeriodicEventType[]> => {
   const events = await db
     .select()
     .from(PeriodicEvent)

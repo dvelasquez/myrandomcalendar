@@ -1,12 +1,16 @@
-import type { SchedulePriority } from '../../schedule/models/ScheduleBlocks.types'; 
-import type { PeriodicFrequency, PeriodicCategory } from '../models/PeriodicEvents.types';
+import type { SchedulePriority } from '../../schedule/models/ScheduleBlocks.types';
+import type {
+  PeriodicFrequency,
+  PeriodicCategory,
+} from '../models/PeriodicEvents.types';
 
 // Form options for periodic events
-export const FREQUENCY_OPTIONS: { value: PeriodicFrequency; label: string }[] = [
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-];
+export const FREQUENCY_OPTIONS: { value: PeriodicFrequency; label: string }[] =
+  [
+    { value: 'daily', label: 'Daily' },
+    { value: 'weekly', label: 'Weekly' },
+    { value: 'monthly', label: 'Monthly' },
+  ];
 
 export const CATEGORY_OPTIONS: { value: PeriodicCategory; label: string }[] = [
   { value: 'exercise', label: 'Exercise' },

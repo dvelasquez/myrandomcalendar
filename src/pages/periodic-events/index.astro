@@ -1,12 +1,15 @@
 ---
 import { actions } from 'astro:actions';
-import { formatDuration, formatFrequency, getCategoryColor } from '../../features/periodic-events/lib/formatters'; 
+import {
+  formatDuration,
+  formatFrequency,
+} from '../../features/periodic-events/lib/formatters';
 import type { PeriodicEvent as PeriodicEventType } from '../../features/periodic-events/models/PeriodicEvents.types';
 import { handlePeriodicEventsIndexPage } from '../../features/periodic-events/services/page-handler';
 import Layout from '../../layouts/Layout.astro';
 import { Badge } from '@/components/ui/badge';
 import ButtonLink from '@/components/ui/button-link';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 // Fetch periodic events server-side using Astro.callAction
 let periodicEvents: PeriodicEventType[] = [];
@@ -21,7 +24,10 @@ try {
 }
 
 // Handle page logic using service
-const pageData = await handlePeriodicEventsIndexPage(Astro.request, periodicEvents);
+const pageData = await handlePeriodicEventsIndexPage(
+  Astro.request,
+  periodicEvents
+);
 
 // Redirect to login if not authenticated
 if (!pageData) {
@@ -30,16 +36,16 @@ if (!pageData) {
 
 // Destructure page data
 const { periodicEvents: events } = pageData;
-
 ---
 
 <Layout title="My Periodic Events">
   <div class="min-h-screen bg-gray-50 py-8">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Header -->
       <div class="flex justify-between items-center mb-8">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 mb-2">My Periodic Events</h1>
+          <h1 class="text-3xl font-bold text-gray-900 mb-2">
+            My Periodic Events
+          </h1>
           <p class="text-gray-600">
             Activities you want to do regularly without fixed times
           </p>
@@ -49,153 +55,211 @@ const { periodicEvents: events } = pageData;
         </ButtonLink>
       </div>
 
-      <!-- Events List -->
-      {events.length === 0 ? (
-        // <!-- Empty State -->
-        <Card>
-          <CardContent>
-            <div class="text-center py-12">
-              <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-              </div>
-              <h3 class="text-lg font-medium text-gray-900 mb-2">No periodic events yet</h3>
-              <p class="text-gray-500 mb-6">
-                Create your first periodic event to start tracking activities you want to do regularly.
-              </p>
-              <ButtonLink href="/periodic-events/create">
-                Create Your First Event
-              </ButtonLink>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        // <!-- Events Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.map((event) => (
-            <Card className="hover:shadow-xl transition-shadow duration-200">
-              <CardContent>
-                <!-- Event Header -->
-                <div class="flex items-start justify-between mb-4">
-                  <div class="flex items-center space-x-3">
-                    <div 
-                      class="w-4 h-4 rounded-full" 
-                      style={`background-color: ${event.color}`}
-                    ></div>
-                    <h3 class="text-lg font-semibold text-gray-900">{event.title}</h3>
-                  </div>
-                  <Badge 
-                    variant={event.priority === 'high' ? 'destructive' : event.priority === 'medium' ? 'secondary' : 'default'}
-                    className="text-xs font-medium"
+      {
+        events.length === 0 ? (
+          <Card>
+            <CardContent>
+              <div class="text-center py-12">
+                <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <svg
+                    class="w-12 h-12 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    {event.priority}
-                  </Badge>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
                 </div>
-
-                <!-- Event Description -->
-                {event.description && (
-                  <p class="text-gray-600 text-sm mb-4 line-clamp-2">{event.description}</p>
-                )}
-
-                <!-- Event Details -->
-                <div class="space-y-3">
-                  <!-- Frequency -->
-                  <div class="flex items-center space-x-2">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span class="text-sm text-gray-600">
-                      {formatFrequency(event.frequency, event.frequencyCount)}
-                    </span>
-                  </div>
-
-                  <!-- Duration -->
-                  <div class="flex items-center space-x-2">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span class="text-sm text-gray-600">
-                      {formatDuration(event.duration)}
-                    </span>
-                  </div>
-
-                  <!-- Category -->
-                  <div class="flex items-center space-x-2">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-                    </svg>
-                    <Badge 
-                      variant="secondary" 
+                <h3 class="text-lg font-medium text-gray-900 mb-2">
+                  No periodic events yet
+                </h3>
+                <p class="text-gray-500 mb-6">
+                  Create your first periodic event to start tracking activities
+                  you want to do regularly.
+                </p>
+                <ButtonLink href="/periodic-events/create">
+                  Create Your First Event
+                </ButtonLink>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {events.map(event => (
+              <Card className="hover:shadow-xl transition-shadow duration-200">
+                <CardContent>
+                  <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                      <div
+                        class="w-4 h-4 rounded-full"
+                        style={`background-color: ${event.color}`}
+                      />
+                      <h3 class="text-lg font-semibold text-gray-900">
+                        {event.title}
+                      </h3>
+                    </div>
+                    <Badge
+                      variant={
+                        event.priority === 'high'
+                          ? 'destructive'
+                          : event.priority === 'medium'
+                            ? 'secondary'
+                            : 'default'
+                      }
                       className="text-xs font-medium"
                     >
-                      {event.category}
+                      {event.priority}
                     </Badge>
                   </div>
-                </div>
 
-                <!-- Event Footer -->
-                <div class="mt-6 pt-4 border-t border-gray-200">
-                  <div class="flex items-center justify-between">
-                    <span class="text-xs text-gray-500">
-                      Created {new Date(event.createdAt).toLocaleDateString()}
-                    </span>
+                  {event.description && (
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+                      {event.description}
+                    </p>
+                  )}
+
+                  <div class="space-y-3">
                     <div class="flex items-center space-x-2">
-                      {event.isActive ? (
-                        <Badge variant="default" className="inline-flex items-center text-xs font-medium">
-                          <div class="w-2 h-2 bg-green-400 rounded-full mr-1"></div>
-                          Active
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="inline-flex items-center text-xs font-medium">
-                          <div class="w-2 h-2 bg-gray-400 rounded-full mr-1"></div>
-                          Inactive
-                        </Badge>
-                      )}
+                      <svg
+                        class="w-4 h-4 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span class="text-sm text-gray-600">
+                        {formatFrequency(event.frequency, event.frequencyCount)}
+                      </span>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                      <svg
+                        class="w-4 h-4 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span class="text-sm text-gray-600">
+                        {formatDuration(event.duration)}
+                      </span>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                      <svg
+                        class="w-4 h-4 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                        />
+                      </svg>
+                      <Badge
+                        variant="secondary"
+                        className="text-xs font-medium"
+                      >
+                        {event.category}
+                      </Badge>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
 
-      <!-- Stats Summary -->
-      {events.length > 0 && (
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="text-lg">Summary</CardTitle>
-          </CardHeader>
-          
-          <CardContent>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div class="text-center">
-                <div class="text-2xl font-bold text-blue-600">{events.length}</div>
-                <div class="text-sm text-gray-600">Total Events</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-green-600">
-                  {events.filter(e => e.isActive).length}
+                  <div class="mt-6 pt-4 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-gray-500">
+                        Created {new Date(event.createdAt).toLocaleDateString()}
+                      </span>
+                      <div class="flex items-center space-x-2">
+                        {event.isActive ? (
+                          <Badge
+                            variant="default"
+                            className="inline-flex items-center text-xs font-medium"
+                          >
+                            <div class="w-2 h-2 bg-green-400 rounded-full mr-1" />
+                            Active
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="secondary"
+                            className="inline-flex items-center text-xs font-medium"
+                          >
+                            <div class="w-2 h-2 bg-gray-400 rounded-full mr-1" />
+                            Inactive
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )
+      }
+
+      {
+        events.length > 0 && (
+          <Card className="mt-8">
+            <CardHeader>
+              <CardTitle className="text-lg">Summary</CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-blue-600">
+                    {events.length}
+                  </div>
+                  <div class="text-sm text-gray-600">Total Events</div>
                 </div>
-                <div class="text-sm text-gray-600">Active</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-purple-600">
-                  {events.filter(e => e.category === 'exercise').length}
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-green-600">
+                    {events.filter(e => e.isActive).length}
+                  </div>
+                  <div class="text-sm text-gray-600">Active</div>
                 </div>
-                <div class="text-sm text-gray-600">Exercise</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-orange-600">
-                  {Math.round(events.reduce((sum, e) => sum + e.duration, 0) / events.length)} min
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-purple-600">
+                    {events.filter(e => e.category === 'exercise').length}
+                  </div>
+                  <div class="text-sm text-gray-600">Exercise</div>
                 </div>
-                <div class="text-sm text-gray-600">Avg Duration</div>
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-orange-600">
+                    {Math.round(
+                      events.reduce((sum, e) => sum + e.duration, 0) /
+                        events.length
+                    )}{' '}
+                    min
+                  </div>
+                  <div class="text-sm text-gray-600">Avg Duration</div>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )
+      }
     </div>
   </div>
 </Layout>

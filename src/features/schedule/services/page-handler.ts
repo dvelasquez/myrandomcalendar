@@ -1,12 +1,22 @@
 import { type ActionAPIContext } from 'astro:actions';
 import { endOfDay, startOfDay } from 'date-fns';
 import type { BackgroundEvent } from '../../calendar/domain/background-event-transformer';
-import { DEFAULT_BACKGROUND_EVENT_CONFIG, transformTimeSlotsToBackgroundEvents } from '../../calendar/domain/background-event-transformer';
+import {
+  DEFAULT_BACKGROUND_EVENT_CONFIG,
+  transformTimeSlotsToBackgroundEvents,
+} from '../../calendar/domain/background-event-transformer';
 import { transformGoogleApiEventsToFullCalendar } from '../../calendar/domain/google-event-transformer';
-import type { CalendarEvent, TimeSlot } from '../../calendar/models/Calendar.types';
+import type {
+  CalendarEvent,
+  TimeSlot,
+} from '../../calendar/models/Calendar.types';
 import type { GoogleCalendarApiEvent } from '../../calendar/providers/google-calendar/models/GoogleCalendar.types';
 import { getScheduleBlocksDb } from '../db/get';
-import { calculateAvailability, calculateAvailabilityForDateRange, DEFAULT_AVAILABILITY_CONFIG } from '../domain/availability-calculator';
+import {
+  calculateAvailability,
+  calculateAvailabilityForDateRange,
+  DEFAULT_AVAILABILITY_CONFIG,
+} from '../domain/availability-calculator';
 import type { ScheduleBlock } from '../models/ScheduleBlocks.types';
 import { handleFetchCalendar } from '@/features/calendar/providers/google-calendar/actions/fetchCalendar';
 
@@ -22,7 +32,9 @@ export interface AvailabilityPageData extends SchedulePageData {
 }
 
 // Fetch schedule blocks
-export async function fetchScheduleBlocks(context: ActionAPIContext): Promise<ScheduleBlock[]> {
+export async function fetchScheduleBlocks(
+  context: ActionAPIContext
+): Promise<ScheduleBlock[]> {
   try {
     const userId = context.locals.user?.id;
     if (!userId) {
@@ -40,15 +52,20 @@ export async function fetchScheduleBlocks(context: ActionAPIContext): Promise<Sc
 export async function fetchGoogleCalendarEvents(
   context: ActionAPIContext,
   startDate: Date,
-  endDate: Date,
+  endDate: Date
 ): Promise<{ events: CalendarEvent[]; error: string | null }> {
   try {
-    const result = await handleFetchCalendar({ startDate: startDate, endDate: endDate }, context);
+    const result = await handleFetchCalendar(
+      { startDate: startDate, endDate: endDate },
+      context
+    );
     const googleApiEvents = result.events as GoogleCalendarApiEvent[];
     const events = transformGoogleApiEventsToFullCalendar(googleApiEvents);
     return { events, error: null };
   } catch (err) {
-    const error = (err as Error).message || 'An error occurred while fetching calendar data';
+    const error =
+      (err as Error).message ||
+      'An error occurred while fetching calendar data';
     console.error('Calendar fetch error:', err);
     return { events: [], error };
   }
@@ -58,19 +75,20 @@ export async function fetchGoogleCalendarEvents(
 export async function getSchedulePageData(
   context: ActionAPIContext,
   startDate?: Date,
-  endDate?: Date,
+  endDate?: Date
 ): Promise<SchedulePageData> {
   const today = new Date();
   const start = startDate || startOfDay(today);
   const end = endDate || endOfDay(today);
 
   const scheduleBlocks = await fetchScheduleBlocks(context);
-  const { events: googleCalendarEvents, error: calendarError } = await fetchGoogleCalendarEvents(context, start, end);
+  const { events: googleCalendarEvents, error: calendarError } =
+    await fetchGoogleCalendarEvents(context, start, end);
 
   return {
     scheduleBlocks,
     googleCalendarEvents,
-    calendarError
+    calendarError,
   };
 }
 
@@ -83,7 +101,8 @@ export async function getAvailabilityPageData(
   const end = endOfDay(selectedDate);
 
   const scheduleBlocks = await fetchScheduleBlocks(context);
-  const { events: googleCalendarEvents, error: calendarError } = await fetchGoogleCalendarEvents(context, start, end);
+  const { events: googleCalendarEvents, error: calendarError } =
+    await fetchGoogleCalendarEvents(context, start, end);
 
   // Calculate availability using schedule domain
   let availabilityTimeSlots: TimeSlot[] = [];
@@ -105,7 +124,7 @@ export async function getAvailabilityPageData(
     scheduleBlocks,
     googleCalendarEvents,
     calendarError,
-    availabilityTimeSlots
+    availabilityTimeSlots,
   };
 }
 
@@ -121,13 +140,14 @@ export async function getCalendarPageData(
   calendarError: string | null;
 }> {
   const scheduleBlocks = await fetchScheduleBlocks(context);
-  const { events: googleCalendarEvents, error: calendarError } = await fetchGoogleCalendarEvents(context, startDate, endDate);
+  const { events: googleCalendarEvents, error: calendarError } =
+    await fetchGoogleCalendarEvents(context, startDate, endDate);
 
   let availabilityBackgroundEvents: BackgroundEvent[] = [];
   if (!calendarError && scheduleBlocks.length > 0) {
     try {
       // Import availability and background event calculation from schedule domain
-      
+
       const timeSlots = await calculateAvailabilityForDateRange(
         startDate,
         endDate,
@@ -151,6 +171,6 @@ export async function getCalendarPageData(
     scheduleBlocks,
     googleCalendarEvents,
     availabilityBackgroundEvents,
-    calendarError
+    calendarError,
   };
 }

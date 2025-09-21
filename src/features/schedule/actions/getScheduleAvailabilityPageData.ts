@@ -1,19 +1,22 @@
-import { ActionError, defineAction } from "astro:actions";
-import { z } from "astro:schema";
-import { handleScheduleAvailabilityPage } from "../services/schedule-availability-handler";
-import type { ScheduleAvailabilityPageData } from "../services/schedule-availability-handler";
+import { ActionError, defineAction } from 'astro:actions';
+import { z } from 'astro:schema';
+import { handleScheduleAvailabilityPage } from '../services/schedule-availability-handler';
+import type { ScheduleAvailabilityPageData } from '../services/schedule-availability-handler';
 
 export const getScheduleAvailabilityPageDataAction = defineAction({
   accept: 'form',
   input: z.object({
     selectedDate: z.string(),
   }),
-  handler: async ({ selectedDate }, context): Promise<ScheduleAvailabilityPageData> => {
+  handler: async (
+    { selectedDate },
+    context
+  ): Promise<ScheduleAvailabilityPageData> => {
     try {
       if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to access availability data'
+          message: 'You must be logged in to access availability data',
         });
       }
 
@@ -23,7 +26,7 @@ export const getScheduleAvailabilityPageDataAction = defineAction({
       if (!data) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to access availability data'
+          message: 'You must be logged in to access availability data',
         });
       }
 

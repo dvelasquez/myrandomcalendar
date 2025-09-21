@@ -11,75 +11,86 @@ const { user } = Astro.locals;
 
 <Layout>
   <div class="container mx-auto px-4 py-8">
-    {user ? (
-      <div class="max-w-2xl mx-auto">
-        <Card className="bg-green-100 border-green-400 text-green-700 mb-6">
-          <CardContent>
-            <h2 class="text-xl font-bold">Welcome back, {user.name || user.email}!</h2>
-            <p>You are successfully logged in.</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">User Information</CardTitle>
-          </CardHeader>
-          
-          <CardContent>
-            <div class="space-y-2">
-              <p><strong>Email:</strong> {user.email}</p>
-              {user.name && <p><strong>Name:</strong> {user.name}</p>}
-              <p><strong>User ID:</strong> {user.id}</p>
-            </div>
-            
-            <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
-              <p class="text-sm text-blue-800">
-                <strong>📅 Calendar Access:</strong> You can now view your Google Calendar events in JSON format. 
-                If you signed in before calendar access was enabled, you may need to sign out and sign in again.
-              </p>
-            </div>
-            
-            <div class="mt-6 space-x-4">
-              <ButtonLink href="/calendar">
-                View My Calendar
-              </ButtonLink>
-              <ButtonLink variant="secondary" href="/schedule">
-                Schedule Management
-              </ButtonLink>
-              <ButtonLink variant="destructive" href="/logout">
-                Logout
-              </ButtonLink>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    ) : (
-      <div class="max-w-2xl mx-auto">
-        <Card className="bg-blue-100 border-blue-400 text-blue-700 mb-6">
-          <CardContent>
-            <h2 class="text-xl font-bold">Welcome to My Random Calendar!</h2>
-            <p>Please log in to access your calendar.</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent>
-            <div class="text-center space-y-4">
-              <p class="text-gray-600">Get started by creating an account or logging in.</p>
-              
-              <div class="flex space-x-4 justify-center">
-                <ButtonLink href="/login">
-                  Login
-                </ButtonLink>              
-                <ButtonLink variant="secondary" href="/register">
-                  Register
+    {
+      user ? (
+        <div class="max-w-2xl mx-auto">
+          <Card className="bg-green-100 border-green-400 text-green-700 mb-6">
+            <CardContent>
+              <h2 class="text-xl font-bold">
+                Welcome back, {user.name || user.email}!
+              </h2>
+              <p>You are successfully logged in.</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">User Information</CardTitle>
+            </CardHeader>
+
+            <CardContent>
+              <div class="space-y-2">
+                <p>
+                  <strong>Email:</strong> {user.email}
+                </p>
+                {user.name && (
+                  <p>
+                    <strong>Name:</strong> {user.name}
+                  </p>
+                )}
+                <p>
+                  <strong>User ID:</strong> {user.id}
+                </p>
+              </div>
+
+              <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                <p class="text-sm text-blue-800">
+                  <strong>📅 Calendar Access:</strong> You can now view your
+                  Google Calendar events in JSON format. If you signed in before
+                  calendar access was enabled, you may need to sign out and sign
+                  in again.
+                </p>
+              </div>
+
+              <div class="mt-6 space-x-4">
+                <ButtonLink href="/calendar">View My Calendar</ButtonLink>
+                <ButtonLink variant="secondary" href="/schedule">
+                  Schedule Management
+                </ButtonLink>
+                <ButtonLink variant="destructive" href="/logout">
+                  Logout
                 </ButtonLink>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )}
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <div class="max-w-2xl mx-auto">
+          <Card className="bg-blue-100 border-blue-400 text-blue-700 mb-6">
+            <CardContent>
+              <h2 class="text-xl font-bold">Welcome to My Random Calendar!</h2>
+              <p>Please log in to access your calendar.</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent>
+              <div class="text-center space-y-4">
+                <p class="text-gray-600">
+                  Get started by creating an account or logging in.
+                </p>
+
+                <div class="flex space-x-4 justify-center">
+                  <ButtonLink href="/login">Login</ButtonLink>
+                  <ButtonLink variant="secondary" href="/register">
+                    Register
+                  </ButtonLink>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )
+    }
   </div>
 </Layout>
-

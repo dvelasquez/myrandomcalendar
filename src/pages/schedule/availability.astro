@@ -14,7 +14,9 @@ const { user } = Astro.locals;
 // Get query parameters for state management
 const url = new URL(Astro.request.url);
 const selectedDateParam = url.searchParams.get('date');
-const selectedDate = selectedDateParam ? new Date(selectedDateParam) : new Date();
+const selectedDate = selectedDateParam
+  ? new Date(selectedDateParam)
+  : new Date();
 
 // Fetch availability page data using new service
 let availabilityData = null;
@@ -23,8 +25,11 @@ if (user) {
   try {
     const formData = new FormData();
     formData.append('selectedDate', selectedDate.toISOString());
-    
-    const result = await Astro.callAction(actions.schedule.getScheduleAvailabilityPageData, formData);
+
+    const result = await Astro.callAction(
+      actions.schedule.getScheduleAvailabilityPageData,
+      formData
+    );
     if (result.data) {
       availabilityData = result.data;
     }
@@ -37,35 +42,54 @@ if (user) {
 <Layout title="Availability - MyRandomCalendar">
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Header -->
       <div class="mb-8">
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-3xl font-bold text-gray-900">Availability</h1>
             <p class="mt-2 text-gray-600">
-              View your availability based on schedule blocks and Google Calendar events.
+              View your availability based on schedule blocks and Google
+              Calendar events.
             </p>
           </div>
           <div class="flex items-center space-x-4">
-            <!-- Date Navigation -->
             <div class="flex items-center space-x-2">
-              <a 
+              <a
                 href={`/schedule/availability?date=${format(subDays(selectedDate, 1), 'yyyy-MM-dd')}`}
                 class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 19l-7-7 7-7"></path>
                 </svg>
               </a>
-              <span class="text-lg font-medium text-gray-900 min-w-[120px] text-center">
+              <span
+                class="text-lg font-medium text-gray-900 min-w-[120px] text-center"
+              >
                 {format(selectedDate, 'MMM dd, yyyy')}
               </span>
-              <a 
+              <a
                 href={`/schedule/availability?date=${format(addDays(selectedDate, 1), 'yyyy-MM-dd')}`}
                 class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"></path>
                 </svg>
               </a>
             </div>
@@ -76,151 +100,190 @@ if (user) {
         </div>
       </div>
 
-      {user && availabilityData ? (
-        <div class="space-y-8">
-          <!-- Calendar Error Message -->
-          {availabilityData.calendarError && (
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              <h3 class="font-bold">Calendar Error:</h3>
-              <p>{availabilityData.calendarError}</p>
-            </div>
-          )}
+      {
+        user && availabilityData ? (
+          <div class="space-y-8">
+            {availabilityData.calendarError && (
+              <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                <h3 class="font-bold">Calendar Error:</h3>
+                <p>{availabilityData.calendarError}</p>
+              </div>
+            )}
 
-          <!-- Google Calendar Events -->
-          {availabilityData.googleCalendarEvents.length > 0 && (
+            {availabilityData.googleCalendarEvents.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl">Scheduled Events</CardTitle>
+                </CardHeader>
+
+                <CardContent>
+                  <div class="space-y-3">
+                    {availabilityData.googleCalendarEvents.map(event => (
+                      <div class="border rounded-lg p-4 flex justify-between items-center">
+                        <div>
+                          <h3 class="font-medium text-gray-900">
+                            {event.title}
+                          </h3>
+                          <p class="text-sm text-gray-600">
+                            {new Date(event.start).toLocaleTimeString()} -{' '}
+                            {event.end
+                              ? new Date(event.end).toLocaleTimeString()
+                              : 'All day'}
+                          </p>
+                          {event.description && (
+                            <p class="text-sm text-gray-500 mt-1">
+                              {event.description}
+                            </p>
+                          )}
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <Badge variant="secondary" className="text-xs">
+                            Google Calendar
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl">Scheduled Events</CardTitle>
+                <CardTitle className="text-xl">Available Time Slots</CardTitle>
               </CardHeader>
-              
+
               <CardContent>
-                <div class="space-y-3">
-                  {availabilityData.googleCalendarEvents.map(event => (
-                    <div class="border rounded-lg p-4 flex justify-between items-center">
-                      <div>
-                        <h3 class="font-medium text-gray-900">{event.title}</h3>
-                        <p class="text-sm text-gray-600">
-                          {new Date(event.start).toLocaleTimeString()} - {event.end ? new Date(event.end).toLocaleTimeString() : 'All day'}
+                {availabilityData.availabilityTimeSlots.length > 0 ? (
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {availabilityData.availabilityTimeSlots.map(slot => (
+                      <div class="border rounded-lg p-4 bg-green-50 border-green-200">
+                        <div class="flex items-center justify-between mb-2">
+                          <h3 class="font-medium text-green-900">
+                            {slot.title || 'Available'}
+                          </h3>
+                          <Badge variant="default" className="text-xs">
+                            {Math.round(
+                              (new Date(slot.end).getTime() -
+                                new Date(slot.start).getTime()) /
+                                (1000 * 60)
+                            )}{' '}
+                            min
+                          </Badge>
+                        </div>
+                        <p class="text-sm text-green-800">
+                          {new Date(slot.start).toLocaleTimeString()} -{' '}
+                          {new Date(slot.end).toLocaleTimeString()}
                         </p>
-                        {event.description && (
-                          <p class="text-sm text-gray-500 mt-1">{event.description}</p>
+                        {slot.priority && (
+                          <p class="text-xs text-green-700 mt-1">
+                            Priority: {slot.priority}
+                          </p>
                         )}
                       </div>
-                      <div class="flex items-center space-x-2">
-                        <Badge variant="secondary" className="text-xs">
-                          Google Calendar
-                        </Badge>
-                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div class="text-center py-8">
+                    <div class="text-gray-400 mb-4">
+                      <svg
+                        class="w-12 h-12 mx-auto"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
                     </div>
-                  ))}
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">
+                      No Available Time
+                    </h3>
+                    <p class="text-gray-600 mb-4">
+                      No free time slots found for{' '}
+                      {format(selectedDate, 'MMMM dd, yyyy')}.
+                    </p>
+                    <div class="space-x-4">
+                      <ButtonLink href="/schedule/maintainer">
+                        Manage Schedule Blocks
+                      </ButtonLink>
+                      <ButtonLink variant="secondary" href="/calendar">
+                        View Calendar
+                      </ButtonLink>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Summary</CardTitle>
+              </CardHeader>
+
+              <CardContent>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600">
+                      {availabilityData.googleCalendarEvents.length}
+                    </div>
+                    <div class="text-sm text-gray-600">Scheduled Events</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600">
+                      {availabilityData.availabilityTimeSlots.length}
+                    </div>
+                    <div class="text-sm text-gray-600">Available Slots</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">
+                      {availabilityData.availabilityTimeSlots.reduce(
+                        (total, slot) =>
+                          total +
+                          Math.round(
+                            (new Date(slot.end).getTime() -
+                              new Date(slot.start).getTime()) /
+                              (1000 * 60)
+                          ),
+                        0
+                      )}
+                    </div>
+                    <div class="text-sm text-gray-600">Total Free Minutes</div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          )}
-
-          <!-- Availability Time Slots -->
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Available Time Slots</CardTitle>
-            </CardHeader>
-            
-            <CardContent>
-              {availabilityData.availabilityTimeSlots.length > 0 ? (
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {availabilityData.availabilityTimeSlots.map((slot) => (
-                    <div class="border rounded-lg p-4 bg-green-50 border-green-200">
-                      <div class="flex items-center justify-between mb-2">
-                        <h3 class="font-medium text-green-900">{slot.title || 'Available'}</h3>
-                        <Badge variant="default" className="text-xs">
-                          {Math.round((new Date(slot.end).getTime() - new Date(slot.start).getTime()) / (1000 * 60))} min
-                        </Badge>
-                      </div>
-                      <p class="text-sm text-green-800">
-                        {new Date(slot.start).toLocaleTimeString()} - {new Date(slot.end).toLocaleTimeString()}
-                      </p>
-                      {slot.priority && (
-                        <p class="text-xs text-green-700 mt-1">Priority: {slot.priority}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div class="text-center py-8">
-                  <div class="text-gray-400 mb-4">
-                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  </div>
-                  <h3 class="text-lg font-medium text-gray-900 mb-2">No Available Time</h3>
-                  <p class="text-gray-600 mb-4">
-                    No free time slots found for {format(selectedDate, 'MMMM dd, yyyy')}.
-                  </p>
-                  <div class="space-x-4">
-                    <ButtonLink href="/schedule/maintainer">
-                      Manage Schedule Blocks
-                    </ButtonLink>
-                    <ButtonLink variant="secondary" href="/calendar">
-                      View Calendar
-                    </ButtonLink>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <!-- Summary Stats -->
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Summary</CardTitle>
-            </CardHeader>
-            
-            <CardContent>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-blue-600">{availabilityData.googleCalendarEvents.length}</div>
-                  <div class="text-sm text-gray-600">Scheduled Events</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-green-600">{availabilityData.availabilityTimeSlots.length}</div>
-                  <div class="text-sm text-gray-600">Available Slots</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-purple-600">
-                    {availabilityData.availabilityTimeSlots.reduce((total, slot) => 
-                      total + Math.round((new Date(slot.end).getTime() - new Date(slot.start).getTime()) / (1000 * 60)), 0
-                    )}
-                  </div>
-                  <div class="text-sm text-gray-600">Total Free Minutes</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
-        <div class="max-w-2xl mx-auto">
-          <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
-            <h2 class="text-xl font-bold">Access Denied</h2>
-            <p>You must be logged in to view your availability.</p>
           </div>
-          
-          <Card>
-            <CardContent>
-              <div class="text-center space-y-4">
-                <p class="text-gray-600">Please log in to access your availability data.</p>
-                
-                <div class="flex space-x-4 justify-center">
-                  <ButtonLink href="/login">
-                    Login
-                  </ButtonLink>
-                  <ButtonLink variant="secondary" href="/register">
-                    Register
-                  </ButtonLink>
+        ) : (
+          <div class="max-w-2xl mx-auto">
+            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
+              <h2 class="text-xl font-bold">Access Denied</h2>
+              <p>You must be logged in to view your availability.</p>
+            </div>
+
+            <Card>
+              <CardContent>
+                <div class="text-center space-y-4">
+                  <p class="text-gray-600">
+                    Please log in to access your availability data.
+                  </p>
+
+                  <div class="flex space-x-4 justify-center">
+                    <ButtonLink href="/login">Login</ButtonLink>
+                    <ButtonLink variant="secondary" href="/register">
+                      Register
+                    </ButtonLink>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+              </CardContent>
+            </Card>
+          </div>
+        )
+      }
     </div>
   </div>
 </Layout>

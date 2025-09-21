@@ -1,32 +1,46 @@
-import { defineAction, ActionError, type ActionAPIContext } from 'astro:actions';
+import {
+  defineAction,
+  ActionError,
+  type ActionAPIContext,
+} from 'astro:actions';
 import { parseISO } from 'date-fns';
 import { google } from 'googleapis';
-import { getGoogleCalendarCredentials, hasGoogleCalendarAccess } from '../db/get';
+import {
+  getGoogleCalendarCredentials,
+  hasGoogleCalendarAccess,
+} from '../db/get';
 import { fetchCalendarSchema } from '../models/GoogleCalendar.schema';
 import type { GoogleCalendarListResponse } from '../models/GoogleCalendar.types';
 
-export const handleFetchCalendar = async ({ startDate, endDate }: { startDate: Date, endDate: Date }, context: ActionAPIContext): Promise<GoogleCalendarListResponse> => {
+export const handleFetchCalendar = async (
+  { startDate, endDate }: { startDate: Date; endDate: Date },
+  context: ActionAPIContext
+): Promise<GoogleCalendarListResponse> => {
   if (!context.locals.user) {
     throw new ActionError({
       code: 'UNAUTHORIZED',
       message: 'You must be logged in to access calendar data',
     });
-  } 
+  }
 
   const hasAccess = await hasGoogleCalendarAccess(context.locals.user.id);
   if (!hasAccess) {
     throw new ActionError({
       code: 'NOT_FOUND',
-      message: 'No Google account with calendar access found. Please sign in with Google again.',
+      message:
+        'No Google account with calendar access found. Please sign in with Google again.',
     });
   }
 
   // Get Google Calendar credentials
-  const credentials = await getGoogleCalendarCredentials(context.locals.user.id);
+  const credentials = await getGoogleCalendarCredentials(
+    context.locals.user.id
+  );
   if (!credentials) {
     throw new ActionError({
       code: 'NOT_FOUND',
-      message: 'No Google account with calendar access found. Please sign in with Google again.',
+      message:
+        'No Google account with calendar access found. Please sign in with Google again.',
     });
   }
 
@@ -59,21 +73,26 @@ export const handleFetchCalendar = async ({ startDate, endDate }: { startDate: D
       start: startDate.toISOString(),
       end: endDate.toISOString(),
     },
-  }; 
-}
-
+  };
+};
 
 export const fetchCalendar = defineAction({
   accept: 'form',
   input: fetchCalendarSchema,
-  handler: async ({ startDate, endDate }, context): Promise<GoogleCalendarListResponse> => {
+  handler: async (
+    { startDate, endDate },
+    context
+  ): Promise<GoogleCalendarListResponse> => {
     try {
       const start = parseISO(startDate);
       const end = parseISO(endDate);
-      return await handleFetchCalendar({ startDate: start, endDate: end }, context);
+      return await handleFetchCalendar(
+        { startDate: start, endDate: end },
+        context
+      );
     } catch (error) {
       console.error('Calendar fetch error:', error);
-      
+
       if (error instanceof ActionError) {
         throw error;
       }

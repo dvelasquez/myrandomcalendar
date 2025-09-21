@@ -1,15 +1,24 @@
 import { defineAction, ActionError } from 'astro:actions';
 import { parseISO } from 'date-fns';
-import { calculateAvailabilityForDateRange, DEFAULT_AVAILABILITY_CONFIG } from '../../schedule/domain/availability-calculator';
+import {
+  calculateAvailabilityForDateRange,
+  DEFAULT_AVAILABILITY_CONFIG,
+} from '../../schedule/domain/availability-calculator';
 import type { ScheduleBlock } from '../../schedule/models/ScheduleBlocks.types';
-import { transformTimeSlotsToBackgroundEvents, DEFAULT_BACKGROUND_EVENT_CONFIG } from '../domain/background-event-transformer';
+import {
+  transformTimeSlotsToBackgroundEvents,
+  DEFAULT_BACKGROUND_EVENT_CONFIG,
+} from '../domain/background-event-transformer';
 import { availabilityCalculationSchema } from '../models/Calendar.schema';
 import type { CalendarEvent } from '../models/Calendar.types';
 
 export const calculateAvailability = defineAction({
   accept: 'form',
   input: availabilityCalculationSchema,
-  handler: async ({ startDate, endDate, includeOvernightEvents, timezone }, context) => {
+  handler: async (
+    { startDate, endDate, includeOvernightEvents, timezone },
+    context
+  ) => {
     try {
       // Parse dates using date-fns (already validated by Zod)
       const start = parseISO(startDate);
@@ -50,7 +59,7 @@ export const calculateAvailability = defineAction({
       };
     } catch (error) {
       console.error('Availability calculation error:', error);
-      
+
       if (error instanceof ActionError) {
         throw error;
       }
@@ -66,7 +75,10 @@ export const calculateAvailability = defineAction({
 export const getBackgroundEvents = defineAction({
   accept: 'form',
   input: availabilityCalculationSchema,
-  handler: async ({ startDate, endDate, includeOvernightEvents, timezone }, context) => {
+  handler: async (
+    { startDate, endDate, includeOvernightEvents, timezone },
+    context
+  ) => {
     try {
       // Parse dates using date-fns (already validated by Zod)
       const start = parseISO(startDate);
@@ -113,7 +125,7 @@ export const getBackgroundEvents = defineAction({
       };
     } catch (error) {
       console.error('Background events error:', error);
-      
+
       if (error instanceof ActionError) {
         throw error;
       }

@@ -1,8 +1,10 @@
-import { db, ScheduleBlock, eq } from "astro:db";
-import type { ScheduleBlock as ScheduleBlockType } from "../models/ScheduleBlocks.types";
-import { updateScheduleBlockDb } from "./update";
+import { db, ScheduleBlock, eq } from 'astro:db';
+import type { ScheduleBlock as ScheduleBlockType } from '../models/ScheduleBlocks.types';
+import { updateScheduleBlockDb } from './update';
 
-export const toggleScheduleBlockDb = async (id: string): Promise<ScheduleBlockType> => {
+export const toggleScheduleBlockDb = async (
+  id: string
+): Promise<ScheduleBlockType> => {
   // First get the current block to toggle its status
   const [currentBlock] = await db
     .select()

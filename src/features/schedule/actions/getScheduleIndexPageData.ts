@@ -1,7 +1,7 @@
-import { ActionError, defineAction } from "astro:actions";
-import { z } from "astro:schema";
-import { handleScheduleIndexPage } from "../services/schedule-index-handler";
-import type { ScheduleIndexPageData } from "../services/schedule-index-handler";
+import { ActionError, defineAction } from 'astro:actions';
+import { z } from 'astro:schema';
+import { handleScheduleIndexPage } from '../services/schedule-index-handler';
+import type { ScheduleIndexPageData } from '../services/schedule-index-handler';
 
 export const getScheduleIndexPageDataAction = defineAction({
   accept: 'form',
@@ -9,21 +9,28 @@ export const getScheduleIndexPageDataAction = defineAction({
     successMessage: z.string().optional(),
     errorMessage: z.string().optional(),
   }),
-  handler: async ({ successMessage, errorMessage }, context): Promise<ScheduleIndexPageData> => {
+  handler: async (
+    { successMessage, errorMessage },
+    context
+  ): Promise<ScheduleIndexPageData> => {
     try {
       if (!context.locals.user) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to access schedule management'
+          message: 'You must be logged in to access schedule management',
         });
       }
 
-      const data = await handleScheduleIndexPage(context, successMessage, errorMessage);
+      const data = await handleScheduleIndexPage(
+        context,
+        successMessage,
+        errorMessage
+      );
 
       if (!data) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: 'You must be logged in to access schedule management'
+          message: 'You must be logged in to access schedule management',
         });
       }
 
