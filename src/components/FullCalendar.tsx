@@ -112,8 +112,8 @@ export default function FullCalendarComponent({
       
       <EventModal 
         event={selectedEvent}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
       />
     </div>
   );
