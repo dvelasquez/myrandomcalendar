@@ -5,7 +5,7 @@ import {
   getSuccessMessageText,
   getActionErrorText,
 } from '../../features/schedule/services/maintainer-handler';
-import Layout from '../../layouts/Layout.astro';
+import AuthLayout from '../../layouts/AuthLayout.astro';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import ButtonLink from '@/components/ui/button-link';
@@ -73,7 +73,7 @@ if (user) {
 }
 ---
 
-<Layout>
+<AuthLayout title="Schedule Maintainer - My Random Calendar">
   <div class="container mx-auto px-4 py-8">
     {
       user && maintainerData ? (
@@ -231,7 +231,7 @@ if (user) {
       )
     }
   </div>
-</Layout>
+</AuthLayout>
 
 <script>
   import { initializeDaysOfWeekHandler } from '../../features/schedule/lib/form-handlers';

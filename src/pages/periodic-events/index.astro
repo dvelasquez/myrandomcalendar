@@ -6,7 +6,7 @@ import {
 } from '../../features/periodic-events/lib/formatters';
 import type { PeriodicEvent as PeriodicEventType } from '../../features/periodic-events/models/PeriodicEvents.types';
 import { handlePeriodicEventsIndexPage } from '../../features/periodic-events/services/page-handler';
-import Layout from '../../layouts/Layout.astro';
+import AuthLayout from '../../layouts/AuthLayout.astro';
 import { Badge } from '@/components/ui/badge';
 import ButtonLink from '@/components/ui/button-link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,7 +38,7 @@ if (!pageData) {
 const { periodicEvents: events } = pageData;
 ---
 
-<Layout title="My Periodic Events">
+<AuthLayout title="My Periodic Events - My Random Calendar">
   <div class="min-h-screen bg-gray-50 py-8">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center mb-8">
@@ -262,4 +262,4 @@ const { periodicEvents: events } = pageData;
       }
     </div>
   </div>
-</Layout>
+</AuthLayout>

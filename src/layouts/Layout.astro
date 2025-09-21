@@ -1,26 +1,16 @@
 ---
-import '../styles/main.css';
+// This layout is deprecated. Use BaseLayout, PublicLayout, or AuthLayout instead.
+import BaseLayout from './BaseLayout.astro';
+
+export interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta content="width=device-width" name="viewport" />
-    <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
-    <meta content={Astro.generator} name="generator" />
-    <title>Astro Basics</title>
-  </head>
-  <body>
-    <slot />
-  </body>
-</html>
-
-<style>
-  html,
-  body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-  }
-</style>
+<!-- DEPRECATED: Use BaseLayout, PublicLayout, or AuthLayout instead -->
+<BaseLayout title={title} description={description}>
+  <slot />
+</BaseLayout>

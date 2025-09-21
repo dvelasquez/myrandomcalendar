@@ -1,6 +1,6 @@
 ---
 import { actions } from 'astro:actions';
-import Layout from '../layouts/Layout.astro';
+import PublicLayout from '../layouts/PublicLayout.astro';
 import { Button } from '@/components/ui/button';
 import ButtonLink from '@/components/ui/button-link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -13,9 +13,8 @@ export const prerender = false;
 const result = Astro.getActionResult(actions.auth.login);
 ---
 
-<Layout title="Login">
-  <div class="max-w-md mx-auto mt-8">
-    <Card>
+<PublicLayout title="Login - My Random Calendar">
+  <Card>
       <CardHeader>
         <CardTitle className="text-2xl text-center">Login</CardTitle>
       </CardHeader>
@@ -101,13 +100,11 @@ const result = Astro.getActionResult(actions.auth.login);
         </div>
       </CardContent>
     </Card>
-  </div>
-</Layout>
+</PublicLayout>
 
 <script>
   import { actions } from 'astro:actions';
   import { navigate } from 'astro:transitions/client';
-  import { authClient } from '../features/auth/lib/auth-client';
 
   const form = document.querySelector('form');
   const googleSignInBtn = document.getElementById('google-signin-btn');
@@ -126,7 +123,9 @@ const result = Astro.getActionResult(actions.auth.login);
 
   googleSignInBtn?.addEventListener('click', async () => {
     try {
-      await authClient.signIn.social({ provider: 'google' });
+      // Use browser-specific auth client
+      const { handleGoogleSignIn } = await import('../features/auth/lib/auth-client-browser');
+      await handleGoogleSignIn();
     } catch (error) {
       console.error('Google sign-in error:', error);
     }

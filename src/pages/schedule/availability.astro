@@ -1,7 +1,7 @@
 ---
 import { actions } from 'astro:actions';
 import { format, addDays, subDays } from 'date-fns';
-import Layout from '../../layouts/Layout.astro';
+import AuthLayout from '../../layouts/AuthLayout.astro';
 import { Badge } from '@/components/ui/badge';
 import ButtonLink from '@/components/ui/button-link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -39,7 +39,7 @@ if (user) {
 }
 ---
 
-<Layout title="Availability - MyRandomCalendar">
+<AuthLayout title="Availability - My Random Calendar">
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="mb-8">
@@ -286,4 +286,4 @@ if (user) {
       }
     </div>
   </div>
-</Layout>
+</AuthLayout>

@@ -2,7 +2,8 @@
 import { actions } from 'astro:actions';
 import { endOfMonth, startOfMonth } from 'date-fns';
 import FullCalendarComponent from '../components/FullCalendar.tsx';
-import Layout from '../layouts/Layout.astro';
+import AuthLayout from '../layouts/AuthLayout.astro';
+import PublicLayout from '../layouts/PublicLayout.astro';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import ButtonLink from '@/components/ui/button-link';
@@ -49,10 +50,9 @@ if (user) {
 }
 ---
 
-<Layout>
-  <div class="container mx-auto px-4 py-8">
-    {
-      user ? (
+{user ? (
+  <AuthLayout title="Calendar - My Random Calendar">
+    <div class="container mx-auto px-4 py-8">
         <div class="max-w-4xl mx-auto">
           <Alert className="mb-6 border-blue-400 bg-blue-50 text-blue-800">
             <AlertTitle>Your Calendar with Availability</AlertTitle>
@@ -230,10 +230,26 @@ if (user) {
             </CardContent>
           </Card>
         </div>
-      )
-    }
-  </div>
-</Layout>
+    </div>
+  </AuthLayout>
+) : (
+  <PublicLayout title="Calendar - My Random Calendar">
+    <Card>
+      <CardContent>
+        <div class="text-center space-y-4">
+          <h2 class="text-xl font-bold">Access Denied</h2>
+          <p class="text-gray-600">
+            Please log in to access your Google Calendar.
+          </p>
+          <div class="flex space-x-4 justify-center">
+            <ButtonLink href="/login">Login</ButtonLink>
+            <ButtonLink variant="secondary" href="/register">Register</ButtonLink>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  </PublicLayout>
+)}
 
 <script>
   import {

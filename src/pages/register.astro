@@ -1,6 +1,6 @@
 ---
 import { actions } from 'astro:actions';
-import Layout from '../layouts/Layout.astro';
+import PublicLayout from '../layouts/PublicLayout.astro';
 import { Button } from '@/components/ui/button';
 import ButtonLink from '@/components/ui/button-link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -13,9 +13,8 @@ export const prerender = false; // Required for server actions
 const result = Astro.getActionResult(actions.auth.register);
 ---
 
-<Layout title="Register">
-  <div class="max-w-md mx-auto mt-8">
-    <Card>
+<PublicLayout title="Register - My Random Calendar">
+  <Card>
       <CardHeader>
         <CardTitle className="text-2xl text-center">Create Account</CardTitle>
       </CardHeader>
@@ -75,8 +74,7 @@ const result = Astro.getActionResult(actions.auth.register);
         </div>
       </CardContent>
     </Card>
-  </div>
-</Layout>
+</PublicLayout>
 
 <script>
   import { actions } from 'astro:actions';

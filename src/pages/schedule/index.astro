@@ -1,7 +1,7 @@
 ---
 import { actions } from 'astro:actions';
 import { formatDaysOfWeek } from '../../features/schedule/services/constants';
-import Layout from '../../layouts/Layout.astro';
+import AuthLayout from '../../layouts/AuthLayout.astro';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import ButtonLink from '@/components/ui/button-link';
@@ -39,10 +39,9 @@ if (user) {
 }
 ---
 
-<Layout>
-  <div class="container mx-auto px-4 py-8">
-    {
-      user && scheduleIndexData ? (
+{user && scheduleIndexData ? (
+  <AuthLayout title="Schedule Management - My Random Calendar">
+    <div class="container mx-auto px-4 py-8">
         <div class="max-w-6xl mx-auto">
           <div class="mb-8">
             <div class="flex justify-between items-start">
@@ -377,7 +376,6 @@ if (user) {
             </CardContent>
           </Card>
         </div>
-      )
-    }
-  </div>
-</Layout>
+    </div>
+  </AuthLayout>
+) : null}
