@@ -39,9 +39,10 @@ if (user) {
 }
 ---
 
-{user && scheduleIndexData ? (
-  <AuthLayout title="Schedule Management - My Random Calendar">
-    <div class="container mx-auto px-4 py-8">
+{
+  user && scheduleIndexData ? (
+    <AuthLayout title="Schedule Management - My Random Calendar">
+      <div class="container mx-auto px-4 py-8">
         <div class="max-w-6xl mx-auto">
           <div class="mb-8">
             <div class="flex justify-between items-start">
@@ -320,12 +321,11 @@ if (user) {
                     <p class="text-sm text-gray-600">Check your free time</p>
                   </div>
                 </ButtonLink>
-
               </div>
             </CardContent>
           </Card>
         </div>
-      ) : (
+        ) : (
         <div class="max-w-2xl mx-auto">
           <Alert className="mb-6 border-yellow-400 bg-yellow-50 text-yellow-800">
             <AlertTitle>Access Denied</AlertTitle>
@@ -351,6 +351,7 @@ if (user) {
             </CardContent>
           </Card>
         </div>
-    </div>
-  </AuthLayout>
-) : null}
+      </div>
+    </AuthLayout>
+  ) : null
+}

@@ -1,8 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,7 +44,10 @@ const CalendarIcon = (props: React.SVGAttributes<SVGElement>) => {
 };
 
 // Hamburger icon component
-const HamburgerIcon = ({ className, ...props }: React.SVGAttributes<SVGElement>) => (
+const HamburgerIcon = ({
+  className,
+  ...props
+}: React.SVGAttributes<SVGElement>) => (
   <svg
     className={cn('pointer-events-none', className)}
     width={16}
@@ -138,10 +141,10 @@ export default function Navigation({ user, currentPath }: NavigationProps) {
                         <NavigationMenuLink
                           href={link.href}
                           className={cn(
-                            "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                            'flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                             isActiveLink(link.href)
-                              ? "bg-accent text-accent-foreground"
-                              : "text-foreground/80"
+                              ? 'bg-accent text-accent-foreground'
+                              : 'text-foreground/80'
                           )}
                         >
                           {link.label}
@@ -177,10 +180,10 @@ export default function Navigation({ user, currentPath }: NavigationProps) {
                       <NavigationMenuLink
                         href={link.href}
                         className={cn(
-                          "group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50",
+                          'group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50',
                           isActiveLink(link.href)
-                            ? "bg-accent text-accent-foreground"
-                            : "text-foreground/80 hover:text-foreground"
+                            ? 'bg-accent text-accent-foreground'
+                            : 'text-foreground/80 hover:text-foreground'
                         )}
                       >
                         {link.label}
@@ -198,11 +201,21 @@ export default function Navigation({ user, currentPath }: NavigationProps) {
           <div className="flex items-center gap-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-9 w-9 rounded-full"
+                >
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src="" alt={user.name || user.email || 'User'} />
+                    <AvatarImage
+                      src=""
+                      alt={user.name || user.email || 'User'}
+                    />
                     <AvatarFallback>
-                      {user.name ? user.name.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : 'U')}
+                      {user.name
+                        ? user.name.charAt(0).toUpperCase()
+                        : user.email
+                          ? user.email.charAt(0).toUpperCase()
+                          : 'U'}
                     </AvatarFallback>
                   </Avatar>
                 </Button>

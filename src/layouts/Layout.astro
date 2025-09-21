@@ -11,6 +11,6 @@ const { title, description } = Astro.props;
 ---
 
 <!-- DEPRECATED: Use BaseLayout, PublicLayout, or AuthLayout instead -->
-<BaseLayout title={title} description={description}>
+<BaseLayout {title} {description}>
   <slot />
 </BaseLayout>

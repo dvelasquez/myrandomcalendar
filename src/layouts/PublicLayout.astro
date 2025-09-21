@@ -6,12 +6,14 @@ export interface Props {
   description?: string;
 }
 
-const { title = "My Random Calendar", description } = Astro.props;
+const { title = 'My Random Calendar', description } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout {title} {description}>
   <!-- Main Content Container -->
-  <main class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+  <main
+    class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100"
+  >
     <div class="w-full max-w-md px-4">
       <slot />
     </div>

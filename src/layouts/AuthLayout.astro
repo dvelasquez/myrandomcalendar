@@ -1,13 +1,13 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-import Navigation from '../components/Navigation';
+import Navigation from '@/components/Navigation';
 
 export interface Props {
   title?: string;
   description?: string;
 }
 
-const { title = "My Random Calendar", description } = Astro.props;
+const { title = 'My Random Calendar', description } = Astro.props;
 
 // Get user from middleware
 const { user } = Astro.locals;
@@ -16,11 +16,9 @@ const { user } = Astro.locals;
 const currentPath = Astro.url.pathname;
 ---
 
-<BaseLayout title={title} description={description}>
-  <!-- ShadCN Navigation Component -->
-  <Navigation user={user} currentPath={currentPath} client:load />
+<BaseLayout {title} {description}>
+  <Navigation {user} {currentPath} client:load />
 
-  <!-- Main Content -->
   <main class="flex-1">
     <slot />
   </main>

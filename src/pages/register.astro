@@ -15,65 +15,59 @@ const result = Astro.getActionResult(actions.auth.register);
 
 <PublicLayout title="Register - My Random Calendar">
   <Card>
-      <CardHeader>
-        <CardTitle className="text-2xl text-center">Create Account</CardTitle>
-      </CardHeader>
+    <CardHeader>
+      <CardTitle className="text-2xl text-center">Create Account</CardTitle>
+    </CardHeader>
 
-      <CardContent>
-        <!-- Display error message if registration failed -->
-        {
-          result?.error && (
-            <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-              {result.error.message}
-            </div>
-          )
-        }
-
-        <form method="POST" action={actions.auth.register} class="space-y-4">
-          <div>
-            <Label htmlFor="name" className="text-gray-700">Name</Label>
-            <Input
-              type="text"
-              id="name"
-              name="name"
-              required
-              className="mt-1"
-            />
+    <CardContent>
+      <!-- Display error message if registration failed -->
+      {
+        result?.error && (
+          <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {result.error.message}
           </div>
+        )
+      }
 
-          <div>
-            <Label htmlFor="email" className="text-gray-700">Email</Label>
-            <Input
-              type="email"
-              id="email"
-              name="email"
-              required
-              className="mt-1"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="password" className="text-gray-700">Password</Label>
-            <Input
-              type="password"
-              id="password"
-              name="password"
-              required
-              className="mt-1"
-            />
-          </div>
-
-          <Button type="submit" className="w-full"> Sign Up </Button>
-        </form>
-
-        <div class="mt-4 text-center">
-          <p class="text-sm text-gray-600">
-            Already have an account?
-            <ButtonLink variant="link" href="/login">Sign in</ButtonLink>
-          </p>
+      <form method="POST" action={actions.auth.register} class="space-y-4">
+        <div>
+          <Label htmlFor="name" className="text-gray-700">Name</Label>
+          <Input type="text" id="name" name="name" required className="mt-1" />
         </div>
-      </CardContent>
-    </Card>
+
+        <div>
+          <Label htmlFor="email" className="text-gray-700">Email</Label>
+          <Input
+            type="email"
+            id="email"
+            name="email"
+            required
+            className="mt-1"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="password" className="text-gray-700">Password</Label>
+          <Input
+            type="password"
+            id="password"
+            name="password"
+            required
+            className="mt-1"
+          />
+        </div>
+
+        <Button type="submit" className="w-full"> Sign Up </Button>
+      </form>
+
+      <div class="mt-4 text-center">
+        <p class="text-sm text-gray-600">
+          Already have an account?
+          <ButtonLink variant="link" href="/login">Sign in</ButtonLink>
+        </p>
+      </div>
+    </CardContent>
+  </Card>
 </PublicLayout>
 
 <script>

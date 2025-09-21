@@ -50,10 +50,11 @@ if (user) {
 }
 ---
 
-{user ? (
-  <AuthLayout title="Calendar - My Random Calendar">
-    <div class="container mx-auto px-4 py-8">
-      <div class="max-w-4xl mx-auto">
+{
+  user ? (
+    <AuthLayout title="Calendar - My Random Calendar">
+      <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
           <Alert className="mb-6 border-blue-400 bg-blue-50 text-blue-800">
             <AlertTitle>Your Calendar with Availability</AlertTitle>
             <AlertDescription>
@@ -191,30 +192,32 @@ if (user) {
                   <p class="text-gray-600">Loading calendar data...</p>
                 </div>
               )}
-
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  </AuthLayout>
-) : (
-  <PublicLayout title="Calendar - My Random Calendar">
-    <Card>
-      <CardContent>
-        <div class="text-center space-y-4">
-          <h2 class="text-xl font-bold">Access Denied</h2>
-          <p class="text-gray-600">
-            Please log in to access your Google Calendar.
-          </p>
-          <div class="flex space-x-4 justify-center">
-            <ButtonLink href="/login">Login</ButtonLink>
-            <ButtonLink variant="secondary" href="/register">Register</ButtonLink>
-          </div>
+            </CardContent>
+          </Card>
         </div>
-      </CardContent>
-    </Card>
-  </PublicLayout>
-)}
+      </div>
+    </AuthLayout>
+  ) : (
+    <PublicLayout title="Calendar - My Random Calendar">
+      <Card>
+        <CardContent>
+          <div class="text-center space-y-4">
+            <h2 class="text-xl font-bold">Access Denied</h2>
+            <p class="text-gray-600">
+              Please log in to access your Google Calendar.
+            </p>
+            <div class="flex space-x-4 justify-center">
+              <ButtonLink href="/login">Login</ButtonLink>
+              <ButtonLink variant="secondary" href="/register">
+                Register
+              </ButtonLink>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </PublicLayout>
+  )
+}
 
 <script>
   import {

@@ -10,109 +10,152 @@ export const prerender = false; // Required for server actions
 const { user } = Astro.locals;
 ---
 
-{user ? (
-  <AuthLayout title="Dashboard - My Random Calendar">
-    <div class="container mx-auto px-4 py-8">
-      <div class="max-w-4xl mx-auto">
-        <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user.name || user.email}!
-          </h1>
-          <p class="text-gray-600">
-            Manage your calendar, schedule, and periodic events from your dashboard.
-          </p>
-        </div>
-
-        <!-- Quick Actions Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <ButtonLink href="/calendar" className="h-auto p-0">
-            <Card className="hover:shadow-lg transition-shadow w-full">
-              <CardContent className="p-6">
-                <div class="flex items-center space-x-4">
-                  <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 class="font-semibold text-gray-900">Calendar</h3>
-                    <p class="text-sm text-gray-600">View your events</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </ButtonLink>
-
-          <ButtonLink href="/schedule" className="h-auto p-0">
-            <Card className="hover:shadow-lg transition-shadow w-full">
-              <CardContent className="p-6">
-                <div class="flex items-center space-x-4">
-                  <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 class="font-semibold text-gray-900">Schedule</h3>
-                    <p class="text-sm text-gray-600">Manage time blocks</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </ButtonLink>
-
-          <ButtonLink href="/periodic-events" className="h-auto p-0">
-            <Card className="hover:shadow-lg transition-shadow w-full">
-              <CardContent className="p-6">
-                <div class="flex items-center space-x-4">
-                  <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 class="font-semibold text-gray-900">Events</h3>
-                    <p class="text-sm text-gray-600">Periodic activities</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </ButtonLink>
-        </div>
-
-        <!-- User Information -->
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Account Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div class="space-y-2">
-              <p><strong>Email:</strong> {user.email}</p>
-              {user.name && <p><strong>Name:</strong> {user.name}</p>}
-              <p><strong>User ID:</strong> {user.id}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  </AuthLayout>
-) : (
-  <PublicLayout title="My Random Calendar">
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-2xl text-center">Welcome to My Random Calendar!</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div class="text-center space-y-6">
-          <p class="text-gray-600">
-            Manage your calendar, schedule, and periodic events in one place.
-          </p>
-          <div class="flex space-x-4 justify-center">
-            <ButtonLink href="/login">Login</ButtonLink>
-            <ButtonLink variant="secondary" href="/register">Register</ButtonLink>
+{
+  user ? (
+    <AuthLayout title="Dashboard - My Random Calendar">
+      <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+          <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+              Welcome back, {user.name || user.email}!
+            </h1>
+            <p class="text-gray-600">
+              Manage your calendar, schedule, and periodic events from your
+              dashboard.
+            </p>
           </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <ButtonLink href="/calendar" className="h-auto p-0">
+              <Card className="hover:shadow-lg transition-shadow w-full">
+                <CardContent className="p-6">
+                  <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <svg
+                        class="w-6 h-6 text-blue-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 class="font-semibold text-gray-900">Calendar</h3>
+                      <p class="text-sm text-gray-600">View your events</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </ButtonLink>
+
+            <ButtonLink href="/schedule" className="h-auto p-0">
+              <Card className="hover:shadow-lg transition-shadow w-full">
+                <CardContent className="p-6">
+                  <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                      <svg
+                        class="w-6 h-6 text-green-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 class="font-semibold text-gray-900">Schedule</h3>
+                      <p class="text-sm text-gray-600">Manage time blocks</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </ButtonLink>
+
+            <ButtonLink href="/periodic-events" className="h-auto p-0">
+              <Card className="hover:shadow-lg transition-shadow w-full">
+                <CardContent className="p-6">
+                  <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <svg
+                        class="w-6 h-6 text-purple-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 class="font-semibold text-gray-900">Events</h3>
+                      <p class="text-sm text-gray-600">Periodic activities</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </ButtonLink>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Account Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div class="space-y-2">
+                <p>
+                  <strong>Email:</strong> {user.email}
+                </p>
+                {user.name && (
+                  <p>
+                    <strong>Name:</strong> {user.name}
+                  </p>
+                )}
+                <p>
+                  <strong>User ID:</strong> {user.id}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </CardContent>
-    </Card>
-  </PublicLayout>
-)}
+      </div>
+    </AuthLayout>
+  ) : (
+    <PublicLayout title="My Random Calendar">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl text-center">
+            Welcome to My Random Calendar!
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div class="text-center space-y-6">
+            <p class="text-gray-600">
+              Manage your calendar, schedule, and periodic events in one place.
+            </p>
+            <div class="flex space-x-4 justify-center">
+              <ButtonLink href="/login">Login</ButtonLink>
+              <ButtonLink variant="secondary" href="/register">
+                Register
+              </ButtonLink>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </PublicLayout>
+  )
+}
