@@ -1,11 +1,11 @@
 ---
 import { actions } from 'astro:actions';
-import ScheduleForm from '../../components/ScheduleForm';
+import ScheduleForm from '../../../components/ScheduleForm';
 import {
   getSuccessMessageText,
   getActionErrorText,
-} from '../../features/schedule/services/maintainer-handler';
-import AuthLayout from '../../layouts/AuthLayout.astro';
+} from '../../../features/schedule/services/maintainer-handler';
+import AuthLayout from '../../../layouts/AuthLayout.astro';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import ButtonLink from '@/components/ui/button-link';
@@ -35,13 +35,13 @@ const deleteResult = Astro.getActionResult(
 
 // Redirect on successful actions
 if (createResult && !createResult.error) {
-  return Astro.redirect('/schedule?success=created');
+  return Astro.redirect('/app/schedule?success=created');
 }
 if (updateResult && !updateResult.error) {
-  return Astro.redirect('/schedule/maintainer?success=updated');
+  return Astro.redirect('/app/schedule/maintainer?success=updated');
 }
 if (deleteResult && !deleteResult.error) {
-  return Astro.redirect('/schedule?success=deleted');
+  return Astro.redirect('/app/schedule?success=deleted');
 }
 
 // Fetch maintainer page data using new service
@@ -162,7 +162,7 @@ if (user) {
                       </div>
                       <div class="flex space-x-2">
                         <ButtonLink
-                          href={`/schedule/maintainer?edit=${block.id}`}
+                          href={`/app/schedule/maintainer?edit=${block.id}`}
                           variant="outline"
                           size="sm"
                         >
@@ -231,7 +231,7 @@ if (user) {
 </AuthLayout>
 
 <script>
-  import { initializeDaysOfWeekHandler } from '../../features/schedule/lib/form-handlers';
+  import { initializeDaysOfWeekHandler } from '../../../features/schedule/lib/form-handlers';
 
   // Initialize days of week checkbox handler
   initializeDaysOfWeekHandler();

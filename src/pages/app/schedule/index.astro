@@ -1,7 +1,7 @@
 ---
 import { actions } from 'astro:actions';
-import { formatDaysOfWeek } from '../../features/schedule/services/constants';
-import AuthLayout from '../../layouts/AuthLayout.astro';
+import { formatDaysOfWeek } from '../../../features/schedule/services/constants';
+import AuthLayout from '../../../layouts/AuthLayout.astro';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import ButtonLink from '@/components/ui/button-link';
@@ -78,7 +78,7 @@ if (!scheduleIndexData) {
               )
             }
           </div>
-          <ButtonLink href="/schedule/maintainer">
+          <ButtonLink href="/app/schedule/maintainer">
             Add Schedule Block
           </ButtonLink>
         </div>
@@ -157,7 +157,7 @@ if (!scheduleIndexData) {
                           {block.priority}
                         </Badge>
                         <ButtonLink
-                          href={`/schedule/maintainer?edit=${block.id}`}
+                          href={`/app/schedule/maintainer?edit=${block.id}`}
                           variant="outline"
                           size="sm"
                         >
@@ -191,7 +191,7 @@ if (!scheduleIndexData) {
                     Create your first schedule block to start managing your time
                     effectively.
                   </p>
-                  <ButtonLink href="/schedule/maintainer">
+                  <ButtonLink href="/app/schedule/maintainer">
                     Create Schedule Block
                   </ButtonLink>
                 </div>
@@ -278,7 +278,7 @@ if (!scheduleIndexData) {
         <CardContent>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <ButtonLink
-              href="/schedule/maintainer"
+              href="/app/schedule/maintainer"
               variant="outline"
               className="flex items-center p-4 h-auto justify-start"
             >
@@ -303,7 +303,7 @@ if (!scheduleIndexData) {
             </ButtonLink>
 
             <ButtonLink
-              href="/schedule/availability"
+              href="/app/schedule/availability"
               variant="outline"
               className="flex items-center p-4 h-auto justify-start"
             >

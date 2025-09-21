@@ -1,7 +1,7 @@
 ---
 import { actions } from 'astro:actions';
 import { format, addDays, subDays } from 'date-fns';
-import AuthLayout from '../../layouts/AuthLayout.astro';
+import AuthLayout from '../../../layouts/AuthLayout.astro';
 import { Badge } from '@/components/ui/badge';
 import ButtonLink from '@/components/ui/button-link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -54,7 +54,7 @@ if (user) {
           <div class="flex items-center space-x-4">
             <div class="flex items-center space-x-2">
               <a
-                href={`/schedule/availability?date=${format(subDays(selectedDate, 1), 'yyyy-MM-dd')}`}
+                href={`/app/schedule/availability?date=${format(subDays(selectedDate, 1), 'yyyy-MM-dd')}`}
                 class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md"
               >
                 <svg
@@ -76,7 +76,7 @@ if (user) {
                 {format(selectedDate, 'MMM dd, yyyy')}
               </span>
               <a
-                href={`/schedule/availability?date=${format(addDays(selectedDate, 1), 'yyyy-MM-dd')}`}
+                href={`/app/schedule/availability?date=${format(addDays(selectedDate, 1), 'yyyy-MM-dd')}`}
                 class="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md"
               >
                 <svg
@@ -205,7 +205,7 @@ if (user) {
                       {format(selectedDate, 'MMMM dd, yyyy')}.
                     </p>
                     <div class="space-x-4">
-                      <ButtonLink href="/schedule/maintainer">
+                      <ButtonLink href="/app/schedule/maintainer">
                         Manage Schedule Blocks
                       </ButtonLink>
                     </div>

@@ -3,10 +3,10 @@ import { actions } from 'astro:actions';
 import {
   formatDuration,
   formatFrequency,
-} from '../../features/periodic-events/lib/formatters';
-import type { PeriodicEvent as PeriodicEventType } from '../../features/periodic-events/models/PeriodicEvents.types';
-import { handlePeriodicEventsIndexPage } from '../../features/periodic-events/services/page-handler';
-import AuthLayout from '../../layouts/AuthLayout.astro';
+} from '../../../features/periodic-events/lib/formatters';
+import type { PeriodicEvent as PeriodicEventType } from '../../../features/periodic-events/models/PeriodicEvents.types';
+import { handlePeriodicEventsIndexPage } from '../../../features/periodic-events/services/page-handler';
+import AuthLayout from '../../../layouts/AuthLayout.astro';
 import { Badge } from '@/components/ui/badge';
 import ButtonLink from '@/components/ui/button-link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,7 +50,7 @@ const { periodicEvents: events } = pageData;
             Activities you want to do regularly without fixed times
           </p>
         </div>
-        <ButtonLink href="/periodic-events/create">
+        <ButtonLink href="/app/periodic-events/create">
           Create New Event
         </ButtonLink>
       </div>
@@ -82,7 +82,7 @@ const { periodicEvents: events } = pageData;
                   Create your first periodic event to start tracking activities
                   you want to do regularly.
                 </p>
-                <ButtonLink href="/periodic-events/create">
+                <ButtonLink href="/app/periodic-events/create">
                   Create Your First Event
                 </ButtonLink>
               </div>

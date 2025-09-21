@@ -101,10 +101,10 @@ export default function Navigation({ user, currentPath }: NavigationProps) {
   }, []);
 
   const navigationLinks = [
-    { href: '/', label: 'Dashboard' },
-    { href: '/calendar', label: 'Calendar' },
-    { href: '/schedule', label: 'Schedule' },
-    { href: '/periodic-events', label: 'Events' },
+    { href: '/app/dashboard', label: 'Dashboard' },
+    { href: '/app/calendar', label: 'Calendar' },
+    { href: '/app/schedule', label: 'Schedule' },
+    { href: '/app/periodic-events', label: 'Events' },
   ];
 
   const isActiveLink = (href: string) => {

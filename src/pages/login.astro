@@ -138,8 +138,10 @@ export const prerender = false;
       });
 
       if (response.ok) {
-        // Redirect to home page on successful login
-        navigate('/');
+        // Redirect to return URL or dashboard on successful login
+        const urlParams = new URLSearchParams(window.location.search);
+        const returnUrl = urlParams.get('return') || '/app/dashboard';
+        navigate(returnUrl);
       } else {
         // Handle error
         const errorData = await response.json();

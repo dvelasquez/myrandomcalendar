@@ -12,6 +12,10 @@ const { title = 'My Random Calendar', description } = Astro.props;
 // Get user from middleware
 const { user } = Astro.locals;
 
+if (!user || !user.id) {
+  return Astro.redirect('/');
+}
+
 // Get current path for active link highlighting
 const currentPath = Astro.url.pathname;
 ---
