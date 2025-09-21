@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import ButtonLink from '@/components/ui/button-link';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { PeriodicEvent } from '@/features/periodic-events/models/PeriodicEvents.types';
@@ -174,21 +175,28 @@ export default function PeriodicEventForm({ initialData, formOptions }: Periodic
         <Label className="text-gray-700 mb-2">
           Color *
         </Label>
-        <div className="grid grid-cols-6 gap-2">
+        <RadioGroup 
+          name="color" 
+          defaultValue={initialData?.color || '#10b981'}
+          className="grid grid-cols-6 gap-2"
+        >
           {formOptions.colorOptions.map((color) => (
-            <label key={color.value} className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="radio"
-                name="color"
-                value={color.value}
+            <div key={color.value} className="flex flex-col items-center space-y-1">
+              <RadioGroupItem 
+                value={color.value} 
+                id={`color-${color.value}`}
                 className="sr-only"
-                defaultChecked={color.value === (initialData?.color || '#10b981')}
               />
-              <div className={`w-8 h-8 rounded-full ${color.class} border-2 border-gray-300 hover:border-gray-400`}></div>
-              <span className="text-xs text-gray-600">{color.label}</span>
-            </label>
+              <label 
+                htmlFor={`color-${color.value}`}
+                className="flex flex-col items-center space-y-1 cursor-pointer"
+              >
+                <div className={`w-8 h-8 rounded-full ${color.class} border-2 border-gray-300 hover:border-gray-400`}></div>
+                <span className="text-xs text-gray-600">{color.label}</span>
+              </label>
+            </div>
           ))}
-        </div>
+        </RadioGroup>
       </div>
 
       {/* Submit Button */}

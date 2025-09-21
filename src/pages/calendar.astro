@@ -4,6 +4,7 @@ import { startOfMonth, endOfMonth } from 'date-fns';
 import FullCalendarComponent from '../components/FullCalendar.tsx';
 import Layout from '../layouts/Layout.astro';
 import type { CalendarPageData } from '@/features/calendar/services/page-handler';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import ButtonLink from '@/components/ui/button-link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -47,35 +48,39 @@ if (user) {
   <div class="container mx-auto px-4 py-8">
     {user ? (
       <div class="max-w-4xl mx-auto">
-        <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6">
-          <h2 class="text-xl font-bold">Your Calendar with Availability</h2>
-          <p>Interactive calendar view showing your Google Calendar events and personal schedule availability</p>
-          {calendarPageData && calendarPageData.scheduleBlocks.length > 0 && (
-            <div class="mt-2 text-sm">
-              <p><strong>Schedule Blocks:</strong> {calendarPageData.scheduleBlocks.length} configured</p>
-              <p><strong>Availability Events:</strong> {calendarPageData.availabilityBackgroundEvents.length} background events</p>
-            </div>
-          )}
-        </div>
+        <Alert className="mb-6 border-blue-400 bg-blue-50 text-blue-800">
+          <AlertTitle>Your Calendar with Availability</AlertTitle>
+          <AlertDescription>
+            Interactive calendar view showing your Google Calendar events and personal schedule availability
+            {calendarPageData && calendarPageData.scheduleBlocks.length > 0 && (
+              <div class="mt-2 text-sm">
+                <p><strong>Schedule Blocks:</strong> {calendarPageData.scheduleBlocks.length} configured</p>
+                <p><strong>Availability Events:</strong> {calendarPageData.availabilityBackgroundEvents.length} background events</p>
+              </div>
+            )}
+          </AlertDescription>
+        </Alert>
         
         <Card>
           <CardContent>
             {error ? (
-              <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                <h3 class="font-bold">Error:</h3>
-                <p>{error}</p>
-                <p class="text-sm mt-2">
-                  {error.includes('calendar access') || error.includes('INSUFFICIENT_SCOPE') ? (
-                    <>
-                      <strong>Solution:</strong> You need to sign out and sign in with Google again to grant calendar permissions.
-                      <br />
-                      <a href="/logout" class="underline">Sign out</a> and then <a href="/login" class="underline">sign in with Google</a> again.
-                    </>
-                  ) : (
-                    'Make sure you\'re signed in with Google and have granted calendar access permissions.'
-                  )}
-                </p>
-              </div>
+              <Alert variant="destructive" className="mb-4">
+                <AlertTitle>Error:</AlertTitle>
+                <AlertDescription>
+                  {error}
+                  <p class="text-sm mt-2">
+                    {error.includes('calendar access') || error.includes('INSUFFICIENT_SCOPE') ? (
+                      <>
+                        <strong>Solution:</strong> You need to sign out and sign in with Google again to grant calendar permissions.
+                        <br />
+                        <a href="/logout" class="underline">Sign out</a> and then <a href="/login" class="underline">sign in with Google</a> again.
+                      </>
+                    ) : (
+                      'Make sure you\'re signed in with Google and have granted calendar access permissions.'
+                    )}
+                  </p>
+                </AlertDescription>
+              </Alert>
             ) : calendarPageData ? (
               <div>
                 <div class="mb-4 flex justify-between items-center">
@@ -157,10 +162,12 @@ if (user) {
       </div>
     ) : (
       <div class="max-w-2xl mx-auto">
-        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-6">
-          <h2 class="text-xl font-bold">Access Denied</h2>
-          <p>You must be logged in to view your calendar.</p>
-        </div>
+        <Alert className="mb-6 border-yellow-400 bg-yellow-50 text-yellow-800">
+          <AlertTitle>Access Denied</AlertTitle>
+          <AlertDescription>
+            You must be logged in to view your calendar.
+          </AlertDescription>
+        </Alert>
         
         <Card>
           <CardContent>
