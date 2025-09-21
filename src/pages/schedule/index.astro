@@ -1,8 +1,9 @@
 ---
 import { actions } from 'astro:actions';
-import { PRIORITY_COLORS, formatDaysOfWeek } from '../../features/schedule/services/constants';
+import { formatDaysOfWeek } from '../../features/schedule/services/constants';
 import Layout from '../../layouts/Layout.astro';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import ButtonLink from '@/components/ui/button-link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
@@ -119,9 +120,12 @@ if (user) {
                         </div>
                       </div>
                       <div class="flex items-center space-x-2">
-                        <span class={`px-2 py-1 text-xs rounded-full ${PRIORITY_COLORS[block.priority]}`}>
+                        <Badge 
+                          variant={block.priority === 'high' ? 'destructive' : block.priority === 'medium' ? 'secondary' : 'default'}
+                          className="text-xs"
+                        >
                           {block.priority}
-                        </span>
+                        </Badge>
                         <ButtonLink
                           href={`/schedule/maintainer?edit=${block.id}`}
                           variant="outline"

@@ -4,6 +4,7 @@ import { formatDuration, formatFrequency, getCategoryColor } from '../../feature
 import type { PeriodicEvent as PeriodicEventType } from '../../features/periodic-events/models/PeriodicEvents.types';
 import { handlePeriodicEventsIndexPage } from '../../features/periodic-events/services/page-handler';
 import Layout from '../../layouts/Layout.astro';
+import { Badge } from '@/components/ui/badge';
 import ButtonLink from '@/components/ui/button-link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
@@ -30,15 +31,6 @@ if (!pageData) {
 // Destructure page data
 const { periodicEvents: events } = pageData;
 
-// Helper function to get priority color
-function getPriorityColor(priority: string): string {
-  const colors = {
-    high: 'bg-red-100 text-red-800',
-    medium: 'bg-yellow-100 text-yellow-800',
-    low: 'bg-green-100 text-green-800',
-  };
-  return colors[priority as keyof typeof colors] || colors.medium;
-}
 ---
 
 <Layout title="My Periodic Events">
@@ -93,9 +85,12 @@ function getPriorityColor(priority: string): string {
                     ></div>
                     <h3 class="text-lg font-semibold text-gray-900">{event.title}</h3>
                   </div>
-                  <div class={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(event.priority)}`}>
+                  <Badge 
+                    variant={event.priority === 'high' ? 'destructive' : event.priority === 'medium' ? 'secondary' : 'default'}
+                    className="text-xs font-medium"
+                  >
                     {event.priority}
-                  </div>
+                  </Badge>
                 </div>
 
                 <!-- Event Description -->
@@ -130,9 +125,12 @@ function getPriorityColor(priority: string): string {
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                     </svg>
-                    <span class={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(event.category)}`}>
+                    <Badge 
+                      variant="secondary" 
+                      className="text-xs font-medium"
+                    >
                       {event.category}
-                    </span>
+                    </Badge>
                   </div>
                 </div>
 
@@ -144,15 +142,15 @@ function getPriorityColor(priority: string): string {
                     </span>
                     <div class="flex items-center space-x-2">
                       {event.isActive ? (
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <Badge variant="default" className="inline-flex items-center text-xs font-medium">
                           <div class="w-2 h-2 bg-green-400 rounded-full mr-1"></div>
                           Active
-                        </span>
+                        </Badge>
                       ) : (
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <Badge variant="secondary" className="inline-flex items-center text-xs font-medium">
                           <div class="w-2 h-2 bg-gray-400 rounded-full mr-1"></div>
                           Inactive
-                        </span>
+                        </Badge>
                       )}
                     </div>
                   </div>

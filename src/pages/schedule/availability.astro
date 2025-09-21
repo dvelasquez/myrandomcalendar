@@ -2,6 +2,7 @@
 import { actions } from 'astro:actions';
 import { format, addDays, subDays } from 'date-fns';
 import Layout from '../../layouts/Layout.astro';
+import { Badge } from '@/components/ui/badge';
 import ButtonLink from '@/components/ui/button-link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
@@ -106,9 +107,9 @@ if (user) {
                         )}
                       </div>
                       <div class="flex items-center space-x-2">
-                        <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                        <Badge variant="secondary" className="text-xs">
                           Google Calendar
-                        </span>
+                        </Badge>
                       </div>
                     </div>
                   ))}
@@ -130,9 +131,9 @@ if (user) {
                     <div class="border rounded-lg p-4 bg-green-50 border-green-200">
                       <div class="flex items-center justify-between mb-2">
                         <h3 class="font-medium text-green-900">{slot.title || 'Available'}</h3>
-                        <span class="text-xs text-green-700 bg-green-100 px-2 py-1 rounded-full">
+                        <Badge variant="default" className="text-xs">
                           {Math.round((new Date(slot.end).getTime() - new Date(slot.start).getTime()) / (1000 * 60))} min
-                        </span>
+                        </Badge>
                       </div>
                       <p class="text-sm text-green-800">
                         {new Date(slot.start).toLocaleTimeString()} - {new Date(slot.end).toLocaleTimeString()}
