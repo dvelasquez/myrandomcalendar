@@ -1,4 +1,5 @@
 {
+  // ESLint Configuration
   "eslint.validate": [
     "javascript",
     "javascriptreact",
@@ -6,12 +7,49 @@
     "typescript", // Enable .ts
     "typescriptreact" // Enable .tsx
   ],
+  "eslint.format.enable": false, // Disable ESLint formatting - let Prettier handle it
+  
+  // Prettier Configuration
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": false,
+  
+  // File-specific formatters
+  "[astro]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  
+  // Auto-save and Code Actions
   "files.autoSave": "onFocusChange",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "never" // Let ESLint handle import organization
   },
-  "eslint.format.enable": true,
-  "editor.formatOnSave": true,
+  
+  // Prettier settings
+  "prettier.documentSelectors": ["**/*.astro"],
+  "prettier.requireConfig": true,
+  
+  // SQL Tools
   "sqltools.useNodeRuntime": true,
   "sqltools.connections": [
     {
