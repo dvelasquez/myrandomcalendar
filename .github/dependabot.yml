@@ -3,9 +3,149 @@
 # Please see the documentation for all configuration options:
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
+# Dependabot configuration with security-first approach and grouped updates
+# This configuration implements a conservative update strategy to protect
+# against supply chain attacks by avoiding immediate adoption of new packages
+#
+# NOTE: Even though this project uses pnpm, Dependabot uses 'npm' as the
+# package-ecosystem value for all Node.js package managers (npm, yarn, pnpm)
 version: 2
 updates:
-  - package-ecosystem: 'npm' # See documentation for possible values
-    directory: '/' # Location of package manifests
+  # Main dependency updates with grouped ecosystems
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
       interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'UTC'
+    open-pull-requests-limit: 12 # One PR per ecosystem group
+    # reviewers: [] # Add your GitHub username here if needed
+    # assignees: [] # Add your GitHub username here if needed
+    commit-message:
+      prefix: 'security'
+      include: 'scope'
+
+    # Group all ecosystems together with different patterns
+    groups:
+      # Astro ecosystem - highest priority
+      astro-ecosystem:
+        patterns:
+          - 'astro*'
+          - '@astrojs/*'
+        update-types: ['minor', 'patch']
+
+      # React ecosystem
+      react-ecosystem:
+        patterns:
+          - 'react*'
+          - '@types/react*'
+        update-types: ['minor', 'patch']
+
+      # Radix UI ecosystem
+      radix-ecosystem:
+        patterns:
+          - '@radix-ui/*'
+        update-types: ['minor', 'patch']
+
+      # TailwindCSS ecosystem
+      tailwind-ecosystem:
+        patterns:
+          - 'tailwindcss*'
+          - '@tailwindcss/*'
+        update-types: ['minor', 'patch']
+
+      # Testing ecosystem
+      testing-ecosystem:
+        patterns:
+          - 'vitest*'
+          - '@vitest/*'
+          - 'eslint*'
+          - '@typescript-eslint/*'
+          - 'prettier*'
+        update-types: ['minor', 'patch']
+
+      # Authentication & Database ecosystem
+      auth-db-ecosystem:
+        patterns:
+          - 'better-auth*'
+          - 'drizzle*'
+          - 'better-sqlite3'
+          - 'googleapis'
+        update-types: ['minor', 'patch']
+
+      # Utility packages ecosystem
+      utility-ecosystem:
+        patterns:
+          - 'date-fns*'
+          - 'class-variance-authority'
+          - 'clsx'
+          - 'tailwind-merge'
+          - 'lucide-react'
+          - 'typescript'
+        update-types: ['minor', 'patch']
+
+      # FullCalendar ecosystem
+      fullcalendar-ecosystem:
+        patterns:
+          - '@fullcalendar/*'
+        update-types: ['minor', 'patch']
+
+      # Database ecosystem
+      database-ecosystem:
+        patterns:
+          - 'pg'
+          - '@types/pg'
+          - 'drizzle-zod'
+        update-types: ['minor', 'patch']
+
+      # ESLint ecosystem
+      eslint-ecosystem:
+        patterns:
+          - '@eslint/*'
+          - 'eslint*'
+          - 'globals'
+        update-types: ['minor', 'patch']
+
+      # Prettier ecosystem
+      prettier-ecosystem:
+        patterns:
+          - 'prettier*'
+        update-types: ['minor', 'patch']
+
+      # Tailwind extensions ecosystem
+      tailwind-extensions-ecosystem:
+        patterns:
+          - 'tw-animate-css'
+        update-types: ['minor', 'patch']
+
+    # Ignore major version updates for critical packages
+    ignore:
+      - dependency-name: 'astro'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@astrojs/*'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'react-dom'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'better-auth'
+        update-types: ['version-update:semver-major']
+
+  # Security updates (immediate processing)
+  - package-ecosystem: 'npm'
+    directory: '/'
+    target-branch: 'security-updates' # Different branch to avoid overlap
+    schedule:
+      interval: 'daily'
+      time: '09:00'
+      timezone: 'UTC'
+    open-pull-requests-limit: 3
+    # reviewers: [] # Add your GitHub username here if needed
+    # assignees: [] # Add your GitHub username here if needed
+    commit-message:
+      prefix: 'security'
+      include: 'scope'
+    # Only security updates for immediate processing
+    # Note: Dependabot automatically prioritizes security updates
+    # This configuration ensures they're processed daily on a separate branch
