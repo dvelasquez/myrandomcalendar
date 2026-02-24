@@ -21,7 +21,7 @@
   "dependencies": {
     "@astrojs/check": "0.9.4",
     "@astrojs/db": "0.17.2",
-    "@astrojs/node": "9.4.3",
+    "@astrojs/node": "9.5.4",
     "@astrojs/react": "4.3.1",
     "@fullcalendar/core": "6.1.19",
     "@fullcalendar/daygrid": "6.1.19",
